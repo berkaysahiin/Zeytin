@@ -20,8 +20,9 @@ int main(int argc, char* argv[])
 {
     SetTraceLogLevel(LOG_WARNING);
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_MSAA_4X_HINT | FLAG_WINDOW_ALWAYS_RUN);
+
     
-    InitWindow(GetScreenWidth(), GetScreenHeight(), "ZeytinEditor");
+    InitWindow(1280, 720, "ZeytinEditor");
     
     SetTargetFPS(60);
     SetExitKey(0);

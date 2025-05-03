@@ -13,6 +13,7 @@
 #include "resource_manager/resource_manager.h"
 
 static void write_status_file(const std::string& status, const std::string& message);
+static void clean_status_file();
 
 EngineControls::EngineControls() 
     : m_is_running(false)
@@ -54,6 +55,7 @@ EngineControls::~EngineControls() {
         m_build_monitor_future.wait();
     }
     kill_engine();
+    clean_status_file();
 }
 
 void EngineControls::render() {
@@ -308,9 +310,9 @@ void EngineControls::monitor_build() {
 
         
         #ifdef _WIN32
-        build_command = "cd " + engine_scripts_path + " && build_wrapper.sh ../build_status/build_status.json";
+        build_command = "cd " + engine_scripts_path + " && python build_with_status.py";
         #else
-        build_command = "cd " + engine_scripts_path + " && ./build_wrapper.sh ../build_status/build_status.json";
+        build_command = "cd " + engine_scripts_path + " && python3 build_with_status.py";
         log_info() << std::filesystem::current_path() << std::endl;
         #endif
         
@@ -350,9 +352,9 @@ void EngineControls::monitor_build() {
             std::string run_command;
             
             #ifdef _WIN32
-            run_command = "cd " + engine_scripts_path + " && run.sh";
+            run_command = "cd " + engine_scripts_path + " && python run.py";
             #else
-            run_command = "cd " + engine_scripts_path + " && ./run.sh";
+            run_command = "cd " + engine_scripts_path + " && python3 run.py";
             #endif
             
             std::system(run_command.c_str());
@@ -406,4 +408,9 @@ static void write_status_file(const std::string& status, const std::string& mess
     } catch (const std::exception& e) {
         log_error() << "Failed to write status file: " << e.what() << std::endl;
     }
+}
+
+static void clean_status_file() {
+    std::filesystem::path status_folder = ResourceManager::get().get_engine_path() / "build_status";
+    std::filesystem::remove_all(status_folder);
 }

@@ -8,10 +8,16 @@
 class EntityList final {
 public:
     EntityList();
+
+    ~EntityList() {
+        clean_backup_entities();
+    }
+
     inline std::vector<EntityDocument>& get_entities() { return m_entities; }
     std::string as_string() const;
     
 private:
+
     void register_event_handlers();
     void sync_entities_from_document(const rapidjson::Document& document);
 
