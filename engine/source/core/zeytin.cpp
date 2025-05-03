@@ -27,6 +27,7 @@
 #include "resource_manager/resource_manager.h"
 
 #include "core/profiling.h"
+#include "config_manager/config_manager.h""
 
 Zeytin::Zeytin() {
 #ifdef EDITOR_MODE
@@ -42,7 +43,8 @@ Zeytin::Zeytin() {
     generate_variants();
     initial_sync_editor();
 #else
-    load_scene(ResourceManager::get().get_resource_subdir("scenes") / "main.scene");
+    std::string startup_scene = CONFIG_GET("startup_scene", std::string, "main.scene");
+    load_scene(ResourceManager::get().get_resource_subdir("scenes") / startup_scene);
     m_is_play_mode = true; // always set to play mode true if standalone
 #endif
 
@@ -318,6 +320,22 @@ void Zeytin::play_late_start_variants() {
     }
 }
 
+void Zeytin::render() {
+    draw_texture_pro(
+        m_render_texture.texture,
+        Rectangle{ 0, 0, (float)m_render_texture.texture.width, (float)-m_render_texture.texture.height },
+        Rectangle{
+        (get_screen_width() - VIRTUAL_WIDTH * ((get_screen_width() / VIRTUAL_WIDTH) < (get_screen_height() / VIRTUAL_HEIGHT) ? (get_screen_width() / VIRTUAL_WIDTH) : (get_screen_height() / VIRTUAL_HEIGHT))) * 0.5f,
+        (get_screen_height() - VIRTUAL_HEIGHT * ((get_screen_width() / VIRTUAL_WIDTH) < (get_screen_height() / VIRTUAL_HEIGHT) ? (get_screen_width() / VIRTUAL_WIDTH) : (get_screen_height() / VIRTUAL_HEIGHT))) * 0.5f,
+        VIRTUAL_WIDTH * ((get_screen_width() / VIRTUAL_WIDTH) < (get_screen_height() / VIRTUAL_HEIGHT) ? (get_screen_width() / VIRTUAL_WIDTH) : (get_screen_height() / VIRTUAL_HEIGHT)),
+        VIRTUAL_HEIGHT * ((get_screen_width() / VIRTUAL_WIDTH) < (get_screen_height() / VIRTUAL_HEIGHT) ? (get_screen_width() / VIRTUAL_WIDTH) : (get_screen_height() / VIRTUAL_HEIGHT))
+    },
+    Vector2{ 0, 0 },
+    0.0f,
+    WHITE
+    );
+}
+
 #ifdef EDITOR_MODE
 
 void Zeytin::subscribe_editor_events() {
@@ -391,22 +409,6 @@ void Zeytin::subscribe_editor_events() {
         [this](bool) {
             m_should_die = true;
         }
-    );
-}
-
-void Zeytin::render() {
-    draw_texture_pro(
-        m_render_texture.texture,
-        Rectangle{ 0, 0, (float)m_render_texture.texture.width, (float)-m_render_texture.texture.height },
-        Rectangle{
-        (get_screen_width() - VIRTUAL_WIDTH * ((get_screen_width() / VIRTUAL_WIDTH) < (get_screen_height() / VIRTUAL_HEIGHT) ? (get_screen_width() / VIRTUAL_WIDTH) : (get_screen_height() / VIRTUAL_HEIGHT))) * 0.5f,
-        (get_screen_height() - VIRTUAL_HEIGHT * ((get_screen_width() / VIRTUAL_WIDTH) < (get_screen_height() / VIRTUAL_HEIGHT) ? (get_screen_width() / VIRTUAL_WIDTH) : (get_screen_height() / VIRTUAL_HEIGHT))) * 0.5f,
-        VIRTUAL_WIDTH * ((get_screen_width() / VIRTUAL_WIDTH) < (get_screen_height() / VIRTUAL_HEIGHT) ? (get_screen_width() / VIRTUAL_WIDTH) : (get_screen_height() / VIRTUAL_HEIGHT)),
-        VIRTUAL_HEIGHT * ((get_screen_width() / VIRTUAL_WIDTH) < (get_screen_height() / VIRTUAL_HEIGHT) ? (get_screen_width() / VIRTUAL_WIDTH) : (get_screen_height() / VIRTUAL_HEIGHT))
-    },
-    Vector2{ 0, 0 },
-    0.0f,
-    WHITE
     );
 }
 
