@@ -13,7 +13,7 @@
 namespace Query {
 
 inline entity_id create_entity() {
-    return Zeytin::get().new_entity_id();
+    return Zeytin::get().new_entity();
 }
 
 template<typename T>

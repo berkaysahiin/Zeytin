@@ -33,3 +33,4 @@ shared_resources/variants/
 compile_commands.json
 .clang-format
 .cache/
+config.json

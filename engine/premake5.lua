@@ -98,6 +98,6 @@ workspace "Zeytin"
             optimize "Off"
 
         filter "configurations:STANDALONE"
-            defines { "TRACY_ENABLE=0" }
+            defines { "TRACY_ENABLE=0", "STANDALONE=1" }
             symbols "On"
             optimize "Off"

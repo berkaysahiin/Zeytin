@@ -3,17 +3,27 @@ import os
 import sys
 import subprocess
 import platform
+import multiprocessing
 
 def main():
     verbose = False
     config = None
-
+    jobs = None
+    
     for arg in sys.argv[1:]:
         if arg == "--verbose":
             verbose = True
         elif arg.startswith("config="):
             config = arg.split("=")[1]
-
+        elif arg.startswith("j=") or arg.startswith("-j=") or arg.startswith("--jobs="):
+            try:
+                jobs = int(arg.split("=")[1])
+            except ValueError:
+                print(f"Warning: Invalid job count '{arg}'. Using default.")
+    
+    if jobs is None:
+        jobs = multiprocessing.cpu_count()
+    
     script_path = os.path.abspath(__file__)
     script_dir = os.path.dirname(script_path)
     
@@ -32,36 +42,40 @@ def main():
     os.chdir(script_dir)
     print(f"Changed directory to: {script_dir}")
     
+    python_cmd = "python" if platform.system() == "Windows" else "python3"
+    
     print("Running parser...")
-    parser_result = subprocess.run(["python3", "parser2.py"], check=False)
+    parser_cmd = [python_cmd, "parser2.py"]
+    print(f"Parser command: {' '.join(parser_cmd)}")
+    parser_result = subprocess.run(parser_cmd, check=False)
     if parser_result.returncode != 0:
         print(f"Parser failed with code {parser_result.returncode}")
         return parser_result.returncode
-
+    
     os.chdir(engine_dir)
     print(f"Changed directory to: {engine_dir}")
-
     print("Running premake5...")
+    
     premake_exe = "premake5.exe" if platform.system() == "Windows" else "premake5"
     premake_result = subprocess.run([premake_exe, "gmake"], check=False)
     if premake_result.returncode != 0:
         print(f"Premake failed with code {premake_result.returncode}")
         return premake_result.returncode
-
-
+    
     build_dir = os.path.join(engine_dir, "build")
     os.chdir(build_dir)
     print(f"Changed directory to: {build_dir}")
-
-    print("Running make...")
-    make_args = ["make"]
+    print(f"Running make with {jobs} jobs...")
+    
+    make_args = ["make", f"-j{jobs}"]
     if verbose:
         make_args.append("VERBOSE=1")
     if config:
         make_args.append(f"config={config}")
-
+    
     print(f"Make command: {' '.join(make_args)}")
     make_result = subprocess.run(make_args, check=False)
+    
     return make_result.returncode
 
 if __name__ == "__main__":

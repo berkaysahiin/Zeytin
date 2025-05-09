@@ -5,6 +5,7 @@ import re
 import glob
 import json
 import sys
+import hashlib
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional, Set, Any, Union
 
@@ -300,7 +301,7 @@ class CodeGenerator:
         code += '        .constructor<>()(rttr::policy::ctor::as_object)\n'
         code += '        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)'
         
-        for prop_type, prop_name, callback_name in class_info['properties']:
+        for prop_type, prop_name, callback_name in sorted(class_info['properties'], key=lambda x: x[1]):
             code += f'\n        .property("{prop_name}", &{class_name}::{prop_name})'
             
             if callback_name:
@@ -309,7 +310,7 @@ class CodeGenerator:
         has_callbacks = any(callback_name for _, _, callback_name in class_info['properties'] if callback_name)
         if has_callbacks:
             code += '\n'
-            for prop_type, prop_name, callback_name in class_info['properties']:
+            for prop_type, prop_name, callback_name in sorted(class_info['properties'], key=lambda x: x[1]):
                 if callback_name:
                     code += f'\n        .method("{callback_name}", &{class_name}::{callback_name})'
         
@@ -323,7 +324,7 @@ class CodeGenerator:
         code = f'    rttr::registration::class_<{class_name}>("{class_name}")\n'
         code += '        .constructor<>()(rttr::policy::ctor::as_object)'
         
-        for prop_type, prop_name, _ in class_info['properties']:
+        for prop_type, prop_name, _ in sorted(class_info['properties'], key=lambda x: x[1]):
             code += f'\n        .property("{prop_name}", &{class_name}::{prop_name})'
         
         code += '\n        (rttr::metadata("NO_VARIANT", true))'
@@ -333,13 +334,15 @@ class CodeGenerator:
 
     @staticmethod
     def generate_full_registration(classes_info: List[Dict[str, Any]]) -> str:
+        sorted_classes = sorted(classes_info, key=lambda x: x['class_name'])
+        
         registration_code = "RTTR_REGISTRATION\n{\n"
         
         registration_code += CodeGenerator.generate_base_classes_registration()
         
         registration_code += CodeGenerator.generate_raylib_registration()
         
-        for class_info in classes_info:
+        for class_info in sorted_classes:
             if class_info['is_variant']:
                 registration_code += CodeGenerator.generate_variant_class_registration(class_info)
             else:
@@ -352,12 +355,24 @@ class CodeGenerator:
     def generate_requires_file(class_name: str, required_variants: List[str], output_dir: str) -> None:
         if not required_variants:
             return
+        
+        sorted_required_variants = sorted(required_variants)
             
         requires_file_path = os.path.join(output_dir, f"{class_name}.requires")
         
         requires_data = {
-            "requires": required_variants
+            "requires": sorted_required_variants
         }
+        
+        if os.path.exists(requires_file_path):
+            try:
+                with open(requires_file_path, 'r') as f:
+                    existing_data = json.load(f)
+                    if existing_data == requires_data:
+                        print(f"Requirements file unchanged, skipping: {requires_file_path}")
+                        return
+            except Exception:
+                pass
         
         try:
             os.makedirs(output_dir, exist_ok=True)
@@ -492,10 +507,24 @@ class RTTRGenerator:
                     break
 
     def generate_rttr_header(self, output_path: str) -> None:
-        includes_code = "\n".join(sorted(self.includes)) + "\n\n"
+        sorted_includes = sorted(self.includes)
+        includes_code = "#pragma once\n" + "\n".join(sorted_includes) + "\n\n"
         registration_code = CodeGenerator.generate_full_registration(self.classes_info)
         final_code = includes_code + registration_code
         
+        if os.path.exists(output_path):
+            try:
+                with open(output_path, 'r') as f:
+                    existing_content = f.read()
+                    existing_hash = hashlib.md5(existing_content.encode()).hexdigest()
+                    new_hash = hashlib.md5(final_code.encode()).hexdigest()
+                    
+                    if existing_hash == new_hash:
+                        print(f"RTTR header file unchanged, skipping: {output_path}")
+                        return
+            except Exception:
+                pass
+                
         try:
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
             with open(output_path, "w") as f:
@@ -512,25 +541,32 @@ class RTTRGenerator:
             print(f"Error writing RTTR header {output_path}: {e}")
 
     def generate_requires_files(self, requires_dir: str) -> None:
-        if os.path.exists(requires_dir):
-            print(f"Clearing existing requires directory: {requires_dir}")
-            try:
-                for file in os.listdir(requires_dir):
-                    file_path = os.path.join(requires_dir, file)
-                    if os.path.isfile(file_path) and file.endswith('.requires'):
-                        os.remove(file_path)
-            except Exception as e:
-                print(f"Error clearing requires directory: {e}")
-        
         os.makedirs(requires_dir, exist_ok=True)
         
+        existing_requires_files = set()
+        if os.path.exists(requires_dir):
+            for file in os.listdir(requires_dir):
+                if file.endswith('.requires'):
+                    existing_requires_files.add(os.path.join(requires_dir, file))
+        
+        generated_files = set()
         for class_info in self.classes_info:
             if class_info['is_variant'] and class_info['required_variants']:
+                requires_file_path = os.path.join(requires_dir, f"{class_info['class_name']}.requires")
                 CodeGenerator.generate_requires_file(
                     class_info['class_name'], 
                     class_info['required_variants'], 
                     requires_dir
                 )
+                generated_files.add(requires_file_path)
+        
+        files_to_remove = existing_requires_files - generated_files
+        for file_path in files_to_remove:
+            try:
+                os.remove(file_path)
+                print(f"Removed obsolete requirements file: {file_path}")
+            except Exception as e:
+                print(f"Error removing obsolete requirements file {file_path}: {e}")
         
         print(f"Requirements files written to {requires_dir}")
 

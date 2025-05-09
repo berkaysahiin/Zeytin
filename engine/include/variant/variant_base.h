@@ -5,9 +5,6 @@
 #include <functional>
 #include "core/raylib_wrapper.h"
 
-template<typename T>
-using VariantRef = std::optional<std::reference_wrapper<T>>;
-
 struct VariantCreateInfo {
     entity_id entity_id;
 
