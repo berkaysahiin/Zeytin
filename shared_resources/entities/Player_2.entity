@@ -1,5 +1,5 @@
 {
-    "entity_id": 12038401047229980964,
+    "entity_id": 3573923946390936768,
     "variants": [
         {
             "type": "CharacterController",
@@ -17,7 +17,7 @@
                     "b": 0,
                     "a": 0
                 },
-                "index": 0,
+                "index": 1,
                 "name": "Player1"
             }
         },

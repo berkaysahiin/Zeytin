@@ -1,4 +1,5 @@
 #include "game/collider.h"
+#include "core/raylib_wrapper.h"
 #include "game/position.h"
 
 #include "core/query.h"
@@ -111,7 +112,8 @@ void Collider::debug_draw() {
 
     switch (m_collider_type) {
         case (int)ColliderType::Rectangle:
-            DrawRectangleLinesEx(get_rectangle(), 3, color);
+            //DrawRectangleLinesEx(get_rectangle(), 3, color);
+            draw_rectangle_rec(get_rectangle(), color);
             break;
         case (int)ColliderType::Circle:
             DrawCircleLines(

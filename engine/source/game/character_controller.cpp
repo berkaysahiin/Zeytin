@@ -16,23 +16,23 @@ void CharacterController::on_play_update() {
 void CharacterController::map_key_bindings() {
     mapped_to_keycode.clear();
     
-    mapped_to_keycode[MappedKey::MoveUp] = KEY_W;
-    mapped_to_keycode[MappedKey::MoveDown] = KEY_S;
-    mapped_to_keycode[MappedKey::MoveLeft] = KEY_A;
-    mapped_to_keycode[MappedKey::MoveRight] = KEY_D;
-    mapped_to_keycode[MappedKey::CommonAbility] = KEY_SPACE;
-    mapped_to_keycode[MappedKey::RandomAbility] = KEY_E;
+    mapped_to_keycode[MappedKey::MoveUp] = KEY_UP;
+    mapped_to_keycode[MappedKey::MoveDown] = KEY_DOWN;
+    mapped_to_keycode[MappedKey::MoveLeft] = KEY_LEFT;
+    mapped_to_keycode[MappedKey::MoveRight] = KEY_RIGHT;
+    mapped_to_keycode[MappedKey::CommonAbility] = KEY_RIGHT_SHIFT;
+    mapped_to_keycode[MappedKey::RandomAbility] = KEY_RIGHT_CONTROL;
 
     const int player_index = Query::read<PlayerInfo>(this).index;
     
     switch (player_index) {
         case 1: 
-            mapped_to_keycode[MappedKey::MoveUp] = KEY_UP;
-            mapped_to_keycode[MappedKey::MoveDown] = KEY_DOWN;
-            mapped_to_keycode[MappedKey::MoveLeft] = KEY_LEFT;
-            mapped_to_keycode[MappedKey::MoveRight] = KEY_RIGHT;
-            mapped_to_keycode[MappedKey::CommonAbility] = KEY_RIGHT_SHIFT;
-            mapped_to_keycode[MappedKey::RandomAbility] = KEY_RIGHT_CONTROL;
+            mapped_to_keycode[MappedKey::MoveUp] = KEY_W;
+            mapped_to_keycode[MappedKey::MoveDown] = KEY_S;
+            mapped_to_keycode[MappedKey::MoveLeft] = KEY_A;
+            mapped_to_keycode[MappedKey::MoveRight] = KEY_D;
+            mapped_to_keycode[MappedKey::CommonAbility] = KEY_SPACE;
+            mapped_to_keycode[MappedKey::RandomAbility] = KEY_E;
             break;
             
         case 2: 
@@ -99,6 +99,7 @@ void CharacterController::apply_movement() {
         if (current_speed > speed.value) {
             m_velocity = vector2_scale(vector2_normalize(m_velocity), speed.value);
         }
+
     } 
     else {
         float friction_amount = friction * get_frame_time();;
