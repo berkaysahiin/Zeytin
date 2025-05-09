@@ -4,6 +4,7 @@
 #include "game/position.h"
 #include "game/speed.h"
 #include "game/player_info.h"
+#include "game/collider.h"
 
 #include <unordered_map>
 
@@ -32,10 +33,11 @@ public:
 private:
     void map_key_bindings();
     int get_keycode(const MappedKey key) const;
-
     void handle_input();
     void apply_movement();
+    void bounce_from_boundries(Collider& other);
 
+private:
     Vector2 m_velocity = {0.0f, 0.0f};
     Vector2 m_input_direction = {0.0f, 0.0f};
 

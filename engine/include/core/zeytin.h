@@ -58,6 +58,7 @@ public:
     void play_start_variants();
     void play_late_start_variants();
     void play_update_variants();
+    void play_late_update_variants();
 
     inline Camera2D& get_camera() { return m_camera; }
     inline const Storage& get_storage() const { return m_storage; }

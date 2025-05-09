@@ -4,7 +4,22 @@
 #include "game/player_info.h"
 #include "remote_logger/remote_logger.h"
 
+#include "game/wall.h"
+
 void CharacterController::on_play_start() {
+    auto& collider = Query::get<Collider>(this);
+    collider.m_callback = [&](Collider& other) {
+        const bool is_wall = Query::has<Wall>(other.entity_id);
+        if(is_wall) {
+            bounce_from_boundries(other);
+            return;
+        }
+        const bool is_player = Query::has<PlayerInfo>(other.entity_id);
+        if(is_player) {
+            // push
+        }
+    };
+
     map_key_bindings();
 }
 
@@ -34,25 +49,6 @@ void CharacterController::map_key_bindings() {
             mapped_to_keycode[MappedKey::CommonAbility] = KEY_SPACE;
             mapped_to_keycode[MappedKey::RandomAbility] = KEY_E;
             break;
-            
-        case 2: 
-            mapped_to_keycode[MappedKey::MoveUp] = KEY_I;
-            mapped_to_keycode[MappedKey::MoveDown] = KEY_K;
-            mapped_to_keycode[MappedKey::MoveLeft] = KEY_J;
-            mapped_to_keycode[MappedKey::MoveRight] = KEY_L;
-            mapped_to_keycode[MappedKey::CommonAbility] = KEY_O;
-            mapped_to_keycode[MappedKey::RandomAbility] = KEY_U;
-            break;
-        case 3: 
-
-            mapped_to_keycode[MappedKey::MoveUp] = KEY_KP_8;
-            mapped_to_keycode[MappedKey::MoveDown] = KEY_KP_2;
-            mapped_to_keycode[MappedKey::MoveLeft] = KEY_KP_4;
-            mapped_to_keycode[MappedKey::MoveRight] = KEY_KP_6;
-            mapped_to_keycode[MappedKey::CommonAbility] = KEY_KP_0;
-            mapped_to_keycode[MappedKey::RandomAbility] = KEY_KP_ENTER;
-            break;
-            
         default: 
             break;
     }
@@ -115,3 +111,50 @@ void CharacterController::apply_movement() {
     position.x += m_velocity.x * get_frame_time();
     position.y += m_velocity.y * get_frame_time();
 }
+
+void CharacterController::bounce_from_boundries(Collider& other) {
+    auto [position, collider] = Query::get<Position, Collider>(this);
+    auto& other_position = Query::get<Position>(other.entity_id);
+
+    if(other.m_collider_type == 1) { // Rectangle
+        Rectangle rect = other.get_rectangle();
+
+        float closest_x = fmaxf(rect.x, fminf(position.x, rect.x + rect.width));
+        float closest_y = fmaxf(rect.y, fminf(position.y, rect.y + rect.height));
+
+        Vector2 normal = {
+            position.x - closest_x,
+            position.y - closest_y
+        };
+
+        bool is_corner = (closest_x != position.x && closest_y != position.y);
+
+        if (!is_corner && Vector2Length(normal) > 0) {
+            if (fabsf(normal.x) < fabsf(normal.y)) {
+                normal.x = 0;
+            } else {
+                normal.y = 0;
+            }
+        }
+
+        if (Vector2Length(normal) > 0) {
+            normal = Vector2Normalize(normal);
+        } else {
+            normal = {0, -1};
+        }
+
+        float penetration = collider.m_radius - Vector2Distance({position.x, position.y}, {closest_x, closest_y});
+        if (penetration > 0) {
+            position.x += normal.x * penetration;
+            position.y += normal.y * penetration;
+        }
+
+        float dot_product = m_velocity.x * normal.x + m_velocity.y * normal.y;
+        if (dot_product < 0) {
+            m_velocity.x = m_velocity.x - 2 * dot_product * normal.x;
+            m_velocity.y = m_velocity.y - 2 * dot_product * normal.y;
+        }
+    }
+}
+
+

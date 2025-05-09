@@ -136,6 +136,7 @@ void Zeytin::run_frame() {
         play_start_variants();
         play_late_start_variants();
         play_update_variants();
+        play_late_update_variants();
     }
 
     end_texture_mode();
@@ -403,6 +404,28 @@ void Zeytin::play_update_variants() {
                 ZPROFILE_VALUE(pair.first);
                 
                 base.on_play_update();
+            }
+        }
+    }
+}
+void Zeytin::play_late_update_variants() {
+    ZPROFILE_ZONE_NAMED("Zeytin::play_late_update_variants()");
+
+    for (auto& pair : m_storage) {   
+        for (auto& variant : pair.second) {
+            VariantBase& base = variant.get_value<VariantBase&>();
+            
+            if (base.is_dead) {
+                continue;
+            }
+            
+            {
+                ZPROFILE_ZONE_NAMED("VariantBase::on_play_late_update()");
+                ZPROFILE_TEXT(base.get_type().get_name().to_string().c_str(),
+                              base.get_type().get_name().to_string().size());
+                ZPROFILE_VALUE(pair.first);
+                
+                base.on_play_late_update();
             }
         }
     }

@@ -8,6 +8,7 @@
 #include "game/sprite.h"
 #include "game/tag.h"
 #include "game/velocity.h"
+#include "game/wall.h"
 #include "game/zone.h"
 #include "raylib.h"
 #include "rttr/registration.h"
@@ -128,6 +129,10 @@ RTTR_REGISTRATION
         .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
         .property("x", &Velocity::x)
         .property("y", &Velocity::y);
+
+    rttr::registration::class_<Wall>("Wall")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object);
 
     rttr::registration::class_<Zone>("Zone")
         .constructor<>()(rttr::policy::ctor::as_object)
