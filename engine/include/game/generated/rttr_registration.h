@@ -8,6 +8,7 @@
 #include "game/sprite.h"
 #include "game/tag.h"
 #include "game/velocity.h"
+#include "game/zone.h"
 #include "raylib.h"
 #include "rttr/registration.h"
 
@@ -83,7 +84,8 @@ RTTR_REGISTRATION
         .property("m_is_trigger", &Collider::m_is_trigger)
         .property("m_radius", &Collider::m_radius)
         .property("m_static", &Collider::m_static)
-        .property("m_width", &Collider::m_width);
+        .property("m_width", &Collider::m_width)
+        .property("thickness", &Collider::thickness);
 
     rttr::registration::class_<PlayerInfo>("PlayerInfo")
         .constructor<>()(rttr::policy::ctor::as_object)
@@ -126,5 +128,9 @@ RTTR_REGISTRATION
         .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
         .property("x", &Velocity::x)
         .property("y", &Velocity::y);
+
+    rttr::registration::class_<Zone>("Zone")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object);
 
 }

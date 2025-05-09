@@ -3,6 +3,7 @@
 #include "game/position.h"
 
 #include "core/query.h"
+#include "raylib.h"
 #include "raymath.h"
 
 enum class ColliderType : int {
@@ -112,16 +113,19 @@ void Collider::debug_draw() {
 
     switch (m_collider_type) {
         case (int)ColliderType::Rectangle:
-            //DrawRectangleLinesEx(get_rectangle(), 3, color);
             draw_rectangle_rec(get_rectangle(), color);
             break;
         case (int)ColliderType::Circle:
-            DrawCircleLines(
-                position.x, 
-                position.y, 
-                m_radius, 
-                color
+            DrawRing(
+                (Vector2){ position.x, position.y },  
+                m_radius - thickness / 2.0f,         
+                m_radius + thickness / 2.0f,        
+                0,                                 
+                360,                              
+                360,                             
+                color                           
             );
+
             break;
         default:
             break;

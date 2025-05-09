@@ -43,7 +43,8 @@
                 "m_is_trigger": false,
                 "m_radius": 0.0,
                 "m_static": false,
-                "m_width": 100.0
+                "m_width": 100.0,
+                "thickness": 4
             }
         }
     ]

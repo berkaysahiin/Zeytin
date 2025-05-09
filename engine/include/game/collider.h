@@ -16,6 +16,7 @@ public:
 
     bool m_static = false; PROPERTY()
     bool m_draw_debug = false; PROPERTY()
+    int thickness = 4; PROPERTY();
     
     void on_update() override;
     void on_play_update() override;

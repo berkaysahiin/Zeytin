@@ -1,0 +1,29 @@
+{
+    "entity_id": 15750893804427435340,
+    "variants": [
+        {
+            "type": "Zone",
+            "value": {}
+        },
+        {
+            "type": "Collider",
+            "value": {
+                "m_collider_type": 2,
+                "m_draw_debug": true,
+                "m_height": 0.0,
+                "m_is_trigger": false,
+                "m_radius": 200.0,
+                "m_static": false,
+                "m_width": 0.0,
+                "thickness": 4
+            }
+        },
+        {
+            "type": "Position",
+            "value": {
+                "x": 589.7999877929688,
+                "y": 264.5
+            }
+        }
+    ]
+}
