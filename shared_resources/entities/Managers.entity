@@ -4,12 +4,12 @@
         {
             "type": "ZoneManager",
             "value": {
-                "m_max_radius": 500.0,
-                "m_max_secs": 10.0,
-                "m_min_radius": 200.0,
-                "m_min_secs": 5.0,
-                "m_spawn_every_secs": 5.0,
-                "m_thick_incess_rate": 30.0,
+                "m_max_radius": 600.0,
+                "m_max_secs": 4.599999904632568,
+                "m_min_radius": 50.0,
+                "m_min_secs": 3.0,
+                "m_spawn_every_secs": 2.700000047683716,
+                "m_thick_incess_rate": 40.20000076293945,
                 "show_debug_visuals": true
             }
         }

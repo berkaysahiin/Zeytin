@@ -1,0 +1,17 @@
+{
+    "entity_id": 5738249282062588298,
+    "variants": [
+        {
+            "type": "PowerUpSpawner",
+            "value": {
+                "m_fixed_type": 1,
+                "m_max_lifetime": 15.0,
+                "m_min_lifetime": 5.0,
+                "m_randomize_type": true,
+                "m_show_debug_visuals": false,
+                "m_spawn_interval": 5.0,
+                "m_spawn_radius": 50.0
+            }
+        }
+    ]
+}

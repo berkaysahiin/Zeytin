@@ -24,6 +24,7 @@ void CharacterController::on_play_start() {
 }
 
 void CharacterController::on_play_update() {
+
     handle_input();
     apply_movement();
 }

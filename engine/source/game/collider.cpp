@@ -86,11 +86,14 @@ bool Collider::intersects(const Collider& other) const {
 Rectangle Collider::get_rectangle() const {
     const auto& position = Query::get<Position>(this);
 
+    const float width = scaled_width();
+    const float height = scaled_height();
+
     return Rectangle{
-        position.x - m_width / 2, 
-        position.y - m_height / 2,
-        m_width, 
-        m_height
+        position.x - width / 2, 
+        position.y - height / 2,
+        width, 
+        height
     };
 }
 
@@ -129,4 +132,14 @@ void Collider::debug_draw() {
         default:
             break;
     }
+}
+
+float Collider::scaled_width() const {
+    const auto& scale = Query::read<Scale>(this);
+    return m_width * scale.x;
+}
+
+float Collider::scaled_height() const {
+    const auto& scale = Query::read<Scale>(this);
+    return m_height * scale.y;
 }

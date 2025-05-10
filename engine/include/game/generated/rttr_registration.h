@@ -3,6 +3,8 @@
 #include "game/collider.h"
 #include "game/player_info.h"
 #include "game/position.h"
+#include "game/powerup.h"
+#include "game/powerup_spawner.h"
 #include "game/scale.h"
 #include "game/speed.h"
 #include "game/sprite.h"
@@ -102,6 +104,26 @@ RTTR_REGISTRATION
         .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
         .property("x", &Position::x)
         .property("y", &Position::y);
+
+    rttr::registration::class_<PowerUp>("PowerUp")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
+        .property("duration", &PowerUp::duration)
+        .property("m_lifetime", &PowerUp::m_lifetime)
+        .property("m_since_spawn", &PowerUp::m_since_spawn)
+        .property("power_multiplier", &PowerUp::power_multiplier)
+        .property("type", &PowerUp::type);
+
+    rttr::registration::class_<PowerUpSpawner>("PowerUpSpawner")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
+        .property("m_fixed_type", &PowerUpSpawner::m_fixed_type)
+        .property("m_max_lifetime", &PowerUpSpawner::m_max_lifetime)
+        .property("m_min_lifetime", &PowerUpSpawner::m_min_lifetime)
+        .property("m_randomize_type", &PowerUpSpawner::m_randomize_type)
+        .property("m_show_debug_visuals", &PowerUpSpawner::m_show_debug_visuals)
+        .property("m_spawn_interval", &PowerUpSpawner::m_spawn_interval)
+        .property("m_spawn_radius", &PowerUpSpawner::m_spawn_radius);
 
     rttr::registration::class_<Scale>("Scale")
         .constructor<>()(rttr::policy::ctor::as_object)

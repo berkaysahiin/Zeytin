@@ -20,6 +20,9 @@ public:
     float since_spawn_secs = 0; PROPERTY();
 
 private:
+    Color get_zone_color() const;
+
+private:
     float m_max_radius = 0; // comes from manager
     float m_min_radius = 0; // comes from manager
     float m_tick_increase = 0; // comes from manager

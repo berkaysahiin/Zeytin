@@ -2,9 +2,11 @@
 
 #include "variant/variant_base.h"
 #include "game/position.h"
+#include "game/scale.h"
 
 class Collider : public VariantBase {
-    VARIANT(Collider)
+    VARIANT(Collider);
+    REQUIRES(Scale);
 
 public:
     int m_collider_type = 0; PROPERTY() // 0=None, 1=Rectangle, 2=Circle
@@ -34,6 +36,9 @@ public:
     inline bool is_enable() { return m_enable; }
 
 private:
+    float scaled_width() const;
+    float scaled_height() const;
+
     void debug_draw();
     void check_collisions();
 

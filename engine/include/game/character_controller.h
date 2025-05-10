@@ -21,7 +21,7 @@ enum class MappedKey {
 
 class CharacterController : public VariantBase {
     VARIANT(CharacterController);
-    REQUIRES(Position, Speed, PlayerInfo)
+    REQUIRES(Position, Speed, PlayerInfo, Scale)
 
 public:
     float acceleration = 5.0f; PROPERTY()

@@ -6,24 +6,31 @@
             "value": {
                 "m_collider_type": 1,
                 "m_draw_debug": true,
-                "m_height": 100.0,
+                "m_height": 35.099998474121094,
                 "m_is_trigger": false,
                 "m_radius": 0.0,
                 "m_static": false,
-                "m_width": 3014.699951171875,
+                "m_width": 3000.0,
                 "thickness": 4
             }
         },
         {
             "type": "Position",
             "value": {
-                "x": 469.2000122070313,
-                "y": 1106.699951171875
+                "x": 657.2999877929688,
+                "y": 1085.5999755859375
             }
         },
         {
             "type": "Wall",
             "value": {}
+        },
+        {
+            "type": "Scale",
+            "value": {
+                "x": 1.0,
+                "y": 1.0
+            }
         }
     ]
 }
