@@ -91,3 +91,65 @@ void ParticleSystem::on_play_update() {
         }
     }
 }
+
+void ParticleSystem::spawn_teleport_effect(const Position& start_pos, const Position& end_pos) {
+    for (int i = 0; i < 100; i++) {
+        Particle p;
+
+        float angle = GetRandomValue(0, 628) / 100.0f;
+        float distance = GetRandomValue(0, 50) / 10.0f;
+        float speed = GetRandomValue(100, 300);
+
+        p.position = {
+            start_pos.x + cosf(angle) * distance,
+            start_pos.y + sinf(angle) * distance
+        };
+
+        p.velocity = {
+            cosf(angle) * speed,
+            sinf(angle) * speed
+        };
+
+        p.color = {
+            static_cast<unsigned char>(100 + GetRandomValue(0, 155)),
+            static_cast<unsigned char>(GetRandomValue(0, 100)),
+            static_cast<unsigned char>(100 + GetRandomValue(0, 155)),
+            static_cast<unsigned char>(200 + GetRandomValue(0, 55))
+        };
+
+        p.lifetime = 0.0f;
+        p.max_lifetime = PARTICLE_LIFETIME * 0.7f;
+
+        m_particles.push_back(p);
+    }
+
+    for (int i = 0; i < 150; i++) {
+        Particle p;
+
+        float angle = GetRandomValue(0, 628) / 100.0f;
+        float distance = GetRandomValue(30, 100) / 10.0f;
+        float speed = GetRandomValue(50, 200);
+
+        p.position = {
+            end_pos.x + cosf(angle) * distance,
+            end_pos.y + sinf(angle) * distance
+        };
+
+        p.velocity = {
+            -cosf(angle) * speed,
+            -sinf(angle) * speed
+        };
+
+        p.color = {
+            static_cast<unsigned char>(100 + GetRandomValue(0, 155)),
+            static_cast<unsigned char>(GetRandomValue(0, 100)),
+            static_cast<unsigned char>(100 + GetRandomValue(0, 155)),
+            static_cast<unsigned char>(200 + GetRandomValue(0, 55))
+        };
+
+        p.lifetime = 0.0f;
+        p.max_lifetime = PARTICLE_LIFETIME * 0.8f;
+
+        m_particles.push_back(p);
+    }
+}

@@ -1,12 +1,15 @@
 #include "game/powerup.h"
+#include <cstdint>
 #include "game/player_info.h"
 #include "game/speed.h"
 #include "game/scale.h"
 #include "game/character_controller.h"
 #include "game/zone.h"
+#include "game/particle_system.h"
 
 #include "core/query.h"
 #include "core/raylib_wrapper.h"
+#include "raylib.h"
 #include "remote_logger/remote_logger.h"
 
 void PowerUp::on_post_init() {
@@ -14,11 +17,24 @@ void PowerUp::on_post_init() {
     collider.m_callback = [&](Collider& other) {
         handle_player_collision(other);
     };
+
+    if(m_type == Type::TELEPORTER) {
+        m_lifetime *= 3;
+    }
 }
 
 void PowerUp::handle_player_collision(Collider& other) {
     if(auto player_info = Query::try_get<PlayerInfo>(other.entity_id)) {
         int player_index = player_info->get().index;
+
+         if (m_type == Type::TELEPORTER) {
+            if (m_cooldown_remaining <= 0 && !m_is_exit_only) {
+                teleport_player(other.entity_id);
+                return; 
+            }
+            return;
+        }
+
         apply_effect_to_player(player_index);
         consume();
     }
@@ -114,6 +130,8 @@ void PowerUp::on_update() {
         case Type::SHIELD:
             draw_shield(position, pulse, time);
             break;
+        case Type::TELEPORTER:
+            draw_teleporter(position, pulse, time);
     }
     
     float base_radius = 20.0f;
@@ -438,4 +456,201 @@ void PowerUp::consume() {
     auto& collider = Query::get<Collider>(this);
     collider.set_enable(false);
     m_used = true;
+}
+
+void PowerUp::draw_teleporter(const Position& position, float pulse, float time) {
+    float base_radius = 25.0f; 
+    float core_radius = 15.0f;
+
+    Color outer_color = BLACK;
+    Color inner_color = BLACK;
+
+    DrawCircleGradient(position.x, position.y, base_radius * 1.2f * pulse,
+                       ColorAlpha(outer_color, 0.9f), ColorAlpha(BLACK, 0.4f));
+
+    const int num_rings = 3;
+    for (int i = 0; i < num_rings; i++) {
+        float ring_radius = base_radius * (0.5f + 0.3f * i);
+        float ring_rotation = time * (50.0f + i * 20.0f);
+        float thickness = 2.0f + i * 0.5f;
+
+        for (int j = 0; j < 4; j++) {
+            float start_angle = ring_rotation + j * 90.0f;
+            float end_angle = start_angle + 60.0f;
+
+            DrawRing(
+                (Vector2){position.x, position.y},
+                ring_radius - thickness/2,
+                ring_radius + thickness/2,
+                start_angle,
+                end_angle,
+                0,
+                ColorAlpha(WHITE, 0.7f - 0.15f * i)
+            );
+        }
+    }
+
+    const int num_particles = 12;
+    float swirl_speed = time * 2.0f;
+
+    for (int i = 0; i < num_particles; i++) {
+        float angle = swirl_speed + i * (360.0f / num_particles);
+        float distance = core_radius * (0.3f + 0.7f * (sinf(time * 3.0f + i) * 0.5f + 0.5f));
+
+        float x = position.x + cosf(angle * DEG2RAD) * distance;
+        float y = position.y + sinf(angle * DEG2RAD) * distance;
+
+        float particle_size = 2.0f + sinf(time * 5.0f + i) * 1.5f;
+        Color particle_color = ColorAlpha(WHITE, 0.7f + 0.3f * sinf(time * 2.0f + i));
+
+        DrawCircleV((Vector2){x, y}, particle_size, particle_color);
+
+        if (i > 0) {
+            float prev_angle = swirl_speed + (i-1) * (360.0f / num_particles);
+            float prev_distance = core_radius * (0.3f + 0.7f * (sinf(time * 3.0f + (i-1)) * 0.5f + 0.5f));
+
+            float prev_x = position.x + cosf(prev_angle * DEG2RAD) * prev_distance;
+            float prev_y = position.y + sinf(prev_angle * DEG2RAD) * prev_distance;
+
+            DrawLineEx(
+                (Vector2){prev_x, prev_y},
+                (Vector2){x, y},
+                1.0f,
+                ColorAlpha(WHITE, 0.5f)
+            );
+        }
+    }
+
+    DrawCircleGradient(position.x, position.y, core_radius * 0.6f,
+                       BLACK, BLACK);
+
+    if (m_cooldown_remaining > 0) {
+        float cooldown_ratio = m_cooldown_remaining / m_cooldown;
+        float arc_angle = 360.0f * (1.0f - cooldown_ratio);
+
+        DrawRing(
+            (Vector2){position.x, position.y},
+            base_radius * 1.2f,
+            base_radius * 1.3f,
+            0,
+            arc_angle,
+            0,
+            ColorAlpha(WHITE, 0.6f)
+        );
+    }
+
+    if (m_is_exit_only) {
+        float x_size = base_radius * 0.8f;
+        float thickness = 3.0f;
+
+        DrawLineEx(
+            (Vector2){position.x - x_size, position.y - x_size},
+            (Vector2){position.x + x_size, position.y + x_size},
+            thickness,
+            WHITE
+        );
+
+        DrawLineEx(
+            (Vector2){position.x + x_size, position.y - x_size},
+            (Vector2){position.x - x_size, position.y + x_size},
+            thickness,
+            WHITE
+        );
+
+        DrawText("EXIT ONLY",
+                position.x - 35,
+                position.y + base_radius * 1.4f,
+                10,
+                BLACK);
+
+        float pulse_alpha = 0.5f + 0.5f * sinf(time * 5.0f);
+
+        DrawRing(
+            (Vector2){position.x, position.y},
+            base_radius * 1.4f,
+            base_radius * 1.5f,
+            0,
+            360,
+            0,
+            ColorAlpha(BLACK, pulse_alpha * 0.7f)
+        );
+    } else if (m_linked_teleporter_id != 0) {
+        float pulse_size = 0.1f * sinf(time * 3.0f);
+
+        for (int i = 0; i < 8; i++) {
+            float angle = i * 45.0f;
+            float radius = base_radius * (1.3f + pulse_size);
+
+            float x1 = position.x + cosf(angle * DEG2RAD) * radius;
+            float y1 = position.y + sinf(angle * DEG2RAD) * radius;
+
+            float x2 = position.x + cosf(angle * DEG2RAD) * (radius - 8.0f);
+            float y2 = position.y + sinf(angle * DEG2RAD) * (radius - 8.0f);
+
+            DrawLineEx(
+                (Vector2){x1, y1},
+                (Vector2){x2, y2},
+                2.0f,
+                BLACK
+            );
+        }
+
+        DrawText("READY",
+                position.x - 20,
+                position.y + base_radius * 1.4f,
+                10,
+                BLACK);
+    } else {
+        float dots_count = (int)(time * 2) % 4;
+        char waiting_text[10];
+
+        strcpy(waiting_text, "LINKING");
+        for (int i = 0; i < dots_count; i++) {
+            strcat(waiting_text, ".");
+        }
+
+        DrawText(waiting_text,
+                position.x - 30,
+                position.y + base_radius * 1.4f,
+                10,
+                BLACK);
+    }
+}
+
+void PowerUp::teleport_player(uint64_t player_id) {
+    if (m_linked_teleporter_id == 0) {
+        auto teleporters = Query::find_where<PowerUp>([this](PowerUp& p) {
+            return p.m_type == Type::TELEPORTER &&
+                   p.entity_id != this->entity_id;
+        });
+
+        if (teleporters.empty()) {
+            m_is_exit_only = true;
+            return;
+        }
+
+        PowerUp& target = teleporters[0].get();
+        m_linked_teleporter_id = target.entity_id;
+        target.m_linked_teleporter_id = this->entity_id;
+    }
+
+    auto target_powerup = Query::try_get<PowerUp>(m_linked_teleporter_id);
+    if (!target_powerup) {
+        m_linked_teleporter_id = 0;
+        return;
+    }
+
+    PowerUp& target = target_powerup->get();
+    Position& target_pos = Query::get<Position>(m_linked_teleporter_id);
+    Position& player_pos = Query::get<Position>(player_id);
+
+    if (auto particle_system = Query::try_find_first<ParticleSystem>()) {
+        particle_system->get().spawn_teleport_effect(player_pos, target_pos);
+    }
+
+    player_pos.x = target_pos.x;
+    player_pos.y = target_pos.y;
+
+    m_cooldown_remaining = m_cooldown;
+    target.m_cooldown_remaining = m_cooldown;
 }

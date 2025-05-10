@@ -16,6 +16,7 @@ class ParticleSystem : public VariantBase {
 
 public:
     void spawn_collision_particles(const Position& pos1, const Position& pos2, Color color, int count=100);
+    void spawn_teleport_effect(const Position& start_pos, const Position& end_pos);
     
     virtual void on_update() override;
     virtual void on_play_update() override;
