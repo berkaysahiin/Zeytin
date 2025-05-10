@@ -109,11 +109,10 @@ void Collider::debug_draw() {
     }
 
     const auto& position = Query::get<Position>(this);
-    Color color = m_is_trigger ? YELLOW : BLUE;
 
     switch (m_collider_type) {
         case (int)ColliderType::Rectangle:
-            draw_rectangle_rec(get_rectangle(), color);
+            draw_rectangle_rec(get_rectangle(), m_color);
             break;
         case (int)ColliderType::Circle:
             DrawRing(
@@ -123,7 +122,7 @@ void Collider::debug_draw() {
                 0,                                 
                 360,                              
                 360,                             
-                color                           
+                m_color                           
             );
 
             break;

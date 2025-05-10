@@ -22,6 +22,8 @@ public:
     void on_play_update() override;
     bool intersects(const Collider& other) const;
 
+    Color m_color = BLUE;
+
     Rectangle get_rectangle() const;
     Vector2 get_circle_center() const;
     inline float get_radius() const { return m_radius; }
