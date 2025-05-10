@@ -26,7 +26,7 @@ public:
     float trail_length = 1.0f; PROPERTY()
     int trail_count = 3; PROPERTY()
     float trail_thickness = 2.0f; PROPERTY()
-    Color trail_color = WHITE; PROPERTY()
+    Color trail_color = ORANGE; PROPERTY()
     
     bool show_zone_effect = true; PROPERTY()
     float zone_effect_size = 1.3f; PROPERTY()

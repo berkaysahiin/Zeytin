@@ -32,7 +32,14 @@ void PlayerRenderer::draw_player() {
         visual_height
     };
     
-    Color player_color = info.color;
+    Color player_color;
+
+    if(info.index == 0) {
+        player_color = BLUE;
+    }
+    else if (info.index == 1) {
+        player_color = ORANGE;
+    }
 
     bool in_zone = info.in_zone;
 
