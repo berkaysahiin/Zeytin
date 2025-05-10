@@ -17,9 +17,10 @@ public:
     float m_min_lifetime = 5.0f; PROPERTY()
     float m_max_lifetime = 15.0f; PROPERTY()
     bool m_randomize_type = true; PROPERTY()
-    PowerUp::Type m_fixed_type = PowerUp::Type::SPEED_BOOST; PROPERTY()
     float m_spawn_radius = 50.0f; PROPERTY()
     bool m_show_debug_visuals = true; PROPERTY()
+
+    PowerUp::Type m_fixed_type = PowerUp::Type::SUPER_SIZE; 
 
 private:
     float m_time_until_next_spawn = 0;

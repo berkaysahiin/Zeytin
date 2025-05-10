@@ -19,17 +19,21 @@ public:
         LENGTH,
     };
 
-    Type type = Type::SPEED_BOOST; PROPERTY()
-    float power_multiplier = 1.5f; PROPERTY() 
-    float duration = 5.0f; PROPERTY() 
-    float m_lifetime = 15.0f; PROPERTY() 
-    float m_since_spawn = 0.0f; PROPERTY() 
+    Type m_type = Type::SPEED_BOOST; 
+    float m_power_multiplier = 1.5f;
+    float m_duration = 5.0f; 
+    float m_lifetime = 15.0f; 
+    float m_since_spawn = 0.0f; 
+    float m_since_used = 0;
+    int m_player_id = -1;
+    bool m_used = false;
 
     virtual void on_post_init() override;
     virtual void on_update() override;  
     virtual void on_play_update() override;
 
 private:
+    void consume();
     void handle_player_collision(Collider& other);
     void apply_effect_to_player(int player_index);
 

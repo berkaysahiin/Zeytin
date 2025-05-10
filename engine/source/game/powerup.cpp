@@ -18,7 +18,7 @@ void PowerUp::handle_player_collision(Collider& other) {
     if(auto player_info = Query::try_get<PlayerInfo>(other.entity_id)) {
         int player_index = player_info->get().index;
         apply_effect_to_player(player_index);
-        Query::remove_entity(entity_id);
+        consume();
     }
 }
 
@@ -31,31 +31,32 @@ void PowerUp::apply_effect_to_player(int player_index) {
     
     PlayerInfo& player = players[0].get();
     auto player_id = player.entity_id;
+    m_player_id = player.entity_id;
     
-    switch (type) {
+    switch (m_type) {
         case Type::SPEED_BOOST: {
             if (auto speed = Query::try_get<Speed>(player_id)) {
                 float original = speed->get().value;
-                speed->get().value *= power_multiplier;
+                speed->get().value *= m_power_multiplier;
                 
                 log_info() << "Player " << player_index << " got SPEED_BOOST: " 
                            << original << " -> " << speed->get().value << " for " 
-                           << duration << " seconds" << std::endl;
+                           << m_duration << " seconds" << std::endl;
             }
             break;
         }
         
         case Type::SUPER_SIZE: {
             if (auto scale = Query::try_get<Scale>(player_id)) {
-                scale->get().x *= power_multiplier;
-                scale->get().y *= power_multiplier;
+                scale->get().x *= m_power_multiplier;
+                scale->get().y *= m_power_multiplier;
                 
                 log_info() << "Player " << player_index << " got SUPER_SIZE: " 
-                           << "Scale multiplied by " << power_multiplier << " for " 
-                           << duration << " seconds" << std::endl;
+                           << "Scale multiplied by " << m_power_multiplier << " for " 
+                           << m_duration << " seconds" << std::endl;
                 
                 if (auto collider = Query::try_get<Collider>(player_id)) {
-                    collider->get().m_radius *= power_multiplier;
+                    collider->get().m_radius *= m_power_multiplier;
                 }
             }
             break;
@@ -64,13 +65,13 @@ void PowerUp::apply_effect_to_player(int player_index) {
         case Type::SHRINK: {
             if (auto scale = Query::try_get<Scale>(player_id)) {
 
-                float shrink_factor = 1.0f / power_multiplier;
+                float shrink_factor = 1.0f / m_power_multiplier;
                 scale->get().x *= shrink_factor;
                 scale->get().y *= shrink_factor;
                 
                 log_info() << "Player " << player_index << " got SHRINK: " 
                            << "Scale reduced by " << shrink_factor << " for " 
-                           << duration << " seconds" << std::endl;
+                           << m_duration << " seconds" << std::endl;
                 
                 if (auto collider = Query::try_get<Collider>(player_id)) {
                     collider->get().m_radius *= shrink_factor;
@@ -99,19 +100,23 @@ void PowerUp::apply_effect_to_player(int player_index) {
             player.color = ColorAlpha(player.color, 0.5f); 
             
             log_info() << "Player " << player_index << " got SHIELD for " 
-                       << duration << " seconds" << std::endl;
+                       << m_duration << " seconds" << std::endl;
             break;
         }
     }
 }
 
 void PowerUp::on_update() {
+    if(m_used) {
+        return;
+    }
+
     const auto& position = Query::read<Position>(this);
     
     float time = (float)get_time();
     float pulse = (sinf(time * 4.0f) * 0.2f + 0.8f);
     
-    switch (type) {
+    switch (m_type) {
         case Type::SPEED_BOOST:
             draw_speed_boost(position, pulse, time);
             break;
@@ -404,9 +409,45 @@ void PowerUp::draw_expiration_warning(const Position& position, float time, floa
 }
 
 void PowerUp::on_play_update() {
-    m_since_spawn += get_frame_time();
-    
-    if (m_since_spawn >= m_lifetime) {
-        Query::remove_entity(entity_id);
+    if(!m_used) { // time if not used
+        m_since_spawn += get_frame_time();
+        
+        if (m_since_spawn >= m_lifetime) {
+            Query::remove_entity(entity_id);
+        }
     }
+    else { 
+        m_since_used += get_frame_time();
+        if(m_since_used >= m_duration)  { // revert and say goodbye
+            switch(m_type) {
+                case Type::SPEED_BOOST: {
+                    if(auto speed_opt = Query::try_get<Speed>(m_player_id)) {
+                        auto& speed = speed_opt->get();
+                        speed.value /= m_power_multiplier;
+                    }
+                    break;
+                }
+                case Type::SUPER_SIZE: {
+                    auto& scale = Query::get<Scale>(m_player_id);
+                    scale.x = 1;
+                    scale.y = 1;
+                    break;
+                }                       
+                case Type::SHRINK: {
+                    auto& scale = Query::get<Scale>(m_player_id);
+                    scale.x = 1;
+                    scale.y = 1;
+                    break;
+                }                       
+            }
+
+            Query::remove_entity(entity_id);
+        }
+    }
+}
+
+void PowerUp::consume() {
+    auto& collider = Query::get<Collider>(this);
+    collider.set_enable(false);
+    m_used = true;
 }

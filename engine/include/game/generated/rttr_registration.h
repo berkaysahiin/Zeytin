@@ -107,17 +107,11 @@ RTTR_REGISTRATION
 
     rttr::registration::class_<PowerUp>("PowerUp")
         .constructor<>()(rttr::policy::ctor::as_object)
-        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
-        .property("duration", &PowerUp::duration)
-        .property("m_lifetime", &PowerUp::m_lifetime)
-        .property("m_since_spawn", &PowerUp::m_since_spawn)
-        .property("power_multiplier", &PowerUp::power_multiplier)
-        .property("type", &PowerUp::type);
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object);
 
     rttr::registration::class_<PowerUpSpawner>("PowerUpSpawner")
         .constructor<>()(rttr::policy::ctor::as_object)
         .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
-        .property("m_fixed_type", &PowerUpSpawner::m_fixed_type)
         .property("m_max_lifetime", &PowerUpSpawner::m_max_lifetime)
         .property("m_min_lifetime", &PowerUpSpawner::m_min_lifetime)
         .property("m_randomize_type", &PowerUpSpawner::m_randomize_type)

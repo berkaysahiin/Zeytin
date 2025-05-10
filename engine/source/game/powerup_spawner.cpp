@@ -25,7 +25,7 @@ PowerUp::Type PowerUpSpawner::get_random_type() {
     collider.m_draw_debug = m_show_debug_visuals;
     
     auto& powerup = Query::add<PowerUp>(powerup_entity).value().get();
-    powerup.type = type;
+    powerup.m_type = type;
     
     m_time_until_next_spawn = m_spawn_interval;
               
