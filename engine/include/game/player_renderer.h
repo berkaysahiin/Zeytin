@@ -20,24 +20,21 @@ public:
     
     float pulse_intensity = 0.05f; PROPERTY()
     float pulse_speed = 5.0f; PROPERTY()
-    
-    bool show_trail = true; PROPERTY()
-    float trail_speed = 0.5f; PROPERTY()
-    float trail_length = 1.0f; PROPERTY()
-    int trail_count = 3; PROPERTY()
-    float trail_thickness = 2.0f; PROPERTY()
-    Color trail_color = ORANGE; PROPERTY()
-    
-    bool show_zone_effect = true; PROPERTY()
-    float zone_effect_size = 1.3f; PROPERTY()
-    float zone_effect_speed = 8.0f; PROPERTY()
-    float zone_effect_duration = 10.0f; PROPERTY()
+
+    bool show_trail = true; PROPERTY();
+    int m_max_history_length = 10; PROPERTY();
+    float m_trail_fade_factor = 0.9f; PROPERTY();
+    float trail_thickness = 10; PROPERTY();
+
+    Color player_color;
     
     virtual void on_init() override;
     virtual void on_update() override;
     
 private:
     void draw_player();
-    void draw_zone_effect(const Vector2& position, float width, float height, float zone_time);
-    void draw_trail_effect(const Vector2& position, float width, float height);
+    void draw_trail_effect();
+    void update_position_history();
+
+    std::vector<Vector2> m_position_history;
 };

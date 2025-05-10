@@ -6,11 +6,13 @@
 #include "game/scale.h"
 #include "game/collider.h"
 #include "game/zone.h"
+#include "raylib.h"
 
 void PlayerRenderer::on_init() {}
 
 void PlayerRenderer::on_update() {
     draw_player();
+    update_position_history();
 }
 
 void PlayerRenderer::draw_player() {
@@ -32,7 +34,9 @@ void PlayerRenderer::draw_player() {
         visual_height
     };
     
-    Color player_color;
+    if (show_trail) {
+        draw_trail_effect();
+    }
 
     if(info.index == 0) {
         player_color = BLUE;
@@ -41,27 +45,16 @@ void PlayerRenderer::draw_player() {
         player_color = ORANGE;
     }
 
-    bool in_zone = info.in_zone;
-
-    if (in_zone && show_zone_effect) {
-        float zone_effect = fminf(info.time_spent_zone / zone_effect_duration, 1.0f);
-        player_color.r = Lerp(player_color.r, 255, zone_effect * 0.3f);
-        player_color.g = Lerp(player_color.g, 215, zone_effect * 0.3f);
-        player_color.b = Lerp(player_color.b, 0, zone_effect * 0.3f);
-    }
-    
     if (corner_radius > 0) {
-        float effective_radius = fminf(corner_radius, fminf(visual_width, visual_height) / 2);
-        DrawRectangleRounded(rect, effective_radius / visual_width, corner_segments, player_color);
-        
+            float effective_radius = fminf(corner_radius, fminf(visual_width, visual_height) / 2);
+            DrawRectangleRounded(rect, effective_radius / visual_width, corner_segments, player_color);
     } else {
         draw_rectangle_rec(rect, player_color);
-        
         if (use_outline && outline_thickness > 0) {
             draw_rectangle_lines_ex(rect, outline_thickness, ColorAlpha(WHITE, 0.7f));
         }
     }
-    
+
     if (show_player_number) {
         char player_text[8];
         sprintf(player_text, "P%d", info.index + 1);
@@ -72,59 +65,30 @@ void PlayerRenderer::draw_player() {
                 position.y - player_label_size/2, 
                 player_label_size, WHITE);
     }
-    
-    if (in_zone && show_zone_effect) {
-        draw_zone_effect(Vector2{position.x, position.y}, scaled_width, scaled_height, info.time_spent_zone);
-    }
-    
-    draw_trail_effect(Vector2{position.x, position.y}, scaled_width, scaled_height);
 }
 
-void PlayerRenderer::draw_zone_effect(const Vector2& position, float width, float height, float zone_time) {
-    float time = (float)get_time();
-    float effect_alpha = fminf(zone_time / zone_effect_duration, 0.7f);
-    float effect_size = zone_effect_size;
-    float wave = sinf(time * zone_effect_speed) * 0.3f + 0.7f;
-    
-    Color effect_color = {255, 215, 0, (unsigned char)(255 * effect_alpha * wave)};
-    
-    Rectangle effect_rect = {
-        position.x - width * effect_size / 2,
-        position.y - height * effect_size / 2,
-        width * effect_size,
-        height * effect_size
-    };
-    
-    if (corner_radius > 0) {
-        float effective_radius = fminf(corner_radius, fminf(width, height) / 2);
-        DrawRectangleRounded(effect_rect, effective_radius / (width * effect_size), 
-                            corner_segments, effect_color);
-    } else {
-        draw_rectangle_rec(effect_rect, effect_color);
-    }
-}
+void PlayerRenderer::update_position_history() {
+    auto& position = Query::read<Position>(this);
+    if (m_position_history.empty() ||
+        vector2_distance(m_position_history.front(), {position.x, position.y}) > 3.0f) {
 
-void PlayerRenderer::draw_trail_effect(const Vector2& position, float width, float height) {
-    if (!show_trail) return;
-    
-    float time = (float)get_time();
-    
-    for (int i = 0; i < trail_count; i++) {
-        float line_pos = fmodf((time * trail_speed + i * (1.0f/trail_count)), 1.0f);
-        
-        float x1 = position.x - width / 2 + line_pos * width * 2;
-        float y1 = position.y - height / 2;
-        float x2 = x1 - width * trail_length;
-        float y2 = position.y + height / 2;
-        
-        if (x1 < position.x + width / 2 && x2 > position.x - width / 2) {
-            float alpha = 0.5f * (1.0f - line_pos);
-            DrawLineEx(
-                (Vector2){x1, y1}, 
-                (Vector2){x2, y2}, 
-                trail_thickness, 
-                ColorAlpha(trail_color, alpha)
-            );
+        m_position_history.insert(m_position_history.begin(), {position.x, position.y});
+
+        if (m_position_history.size() > m_max_history_length) {
+            m_position_history.pop_back();
         }
+    }
+}
+
+void PlayerRenderer::draw_trail_effect() {
+    if (!show_trail || m_position_history.size() < 2) return;
+
+    for (size_t i = 1; i < m_position_history.size(); i++) {
+        float alpha = trail_thickness * pow(m_trail_fade_factor, i);
+
+        float size = trail_thickness * (1.0f - (float)i / m_position_history.size());
+
+        Color trail_point_color = ColorAlpha(player_color, alpha);
+        DrawCircleV(m_position_history[i], size, player_color);
     }
 }

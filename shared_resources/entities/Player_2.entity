@@ -60,27 +60,16 @@
             "value": {
                 "corner_radius": 50.099998474121094,
                 "corner_segments": 10,
+                "m_max_history_length": 500,
+                "m_trail_fade_factor": 0.8999999761581421,
                 "outline_thickness": 1000.0,
                 "player_label_size": 30,
                 "pulse_intensity": 0.05000000074505806,
                 "pulse_speed": 5.0,
                 "show_player_number": true,
-                "show_trail": false,
-                "show_zone_effect": false,
-                "trail_color": {
-                    "r": 255,
-                    "g": 255,
-                    "b": 255,
-                    "a": 255
-                },
-                "trail_count": 3,
-                "trail_length": 1.0,
-                "trail_speed": 0.5,
-                "trail_thickness": 2.0,
-                "use_outline": true,
-                "zone_effect_duration": 10.0,
-                "zone_effect_size": 1.2999999523162842,
-                "zone_effect_speed": 8.0
+                "show_trail": true,
+                "trail_thickness": 10.0,
+                "use_outline": true
             }
         }
     ]

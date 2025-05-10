@@ -1,10 +1,10 @@
 {
-    "entity_id": 12038401047229980964,
+    "entity_id": 10114343595349741071,
     "variants": [
         {
             "type": "CharacterController",
             "value": {
-                "acceleration": 800.0,
+                "acceleration": 600.0,
                 "friction": 10.0
             }
         },
@@ -12,10 +12,10 @@
             "type": "PlayerInfo",
             "value": {
                 "color": {
-                    "r": 4,
-                    "g": 2,
-                    "b": 5,
-                    "a": 13
+                    "r": 0,
+                    "g": 0,
+                    "b": 0,
+                    "a": 0
                 },
                 "index": 0,
                 "name": "Player1",
@@ -25,21 +25,21 @@
         {
             "type": "Position",
             "value": {
-                "x": 1830.5999755859375,
-                "y": 971.0
+                "x": 153.39999389648438,
+                "y": 316.79998779296875
             }
         },
         {
             "type": "Speed",
             "value": {
-                "value": 800.0
+                "value": 600.0
             }
         },
         {
             "type": "Collider",
             "value": {
                 "m_collider_type": 1,
-                "m_draw_debug": true,
+                "m_draw_debug": false,
                 "m_height": 100.0,
                 "m_is_trigger": false,
                 "m_radius": 0.0,
@@ -53,6 +53,23 @@
             "value": {
                 "x": 1.0,
                 "y": 1.0
+            }
+        },
+        {
+            "type": "PlayerRenderer",
+            "value": {
+                "corner_radius": 50.099998474121094,
+                "corner_segments": 10,
+                "m_max_history_length": 500,
+                "m_trail_fade_factor": 0.8999999761581421,
+                "outline_thickness": 1000.0,
+                "player_label_size": 30,
+                "pulse_intensity": 0.05000000074505806,
+                "pulse_speed": 5.0,
+                "show_player_number": true,
+                "show_trail": true,
+                "trail_thickness": 10.0,
+                "use_outline": true
             }
         }
     ]
