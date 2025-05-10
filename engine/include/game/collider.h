@@ -35,10 +35,10 @@ public:
     inline void set_enable(bool value) { m_enable = value; }
     inline bool is_enable() { return m_enable; }
 
-private:
     float scaled_width() const;
     float scaled_height() const;
 
+private:
     void debug_draw();
     void check_collisions();
 

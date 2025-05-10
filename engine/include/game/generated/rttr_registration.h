@@ -2,6 +2,7 @@
 #include "game/character_controller.h"
 #include "game/collider.h"
 #include "game/player_info.h"
+#include "game/player_renderer.h"
 #include "game/position.h"
 #include "game/powerup.h"
 #include "game/powerup_spawner.h"
@@ -98,6 +99,14 @@ RTTR_REGISTRATION
         .property("index", &PlayerInfo::index)
         .property("name", &PlayerInfo::name)
         .property("time_spent_zone", &PlayerInfo::time_spent_zone);
+
+    rttr::registration::class_<PlayerRenderer>("PlayerRenderer")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
+        .property("corner_radius", &PlayerRenderer::corner_radius)
+        .property("outline_thickness", &PlayerRenderer::outline_thickness)
+        .property("show_player_number", &PlayerRenderer::show_player_number)
+        .property("use_outline", &PlayerRenderer::use_outline);
 
     rttr::registration::class_<Position>("Position")
         .constructor<>()(rttr::policy::ctor::as_object)

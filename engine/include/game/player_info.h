@@ -8,7 +8,7 @@ class PlayerInfo : public VariantBase {
 public:
     int index = 0; PROPERTY();
     std::string name; PROPERTY();
-    Color color; PROPERTY();
+    Color color = BLUE; PROPERTY();
 
     float time_spent_zone = 0; PROPERTY();
 };
