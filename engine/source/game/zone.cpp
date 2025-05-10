@@ -123,7 +123,7 @@ Color Zone::get_zone_color() const {
 void Zone::draw_polygon_in_zone(const Collider& collider) {
     const auto& position = Query::read<Position>(this);
 
-    float polygon_radius = collider.m_radius;
+    float polygon_radius = collider.m_radius * 0.7f;
 
     for (int i = 0; i < m_polygon_sides; i++) {
         float angle = m_rotation_angle + i * 360.0f / m_polygon_sides;
@@ -144,6 +144,6 @@ void Zone::draw_polygon_in_zone(const Collider& collider) {
         line_color.b = fminf(255, line_color.b + 40);
         line_color.a = 200; 
 
-        DrawLineEx((Vector2){x1, y1}, (Vector2){x2, y2}, 2.0f, line_color);
+        DrawLineEx((Vector2){x1, y1}, (Vector2){x2, y2}, 3.0f, line_color);
     }
 }

@@ -20,6 +20,8 @@ public:
     float m_panel_x = 0; PROPERTY();
     float m_panel_y = 30.0f; PROPERTY();
 
+    float since_last_zone = 0;
+
     virtual void on_post_init() override;
     virtual void on_play_update() override;
 

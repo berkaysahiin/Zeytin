@@ -28,5 +28,5 @@ private:
     float m_tick_increase = 0; // comes from manager
     
     float m_rotation_angle = 0.0f; 
-    int m_polygon_sides = 36; 
+    int m_polygon_sides = 3; 
 };
