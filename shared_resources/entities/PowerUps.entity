@@ -6,7 +6,7 @@
             "value": {
                 "m_max_lifetime": 15.0,
                 "m_min_lifetime": 5.0,
-                "m_randomize_type": false,
+                "m_randomize_type": true,
                 "m_show_debug_visuals": false,
                 "m_spawn_interval": 5.0,
                 "m_spawn_radius": 50.0

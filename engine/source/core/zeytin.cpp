@@ -133,6 +133,7 @@ void Zeytin::run_frame() {
     end_mode2d();
 
     if (m_state.play_mode && !m_state.pause_play_mode) {
+        clean_dead_variants();
         play_start_variants();
         play_late_start_variants();
         play_update_variants();

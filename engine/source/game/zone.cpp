@@ -9,8 +9,6 @@
 #include "game/zone_manager.h"
 
 void Zone::on_init() {
-    m_in_players.reserve(2);
-
     const ZoneManager& manager = Query::find_first<ZoneManager>();
 
     m_max_radius = manager.m_max_radius;
@@ -24,16 +22,8 @@ void Zone::on_play_update() {
     auto& collider = Query::get<Collider>(this);
     collider.m_color = get_zone_color();
 
-    Query::for_each<PlayerInfo>([this](PlayerInfo& info){
-        const auto& player_collider = Query::read<Collider>(info.entity_id);
-        const auto& this_collider = Query::read<Collider>(this);
-        if(this_collider.intersects(player_collider)) {
-            m_in_players.push_back(info.index);
-            info.time_spent_zone += get_frame_time();
-        }
-    });
-
     if(since_spawn_secs >= vanish_after_secs) {
+        collider.set_enable(false);
         Query::remove_entity(entity_id);
     }
 
@@ -42,9 +32,7 @@ void Zone::on_play_update() {
     }
 }
 
-void Zone::on_play_late_update() {
-    m_in_players.clear();
-}
+void Zone::on_play_late_update() {}
 
 Color Zone::get_zone_color() const {
     float time_ratio = since_spawn_secs / vanish_after_secs;

@@ -23,7 +23,6 @@
     
     Query::add<Zone>(zone_entity, vanish_after_secs);
     
-    
     m_until_next_spawn = m_spawn_every_secs;
 
     return zone_entity;

@@ -5,6 +5,8 @@
 #include "remote_logger/remote_logger.h"
 
 #include "game/wall.h"
+#include "game/zone.h"
+#include "game/player_info.h"
 
 void CharacterController::on_play_start() {
     auto& collider = Query::get<Collider>(this);
@@ -18,12 +20,23 @@ void CharacterController::on_play_start() {
         if(is_player) {
             push_each_other(other);
         }
+
+        const bool is_zone = Query::has<Zone>(other.entity_id);
+        Query::get<PlayerInfo>(this).in_zone = is_zone;
     };
 
     map_key_bindings();
 }
 
 void CharacterController::on_play_update() {
+    auto& collider = Query::get<Collider>(this);
+    auto& info = Query::get<PlayerInfo>(this);
+    auto zones = Query::find_all<Zone>();
+
+    for(auto zone_ref : zones) {
+        auto& zone_collider = Query::get<Collider>(zone_ref.get().entity_id);
+         info.in_zone = collider.intersects(zone_collider);
+    }
 
     handle_input();
     apply_movement();

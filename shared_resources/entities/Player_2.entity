@@ -54,6 +54,34 @@
                 "x": 1.0,
                 "y": 1.0
             }
+        },
+        {
+            "type": "PlayerRenderer",
+            "value": {
+                "corner_radius": 58.70000076293945,
+                "corner_segments": 10,
+                "outline_thickness": 1000.0,
+                "player_label_size": 20,
+                "pulse_intensity": 0.05000000074505806,
+                "pulse_speed": 5.0,
+                "show_player_number": true,
+                "show_trail": true,
+                "show_zone_effect": true,
+                "trail_color": {
+                    "r": 255,
+                    "g": 255,
+                    "b": 255,
+                    "a": 255
+                },
+                "trail_count": 3,
+                "trail_length": 1.0,
+                "trail_speed": 0.5,
+                "trail_thickness": 2.0,
+                "use_outline": false,
+                "zone_effect_duration": 10.0,
+                "zone_effect_size": 1.2999999523162842,
+                "zone_effect_speed": 8.0
+            }
         }
     ]
 }
