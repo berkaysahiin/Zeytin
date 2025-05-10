@@ -17,8 +17,10 @@ void CharacterController::on_play_start() {
             bounce_from_boundries(other);
         }
 
-        const bool is_player = Query::has<PlayerInfo>(other.entity_id);
-        if(is_player) {
+        //const bool is_player = Query::has<PlayerInfo>(other.entity_id);
+        if(auto p = Query::try_get<PlayerInfo>(other.entity_id)) {
+            if(p->get().shield) return;
+            if(Query::get<PlayerInfo>(entity_id).shield) return;
             push_each_other(other);
         }
 
@@ -181,6 +183,7 @@ void CharacterController::push_each_other(Collider& other) {
     auto& my_position = Query::get<Position>(this);
     auto& other_position = Query::get<Position>(other.entity_id);
     auto& my_collider = Query::get<Collider>(this);
+    auto& my_scale = Query::get<Scale>(this);
 
     Vector2 push_direction = {
         my_position.x - other_position.x,
@@ -195,36 +198,53 @@ void CharacterController::push_each_other(Collider& other) {
         push_direction.x = GetRandomValue(-100, 100) / 100.0f;
         push_direction.y = GetRandomValue(-100, 100) / 100.0f;
         push_direction = vector2_normalize(push_direction);
-        current_distance = 0.001f;  
+        current_distance = 0.001f;
     } else {
-        push_direction = vector2_scale(push_direction, 1.0f/current_distance);  
+        push_direction = vector2_scale(push_direction, 1.0f / current_distance);
     }
 
     if (Query::has<CharacterController>(other.entity_id)) {
         auto& other_controller = Query::get<CharacterController>(other.entity_id);
+        auto& other_scale = Query::get<Scale>(other.entity_id);
 
         if (overlap > 0) {
             Vector2 separation = vector2_scale(push_direction, overlap * 0.5f);
-
             my_position.x += separation.x;
             my_position.y += separation.y;
             other_position.x -= separation.x;
             other_position.y -= separation.y;
         }
 
-        const float push_strength = 600.0f;  
-        const float velocity_retention = 0.2f;  
+        float my_scale_factor = my_scale.x * my_scale.y;
+        float other_scale_factor = other_scale.x * other_scale.y;
 
-        Vector2 impulse = vector2_scale(push_direction, push_strength);
+        float my_velocity_magnitude = vector2_length(m_velocity);
+        float other_velocity_magnitude = vector2_length(other_controller.m_velocity);
+
+        float size_ratio = my_scale_factor / (other_scale_factor + 0.0001f);
+        float velocity_ratio = my_velocity_magnitude / (other_velocity_magnitude + 0.0001f);
+
+        float normalized_size_advantage = size_ratio / (size_ratio + 1.0f);
+        float normalized_velocity_advantage = velocity_ratio / (velocity_ratio + 1.0f);
+
+        float advantage_factor = 0.6f * normalized_size_advantage + 0.4f * normalized_velocity_advantage;
+
+        const float base_push_strength = 600.0f;
+        const float velocity_retention = 0.2f;
+
+        float my_push_strength = 1.5f * (1.0f - advantage_factor);
+        float other_push_strength = 1.5f * advantage_factor;
+
+        Vector2 impulse = vector2_scale(push_direction, base_push_strength);
 
         Vector2 my_new_velocity = {
-            m_velocity.x * velocity_retention + impulse.x,
-            m_velocity.y * velocity_retention + impulse.y
+            m_velocity.x * velocity_retention + impulse.x * my_push_strength,
+            m_velocity.y * velocity_retention + impulse.y * my_push_strength
         };
 
         Vector2 other_new_velocity = {
-            other_controller.m_velocity.x * velocity_retention - impulse.x,
-            other_controller.m_velocity.y * velocity_retention - impulse.y
+            other_controller.m_velocity.x * velocity_retention - impulse.x * other_push_strength,
+            other_controller.m_velocity.y * velocity_retention - impulse.y * other_push_strength
         };
 
         m_velocity = my_new_velocity;
@@ -233,10 +253,16 @@ void CharacterController::push_each_other(Collider& other) {
         const auto& other_info = Query::read<PlayerInfo>(other.entity_id);
         const auto& my_info = Query::read<PlayerInfo>(this);
 
-        if(auto particle_system_ref = Query::try_find_first<ParticleSystem>()) {
+        if (auto particle_system_ref = Query::try_find_first<ParticleSystem>()) {
             auto& particle_system = particle_system_ref->get();
-            particle_system.spawn_collision_particles(my_position, other_position, my_info.color);
 
+            float impact_force = vector2_length(impulse) * (my_push_strength + other_push_strength);
+            float impact_scaled = impact_force * 0.008;  
+            int count = static_cast<int>(pow(impact_scaled, 3.0f));
+            count = std::clamp(count, 5, 3000);  
+
+            particle_system.spawn_collision_particles(my_position, other_position, my_info.color, count);
         }
     }
 }
+

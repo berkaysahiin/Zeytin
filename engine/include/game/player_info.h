@@ -9,9 +9,10 @@ public:
     int index = 0; PROPERTY();
     std::string name; PROPERTY();
     Color color = BLUE; PROPERTY();
-    bool in_zone = false; PROPERTY(); 
     float time_spent_zone = 0; PROPERTY();
 
+    bool in_zone = false; PROPERTY(); 
+    bool shield = false; PROPERTY();
     // ui
     float m_panel_width = 280.0f; PROPERTY();
     float m_panel_height = 160.0f; PROPERTY();

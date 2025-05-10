@@ -36,8 +36,8 @@ void ZoneManager::on_play_update() {
 
     if(m_until_next_spawn <= 0) {
         float radius = get_random_value(m_min_radius, m_max_radius);
-        float x = get_random_value(radius, VIRTUAL_WIDTH - radius * 3);
-        float y = get_random_value(radius, VIRTUAL_HEIGHT - radius * 3);
+        float x = get_random_value(radius * 3, VIRTUAL_WIDTH - radius * 3);
+        float y = get_random_value(radius * 3, VIRTUAL_HEIGHT - radius * 3);
         float secs = get_random_value(m_min_secs, m_max_secs);
         spawn_zone(x, y, radius, secs);
     }

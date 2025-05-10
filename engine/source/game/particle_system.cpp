@@ -2,7 +2,7 @@
 #include "core/raylib_wrapper.h"
 #include "core/zeytin.h"
 
-void ParticleSystem::spawn_collision_particles(const Position& pos1, const Position& pos2, Color color) {
+void ParticleSystem::spawn_collision_particles(const Position& pos1, const Position& pos2, Color color, int count) {
     Vector2 collision_center = {
         (pos1.x + pos2.x) * 0.5f,
         (pos1.y + pos2.y) * 0.5f
@@ -25,7 +25,7 @@ void ParticleSystem::spawn_collision_particles(const Position& pos1, const Posit
         collision_direction.x
     };
 
-    int particles_to_spawn = std::min(MAX_PARTICLES - static_cast<int>(m_particles.size()), 500);
+    int particles_to_spawn = std::min(MAX_PARTICLES - static_cast<int>(m_particles.size()), count);
     
     for (int i = 0; i < particles_to_spawn; ++i) {
         Particle p;

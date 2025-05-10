@@ -121,6 +121,7 @@ RTTR_REGISTRATION
         .property("m_panel_x", &PlayerInfo::m_panel_x)
         .property("m_panel_y", &PlayerInfo::m_panel_y)
         .property("name", &PlayerInfo::name)
+        .property("shield", &PlayerInfo::shield)
         .property("time_spent_zone", &PlayerInfo::time_spent_zone);
 
     rttr::registration::class_<PlayerRenderer>("PlayerRenderer")

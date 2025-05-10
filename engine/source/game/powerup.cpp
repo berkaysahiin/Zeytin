@@ -78,8 +78,8 @@ void PowerUp::apply_effect_to_player(int player_index) {
         }
 
         case Type::SHIELD: {
-            player.color = ColorAlpha(player.color, 0.5f); 
-            break;
+            player.color = ColorAlpha(player.color, 0.1);  
+            player.shield = true;
         }
     }
 }
@@ -420,6 +420,13 @@ void PowerUp::on_play_update() {
                     scale.y = 1;
                     break;
                 }                       
+                case Type::SHIELD: {
+                    auto& info = Query::get<PlayerInfo>(m_player_id);
+                    info.color = ColorAlpha(info.color, 1);  
+                    info.shield = false;
+                    break;
+                }
+
             }
 
             Query::remove_entity(entity_id);

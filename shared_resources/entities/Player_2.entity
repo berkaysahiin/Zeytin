@@ -25,6 +25,7 @@
                 "m_panel_x": 29.700000762939453,
                 "m_panel_y": 36.900001525878906,
                 "name": "Player1",
+                "shield": false,
                 "time_spent_zone": 0.0
             }
         },
