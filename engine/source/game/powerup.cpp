@@ -3,6 +3,7 @@
 #include "game/speed.h"
 #include "game/scale.h"
 #include "game/character_controller.h"
+#include "game/zone.h"
 
 #include "core/query.h"
 #include "core/raylib_wrapper.h"
@@ -39,10 +40,6 @@ void PowerUp::apply_effect_to_player(int player_index) {
             if (auto speed = Query::try_get<Speed>(player_id)) {
                 float original = speed->get().value;
                 speed->get().value *= m_power_multiplier;
-                
-                log_info() << "Player " << player_index << " got SPEED_BOOST: " 
-                           << original << " -> " << speed->get().value << " for " 
-                           << m_duration << " seconds" << std::endl;
             }
             break;
         }
@@ -51,10 +48,6 @@ void PowerUp::apply_effect_to_player(int player_index) {
             if (auto scale = Query::try_get<Scale>(player_id)) {
                 scale->get().x *= m_power_multiplier;
                 scale->get().y *= m_power_multiplier;
-                
-                log_info() << "Player " << player_index << " got SUPER_SIZE: " 
-                           << "Scale multiplied by " << m_power_multiplier << " for " 
-                           << m_duration << " seconds" << std::endl;
                 
                 if (auto collider = Query::try_get<Collider>(player_id)) {
                     collider->get().m_radius *= m_power_multiplier;
@@ -70,10 +63,6 @@ void PowerUp::apply_effect_to_player(int player_index) {
                 scale->get().x *= shrink_factor;
                 scale->get().y *= shrink_factor;
                 
-                log_info() << "Player " << player_index << " got SHRINK: " 
-                           << "Scale reduced by " << shrink_factor << " for " 
-                           << m_duration << " seconds" << std::endl;
-                
                 if (auto collider = Query::try_get<Collider>(player_id)) {
                     collider->get().m_radius *= shrink_factor;
                 }
@@ -82,26 +71,14 @@ void PowerUp::apply_effect_to_player(int player_index) {
         }
         
         case Type::ZONE_SLOW: {
-
-            //auto zone_managers = Query::find_all<ZoneManager>();
-            //if (!zone_managers.empty()) {
-            //    auto& manager = zone_managers[0].get();
-            //    float original = manager.m_thick_incess_rate;
-            //    manager.m_thick_incess_rate /= power_multiplier;
-            //    
-            //    log_info() << "Player " << player_index << " got ZONE_SLOW: " 
-            //               << "Zone growth rate slowed from " << original 
-            //               << " to " << manager.m_thick_incess_rate << " for " 
-            //               << duration << " seconds" << std::endl;
-            //}
+              for(auto& zone_ref : Query::find_all<Zone>()) {
+                  zone_ref.get().vanish_after_secs *= m_power_multiplier;
+              }
             break;
         }
-        
+
         case Type::SHIELD: {
             player.color = ColorAlpha(player.color, 0.5f); 
-            
-            log_info() << "Player " << player_index << " got SHIELD for " 
-                       << m_duration << " seconds" << std::endl;
             break;
         }
     }
