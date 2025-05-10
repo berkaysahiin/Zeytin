@@ -84,7 +84,7 @@ void Zeytin::initialize_standalone() {
     
     if (!load_scene(scene_path)) {
         log_error() << "Failed to load startup scene: " << scene_path << std::endl;
-        m_state.should_die = true;
+        //m_state.should_die = true;
         return;
     }
     

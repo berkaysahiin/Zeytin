@@ -62,7 +62,9 @@ T& get(entity_id id) {
         }
     }
 
-    throw std::runtime_error("Component not found despite has() check");
+    std::ostringstream error_msg;
+    error_msg << "Component " << typeid(T).name() << " not found on entity: " << id << std::endl;
+    throw std::runtime_error(error_msg.str());
 }
 
 template<typename T>

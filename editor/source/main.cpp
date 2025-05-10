@@ -15,6 +15,7 @@
 #include "test_viewer/test_viewer.h"
 #include "test_manager/test_manager.h"
 #include "window/window_manager.h"
+#include "export/export_window.h"
 
 int main(int argc, char* argv[])
 {
@@ -38,6 +39,8 @@ int main(int argc, char* argv[])
 
     Hierarchy hierarchy(entity_list.get_entities(), variant_list.get_variants());
     TestViewer test_viewer;
+
+    ExportWindow::get().set_entity_list(&entity_list);
 
     WindowManager window_manager;
     window_manager.init();
@@ -72,6 +75,13 @@ int main(int argc, char* argv[])
         },
         false, 
         "Test Viewer", 
+        true);
+    window_manager.add_window("Export",
+        []() {
+            ExportWindow::get().render();
+        },
+        false,  
+        "Export", 
         true);
 
     window_manager.add_main_menu_component([&engine_controls]{

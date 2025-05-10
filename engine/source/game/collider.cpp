@@ -135,11 +135,19 @@ void Collider::debug_draw() {
 }
 
 float Collider::scaled_width() const {
-    const auto& scale = Query::read<Scale>(this);
-    return m_width * scale.x;
+    if(auto s = Query::try_get<Scale>(this)) {
+        auto& scale = s->get();
+        return m_width * scale.x;
+    }
+
+    return m_width;
 }
 
 float Collider::scaled_height() const {
-    const auto& scale = Query::read<Scale>(this);
-    return m_height * scale.y;
+    if(auto s = Query::try_get<Scale>(this)) {
+        auto& scale = s->get();
+        return m_height * scale.y;
+    }
+
+    return m_height;
 }
