@@ -36,43 +36,73 @@ void Zone::on_play_late_update() {}
 
 Color Zone::get_zone_color() const {
     float time_ratio = since_spawn_secs / vanish_after_secs;
-
     time_ratio = time_ratio < 0.0f ? 0.0f : (time_ratio > 1.0f ? 1.0f : time_ratio);
 
-    float adjusted_ratio = powf(time_ratio, 2.0f); 
+    Color inner_color, middle_color, outer_color;
 
-    float pulse_speed = 2.0f + 8.0f * adjusted_ratio; 
-    float pulse_intensity = 0.2f + 0.3f * adjusted_ratio; 
-    float pulse = (1.0f - pulse_intensity) + pulse_intensity * sinf(pulse_speed * since_spawn_secs * 3.14159f);
-
-    Color start_color = {30, 220, 255, 180}; 
-    Color end_color = {255, 30, 0, 220};      
-
-    if (time_ratio > 0.8f) {
-        float final_intensity = (time_ratio - 0.8f) * 5.0f; 
-        end_color.r = 255;
-        end_color.g = 30 * (1.0f - final_intensity); 
-        end_color.b = 0;
-
-        pulse = (1.0f - 0.5f) + 0.5f * sinf(12.0f * since_spawn_secs * 3.14159f);
+    if (time_ratio < 0.4f) {
+        inner_color = (Color){0, 255, 255, 230};  
+        middle_color = (Color){30, 144, 255, 180}; 
+        outer_color = (Color){64, 224, 208, 120};   
+    }
+    else if (time_ratio < 0.7f) {
+        inner_color = (Color){255, 140, 0, 220};    
+        middle_color = (Color){255, 191, 0, 160};  
+        outer_color = (Color){220, 60, 10, 140};  
+    }
+    else {
+        inner_color = (Color){255, 0, 0, 240};      
+        middle_color = (Color){220, 20, 60, 200};  
+        outer_color = (Color){148, 0, 211, 160};  
     }
 
-    Color result;
-    result.r = (start_color.r + (end_color.r - start_color.r) * adjusted_ratio) * pulse;
-    result.g = (start_color.g + (end_color.g - start_color.g) * adjusted_ratio) * pulse;
-    result.b = (start_color.b + (end_color.b - start_color.b) * adjusted_ratio) * pulse;
+    float base_pulse = sinf(since_spawn_secs * 3.14159f * 2.0f);
 
-    float alpha_pulse = 1.0f;
+    float inner_pulse = 0.9f + 0.1f * sinf(since_spawn_secs * 1.0f * 3.14159f);
+    float middle_pulse = 0.8f + 0.2f * sinf(since_spawn_secs * 2.0f * 3.14159f);
+    float outer_pulse = 0.7f + 0.3f * sinf(since_spawn_secs * 3.0f * 3.14159f);
+
     if (time_ratio > 0.7f) {
-        float warning_phase = (time_ratio - 0.7f) / 0.3f; 
-        alpha_pulse = 0.7f + 0.3f * sinf(15.0f * since_spawn_secs * 3.14159f);
+        float warning_phase = (time_ratio - 0.7f) / 0.3f;
+        float warning_pulse = 0.5f + 0.5f * sinf(15.0f * since_spawn_secs * 3.14159f);
 
         if (time_ratio > 0.9f) {
-            alpha_pulse = 0.5f + 0.5f * sinf(25.0f * since_spawn_secs * 3.14159f);
+            warning_pulse = 0.3f + 0.7f * sinf(25.0f * since_spawn_secs * 3.14159f);
+
+            if (fmodf(since_spawn_secs * 10.0f, 1.0f) > 0.5f) {
+                inner_color = (Color){255, 255, 255, 200};  
+            }
         }
+
+        inner_color.a *= warning_pulse;
+        middle_color.a *= warning_pulse;
+        outer_color.a *= warning_pulse;
     }
 
-    result.a = (start_color.a + (end_color.a - start_color.a) * adjusted_ratio) * alpha_pulse;
+    inner_color.a = (unsigned char)((float)inner_color.a * inner_pulse);
+    middle_color.a = (unsigned char)((float)middle_color.a * middle_pulse);
+    outer_color.a = (unsigned char)((float)outer_color.a * outer_pulse);
+
+    Color result = inner_color;  
+
+    float middle_influence = 0.3f + 0.2f * time_ratio;
+    float outer_influence = 0.1f + 0.3f * time_ratio * time_ratio;
+
+    result.r = (unsigned char)((float)result.r * (1.0f - middle_influence - outer_influence) +
+                               (float)middle_color.r * middle_influence +
+                               (float)outer_color.r * outer_influence);
+
+    result.g = (unsigned char)((float)result.g * (1.0f - middle_influence - outer_influence) +
+                               (float)middle_color.g * middle_influence +
+                               (float)outer_color.g * outer_influence);
+
+    result.b = (unsigned char)((float)result.b * (1.0f - middle_influence - outer_influence) +
+                               (float)middle_color.b * middle_influence +
+                               (float)outer_color.b * outer_influence);
+
+    result.a = (unsigned char)((float)result.a * 0.7f +
+                               (float)middle_color.a * 0.2f +
+                               (float)outer_color.a * 0.1f);
 
     result.r = result.r > 255 ? 255 : result.r;
     result.g = result.g > 255 ? 255 : result.g;
@@ -81,3 +111,4 @@ Color Zone::get_zone_color() const {
 
     return result;
 }
+
