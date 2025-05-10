@@ -293,5 +293,8 @@ inline void remove_entity(entity_id id) {
     Zeytin::get().remove_entity(id);
 }
 
+inline bool entity_exists(entity_id id) {
+    return Zeytin::get().get_storage().find(id) != Zeytin::get().get_storage().end();
+}
 
 } 

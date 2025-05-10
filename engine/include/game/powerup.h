@@ -25,7 +25,7 @@ public:
     float m_lifetime = 15.0f; 
     float m_since_spawn = 0.0f; 
     float m_since_used = 0;
-    int m_player_id = -1;
+    uint64_t m_player_id = -1;
     bool m_used = false;
 
     virtual void on_post_init() override;

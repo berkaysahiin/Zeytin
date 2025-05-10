@@ -6,6 +6,7 @@
 
 #include "core/query.h"
 #include "core/raylib_wrapper.h"
+#include "remote_logger/remote_logger.h"
 
 void PowerUp::on_post_init() {
     auto& collider = Query::get<Collider>(this);
@@ -418,6 +419,9 @@ void PowerUp::on_play_update() {
     }
     else { 
         m_since_used += get_frame_time();
+        if(!Query::entity_exists(m_player_id)) {
+            log_error() << "Entity with id doesnot exist: " << m_player_id << std::endl;
+        }
         if(m_since_used >= m_duration)  { // revert and say goodbye
             switch(m_type) {
                 case Type::SPEED_BOOST: {
