@@ -113,7 +113,13 @@ RTTR_REGISTRATION
         .constructor<>()(rttr::policy::ctor::as_object)
         .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
         .property("color", &PlayerInfo::color)
+        .property("in_zone", &PlayerInfo::in_zone)
         .property("index", &PlayerInfo::index)
+        .property("m_padding", &PlayerInfo::m_padding)
+        .property("m_panel_height", &PlayerInfo::m_panel_height)
+        .property("m_panel_width", &PlayerInfo::m_panel_width)
+        .property("m_panel_x", &PlayerInfo::m_panel_x)
+        .property("m_panel_y", &PlayerInfo::m_panel_y)
         .property("name", &PlayerInfo::name)
         .property("time_spent_zone", &PlayerInfo::time_spent_zone);
 

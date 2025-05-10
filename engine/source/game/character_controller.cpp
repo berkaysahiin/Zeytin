@@ -39,6 +39,11 @@ void CharacterController::on_play_update() {
          info.in_zone = collider.intersects(zone_collider);
     }
 
+    if(info.in_zone) {
+        info.time_spent_zone += get_frame_time();
+    }
+
+
     handle_input();
     apply_movement();
 }
@@ -170,9 +175,6 @@ void CharacterController::bounce_from_boundries(Collider& other) {
             m_velocity.y = m_velocity.y - 2 * dot_product * normal.y;
         }
     }
-
-    info.color = get_random_color();
-    log_info() << "Randomly changed color" << std::endl;
 }
 
 void CharacterController::push_each_other(Collider& other) {

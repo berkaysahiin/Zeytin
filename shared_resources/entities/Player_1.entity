@@ -4,8 +4,8 @@
         {
             "type": "CharacterController",
             "value": {
-                "acceleration": 1000.0,
-                "friction": 500.0
+                "acceleration": 600.0,
+                "friction": 5.0
             }
         },
         {
@@ -17,7 +17,13 @@
                     "b": 0,
                     "a": 0
                 },
+                "in_zone": false,
                 "index": 0,
+                "m_padding": 9.5,
+                "m_panel_height": 168.8000030517578,
+                "m_panel_width": 263.6000061035156,
+                "m_panel_x": 20.0,
+                "m_panel_y": 30.0,
                 "name": "Player1",
                 "time_spent_zone": 0.0
             }
