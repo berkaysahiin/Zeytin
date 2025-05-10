@@ -1,6 +1,7 @@
 #include "entity/entity_list.h"
 
 #include <filesystem>
+#include <mutex>
 
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
@@ -8,6 +9,8 @@
 #include "logger.h"
 #include "engine/engine_event.h"
 #include "resource_manager/resource_manager.h"
+
+#include "common/global_mutexes.h"
 
 namespace {
     constexpr const char* BACKUP_DIR = "temp_backup";
@@ -34,27 +37,28 @@ void EntityList::register_event_handlers() {
     );
 
     EngineEventBus::get().subscribe<std::string>(
-        EngineEvent::SyncEditor,
+    EngineEvent::SyncEditor,
         [this](auto msg) {
-            if(should_sync_runtime()) {
-                rapidjson::Document doc;
-                doc.Parse(msg.c_str());
+            if(!should_sync_runtime()) {
+                log_warning() << "EDITOR: Sync received but ignored" << std::endl;
+                return;
+            }
 
-                if(doc.HasParseError()) {
-                    return;
-                }
+            rapidjson::Document doc;
+            doc.Parse(msg.c_str());
 
-                sync_entities_from_document(doc);
-                if(!m_is_synced_once) {
-                    m_is_synced_once = true;
-                    log_info() << "Initial sync with runtime" << std::endl;
-                }
+            if(doc.HasParseError()) {
+                return;
+            }
 
-            } else {
-                log_warning() << "EDITOR: Sync recevied but ignored" << std::endl;
+            sync_entities_from_document(doc);
+            if(!m_is_synced_once) {
+                m_is_synced_once = true;
+                log_info() << "Initial sync with runtime" << std::endl;
             }
         }
     );
+
     
     EngineEventBus::get().subscribe<bool>(
         EngineEvent::EnterPlayMode,

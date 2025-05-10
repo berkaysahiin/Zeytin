@@ -1,5 +1,6 @@
 #include "game/zone.h"
 
+#include "core/raylib_wrapper.h"
 #include "game/collider.h"
 #include "core/query.h"
 #include "game/player_info.h"
@@ -15,6 +16,7 @@ void Zone::on_play_update() {
         const auto& this_collider = Query::read<Collider>(this);
         if(this_collider.intersects(player_collider)) {
             m_in_players.push_back(info.index);
+            info.time_spent_zone += get_frame_time();
         }
     });
 }

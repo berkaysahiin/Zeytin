@@ -33,9 +33,12 @@ public:
 private:
     void map_key_bindings();
     int get_keycode(const MappedKey key) const;
+
     void handle_input();
     void apply_movement();
+
     void bounce_from_boundries(Collider& other);
+    void push_each_other(Collider& other);
 
 private:
     Vector2 m_velocity = {0.0f, 0.0f};

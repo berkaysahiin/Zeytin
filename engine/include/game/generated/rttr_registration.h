@@ -93,7 +93,8 @@ RTTR_REGISTRATION
         .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
         .property("color", &PlayerInfo::color)
         .property("index", &PlayerInfo::index)
-        .property("name", &PlayerInfo::name);
+        .property("name", &PlayerInfo::name)
+        .property("time_spent_zone", &PlayerInfo::time_spent_zone);
 
     rttr::registration::class_<Position>("Position")
         .constructor<>()(rttr::policy::ctor::as_object)

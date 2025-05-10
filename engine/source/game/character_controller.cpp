@@ -12,11 +12,11 @@ void CharacterController::on_play_start() {
         const bool is_wall = Query::has<Wall>(other.entity_id);
         if(is_wall) {
             bounce_from_boundries(other);
-            return;
         }
+
         const bool is_player = Query::has<PlayerInfo>(other.entity_id);
         if(is_player) {
-            // push
+            push_each_other(other);
         }
     };
 
@@ -157,4 +157,57 @@ void CharacterController::bounce_from_boundries(Collider& other) {
     }
 }
 
+void CharacterController::push_each_other(Collider& other) {
+    auto& my_position = Query::get<Position>(this);
+    auto& other_position = Query::get<Position>(other.entity_id);
+    auto& my_collider = Query::get<Collider>(this);
 
+    Vector2 push_direction = {
+        my_position.x - other_position.x,
+        my_position.y - other_position.y
+    };
+
+    float min_distance = my_collider.get_radius() + other.get_radius();
+    float current_distance = vector2_length(push_direction);
+    float overlap = min_distance - current_distance;
+
+    if (current_distance < 0.001f) {
+        push_direction.x = GetRandomValue(-100, 100) / 100.0f;
+        push_direction.y = GetRandomValue(-100, 100) / 100.0f;
+        push_direction = vector2_normalize(push_direction);
+        current_distance = 0.001f;  
+    } else {
+        push_direction = vector2_scale(push_direction, 1.0f/current_distance);  
+    }
+
+    if (Query::has<CharacterController>(other.entity_id)) {
+        auto& other_controller = Query::get<CharacterController>(other.entity_id);
+
+        if (overlap > 0) {
+            Vector2 separation = vector2_scale(push_direction, overlap * 0.5f);
+
+            my_position.x += separation.x;
+            my_position.y += separation.y;
+            other_position.x -= separation.x;
+            other_position.y -= separation.y;
+        }
+
+        const float push_strength = 600.0f;  
+        const float velocity_retention = 0.2f;  
+
+        Vector2 impulse = vector2_scale(push_direction, push_strength);
+
+        Vector2 my_new_velocity = {
+            m_velocity.x * velocity_retention + impulse.x,
+            m_velocity.y * velocity_retention + impulse.y
+        };
+
+        Vector2 other_new_velocity = {
+            other_controller.m_velocity.x * velocity_retention - impulse.x,
+            other_controller.m_velocity.y * velocity_retention - impulse.y
+        };
+
+        m_velocity = my_new_velocity;
+        other_controller.m_velocity = other_new_velocity;
+    }
+}

@@ -12,20 +12,21 @@
             "type": "PlayerInfo",
             "value": {
                 "color": {
-                    "r": 0,
-                    "g": 0,
-                    "b": 0,
-                    "a": 0
+                    "r": 4,
+                    "g": 2,
+                    "b": 5,
+                    "a": 13
                 },
                 "index": 0,
-                "name": "Player1"
+                "name": "Player1",
+                "time_spent_zone": 0.0
             }
         },
         {
             "type": "Position",
             "value": {
-                "x": 1600.0,
-                "y": 900.0
+                "x": 1076.926025390625,
+                "y": 344.43231201171875
             }
         },
         {

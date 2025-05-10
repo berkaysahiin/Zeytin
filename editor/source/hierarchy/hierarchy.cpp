@@ -14,6 +14,8 @@
 #include "resource_manager/resource_manager.h"
 #include "resource_manager/resource_manager.h"
 
+#include "common/global_mutexes.h"
+
 namespace {
     void notify_engine_entity_property_changed(uint64_t entity_id, 
                                               const std::string& variant_type, 
@@ -37,11 +39,15 @@ void Hierarchy::update() {
     render_save_controls();
     ImGui::Separator();
 
-    for (auto& entity : m_entities) {
-        if (!entity.is_dead()) {
-            render_entity(entity);
+    {
+        std::lock_guard<std::mutex> lock(g_entities_mutex); 
+        for (auto& entity : m_entities) {
+            if (!entity.is_dead()) {
+                render_entity(entity);
+            }
         }
     }
+
 }
 
 void Hierarchy::render_save_controls() {

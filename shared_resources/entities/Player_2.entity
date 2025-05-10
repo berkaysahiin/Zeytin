@@ -18,7 +18,8 @@
                     "a": 0
                 },
                 "index": 1,
-                "name": "Player1"
+                "name": "Player1",
+                "time_spent_zone": 0.0
             }
         },
         {
