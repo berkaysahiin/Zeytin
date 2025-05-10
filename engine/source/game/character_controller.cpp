@@ -7,6 +7,7 @@
 #include "game/wall.h"
 #include "game/zone.h"
 #include "game/player_info.h"
+#include "game/particle_system.h"
 
 void CharacterController::on_play_start() {
     auto& collider = Query::get<Collider>(this);
@@ -223,5 +224,14 @@ void CharacterController::push_each_other(Collider& other) {
 
         m_velocity = my_new_velocity;
         other_controller.m_velocity = other_new_velocity;
+
+        const auto& other_info = Query::read<PlayerInfo>(other.entity_id);
+        const auto& my_info = Query::read<PlayerInfo>(this);
+
+        if(auto particle_system_ref = Query::try_find_first<ParticleSystem>()) {
+            auto& particle_system = particle_system_ref->get();
+            particle_system.spawn_collision_particles(my_position, other_position, my_info.color, other_info.color);
+
+        }
     }
 }

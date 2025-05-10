@@ -22,6 +22,14 @@ void Zone::on_play_update() {
     auto& collider = Query::get<Collider>(this);
     collider.m_color = get_zone_color();
 
+    m_rotation_angle += 15.0f * get_frame_time();
+    if (m_rotation_angle > 360.0f) m_rotation_angle -= 360.0f;
+
+    float size_ratio = collider.m_radius / m_max_radius;
+    m_polygon_sides = 3 + static_cast<int>(size_ratio * 9.0f);
+
+    draw_polygon_in_zone(collider);
+
     if(since_spawn_secs >= vanish_after_secs) {
         collider.set_enable(false);
         Query::remove_entity(entity_id);
@@ -112,3 +120,30 @@ Color Zone::get_zone_color() const {
     return result;
 }
 
+void Zone::draw_polygon_in_zone(const Collider& collider) {
+    const auto& position = Query::read<Position>(this);
+
+    float polygon_radius = collider.m_radius;
+
+    for (int i = 0; i < m_polygon_sides; i++) {
+        float angle = m_rotation_angle + i * 360.0f / m_polygon_sides;
+        float rad = angle * DEG2RAD;
+
+        float x1 = position.x + cosf(rad) * polygon_radius;
+        float y1 = position.y + sinf(rad) * polygon_radius;
+
+        float next_angle = m_rotation_angle + (i + 1) * 360.0f / m_polygon_sides;
+        float next_rad = next_angle * DEG2RAD;
+
+        float x2 = position.x + cosf(next_rad) * polygon_radius;
+        float y2 = position.y + sinf(next_rad) * polygon_radius;
+
+        Color line_color = collider.m_color;
+        line_color.r = fminf(255, line_color.r + 40);
+        line_color.g = fminf(255, line_color.g + 40);
+        line_color.b = fminf(255, line_color.b + 40);
+        line_color.a = 200; 
+
+        DrawLineEx((Vector2){x1, y1}, (Vector2){x2, y2}, 2.0f, line_color);
+    }
+}

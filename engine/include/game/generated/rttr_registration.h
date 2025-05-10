@@ -1,6 +1,7 @@
 #pragma once
 #include "game/character_controller.h"
 #include "game/collider.h"
+#include "game/particle_system.h"
 #include "game/player_info.h"
 #include "game/player_renderer.h"
 #include "game/position.h"
@@ -92,6 +93,22 @@ RTTR_REGISTRATION
         .property("m_width", &Collider::m_width)
         .property("thickness", &Collider::thickness);
 
+    rttr::registration::class_<Particle>("Particle")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .property("color", &Particle::color)
+        .property("lifetime", &Particle::lifetime)
+        .property("max_lifetime", &Particle::max_lifetime)
+        .property("position", &Particle::position)
+        .property("velocity", &Particle::velocity)
+        (rttr::metadata("NO_VARIANT", true));
+
+    rttr::registration::class_<ParticleSystem>("ParticleSystem")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
+        .property("MAX_PARTICLES", &ParticleSystem::MAX_PARTICLES)
+        .property("PARTICLE_LIFETIME", &ParticleSystem::PARTICLE_LIFETIME)
+        .property("PARTICLE_SPEED", &ParticleSystem::PARTICLE_SPEED);
+
     rttr::registration::class_<PlayerInfo>("PlayerInfo")
         .constructor<>()(rttr::policy::ctor::as_object)
         .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
@@ -171,9 +188,7 @@ RTTR_REGISTRATION
 
     rttr::registration::class_<Zone>("Zone")
         .constructor<>()(rttr::policy::ctor::as_object)
-        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
-        .property("since_spawn_secs", &Zone::since_spawn_secs)
-        .property("vanish_after_secs", &Zone::vanish_after_secs);
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object);
 
     rttr::registration::class_<ZoneManager>("ZoneManager")
         .constructor<>()(rttr::policy::ctor::as_object)
