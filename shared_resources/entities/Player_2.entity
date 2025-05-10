@@ -39,7 +39,7 @@
             "type": "Collider",
             "value": {
                 "m_collider_type": 1,
-                "m_draw_debug": true,
+                "m_draw_debug": false,
                 "m_height": 100.0,
                 "m_is_trigger": false,
                 "m_radius": 0.0,
@@ -58,15 +58,15 @@
         {
             "type": "PlayerRenderer",
             "value": {
-                "corner_radius": 58.70000076293945,
+                "corner_radius": 50.099998474121094,
                 "corner_segments": 10,
                 "outline_thickness": 1000.0,
-                "player_label_size": 20,
+                "player_label_size": 30,
                 "pulse_intensity": 0.05000000074505806,
                 "pulse_speed": 5.0,
                 "show_player_number": true,
-                "show_trail": true,
-                "show_zone_effect": true,
+                "show_trail": false,
+                "show_zone_effect": false,
                 "trail_color": {
                     "r": 255,
                     "g": 255,
@@ -77,7 +77,7 @@
                 "trail_length": 1.0,
                 "trail_speed": 0.5,
                 "trail_thickness": 2.0,
-                "use_outline": false,
+                "use_outline": true,
                 "zone_effect_duration": 10.0,
                 "zone_effect_size": 1.2999999523162842,
                 "zone_effect_speed": 8.0
