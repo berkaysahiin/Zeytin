@@ -46,6 +46,8 @@ private:
     void teleport_player(uint64_t entity);
     void spawn_teleport_effect(const Position& start_pos, const Position& end_pos);
 
+    void teleporter_look_others();
+
     void draw_speed_boost(const Position& position, float pulse, float time);
     void draw_super_size(const Position& position, float pulse, float time);
     void draw_shrink(const Position& position, float pulse, float time);  

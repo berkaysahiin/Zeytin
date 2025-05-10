@@ -406,6 +406,7 @@ void PowerUp::draw_expiration_warning(const Position& position, float time, floa
 
 void PowerUp::on_play_update() {
     if(!m_used) { // time if not used
+        teleporter_look_others();
         m_since_spawn += get_frame_time();
         
         if (m_since_spawn >= m_lifetime) {
@@ -557,11 +558,11 @@ void PowerUp::draw_teleporter(const Position& position, float pulse, float time)
             WHITE
         );
 
-        DrawText("EXIT ONLY",
-                position.x - 35,
-                position.y + base_radius * 1.4f,
-                10,
-                BLACK);
+        //DrawText("EXIT ONLY",
+        //        position.x - 35,
+        //        position.y + base_radius * 1.4f,
+        //        20,
+        //        BLACK);
 
         float pulse_alpha = 0.5f + 0.5f * sinf(time * 5.0f);
 
@@ -595,47 +596,31 @@ void PowerUp::draw_teleporter(const Position& position, float pulse, float time)
             );
         }
 
-        DrawText("READY",
-                position.x - 20,
-                position.y + base_radius * 1.4f,
-                10,
-                BLACK);
+        //DrawText("USED",
+        //        position.x - 20,
+        //        position.y + base_radius * 1.4f,
+        //        20,
+        //        BLACK);
     } else {
-        float dots_count = (int)(time * 2) % 4;
-        char waiting_text[10];
+        //float dots_count = (int)(time * 2) % 4;
+        //char waiting_text[25];
 
-        strcpy(waiting_text, "LINKING");
-        for (int i = 0; i < dots_count; i++) {
-            strcat(waiting_text, ".");
-        }
+        //strcpy(waiting_text, "JUMP TO RANDOM");
+        //for (int i = 0; i < dots_count; i++) {
+        //    strcat(waiting_text, ".");
+        //}
 
-        DrawText(waiting_text,
-                position.x - 30,
-                position.y + base_radius * 1.4f,
-                10,
-                BLACK);
+        //DrawText(waiting_text,
+        //        position.x - 30,
+        //        position.y + base_radius * 1.4f,
+        //        20,
+        //        BLACK);
     }
 }
 
 void PowerUp::teleport_player(uint64_t player_id) {
-    if (m_linked_teleporter_id == 0) {
-        auto teleporters = Query::find_where<PowerUp>([this](PowerUp& p) {
-            return p.m_type == Type::TELEPORTER &&
-                   p.entity_id != this->entity_id;
-        });
-
-        if (teleporters.empty()) {
-            m_is_exit_only = true;
-            return;
-        }
-
-        PowerUp& target = teleporters[0].get();
-        m_linked_teleporter_id = target.entity_id;
-        target.m_linked_teleporter_id = this->entity_id;
-    }
-
     auto target_powerup = Query::try_get<PowerUp>(m_linked_teleporter_id);
-    if (!target_powerup) {
+    if (!target_powerup || target_powerup->get().m_type != Type::TELEPORTER) {
         m_linked_teleporter_id = 0;
         return;
     }
@@ -653,4 +638,26 @@ void PowerUp::teleport_player(uint64_t player_id) {
 
     m_cooldown_remaining = m_cooldown;
     target.m_cooldown_remaining = m_cooldown;
+
+    Query::remove_entity(target.entity_id);
+    Query::remove_entity(entity_id);
+}
+
+void PowerUp::teleporter_look_others() {
+    if (m_linked_teleporter_id == 0) {
+        auto teleporters = Query::find_where<PowerUp>([this](PowerUp& p) {
+                return p.m_type == Type::TELEPORTER 
+                && p.entity_id != this->entity_id
+                && !p.is_dead;
+            });
+    
+            if (teleporters.empty()) {
+                //m_is_exit_only = true;
+                return;
+            }
+    
+            PowerUp& target = teleporters[0].get();
+            m_linked_teleporter_id = target.entity_id;
+            target.m_linked_teleporter_id = this->entity_id;
+        }
 }
