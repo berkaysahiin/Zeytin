@@ -13,12 +13,17 @@ public:
 
     bool in_zone = false; PROPERTY(); 
     bool shield = false; PROPERTY();
-    // ui
+    
     float m_panel_width = 280.0f; PROPERTY();
     float m_panel_height = 160.0f; PROPERTY();
-    float m_padding = 0; PROPERTY();
-    float m_panel_x = 0; PROPERTY();
+    float m_padding = 15.0f; PROPERTY();
+    float m_panel_x = 20.0f; PROPERTY();
     float m_panel_y = 30.0f; PROPERTY();
+
+    float max_time_outside = 12; PROPERTY();
+    float warning_threshold = 3.0f; PROPERTY();
+    float danger_threshold = 6.0f; PROPERTY();
+    float critical_threshold = 9.0f; PROPERTY();
 
     float since_last_zone = 0;
 
@@ -27,6 +32,5 @@ public:
 
 private:
     void draw_ui();
+    void draw_zone_warning();
 };
-
-
