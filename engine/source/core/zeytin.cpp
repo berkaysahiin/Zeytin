@@ -152,11 +152,11 @@ VariantList& Zeytin::get_variants(const entity_id& entity) {
 }
 
 void Zeytin::remove_entity(entity_id id) {
-    auto it = m_storage.find(id);
-    if (it != m_storage.end()) {
-        m_storage.erase(it);
+    for(rttr::variant& var : get_variants(id)) {
+        var.get_value<VariantBase&>().is_dead = true;
     }
 }
+
 
 void Zeytin::clean_dead_variants() {
     ZPROFILE_FUNCTION();

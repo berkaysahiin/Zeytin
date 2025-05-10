@@ -248,7 +248,9 @@ void for_each(std::function<void(T&)> action) {
         for (auto& variant : variants) {
             if (variant.get_type() == type) {
                 T& component = variant.get_value<T&>();
-                action(component);
+                if(!component.is_dead) {
+                    action(component);
+                }
             }
         }
     }
@@ -287,9 +289,9 @@ std::optional<std::reference_wrapper<T>> add(VariantBase* base, Args&&... args) 
     return add<T>(base->entity_id, std::forward<Args>(args)...);
 }
 
-template<typename T>
-void remove_entity(const T& t) {
-    Zeytin::get().remove_entity(t.entity_id);
+inline void remove_entity(entity_id id) {
+    Zeytin::get().remove_entity(id);
 }
+
 
 } 

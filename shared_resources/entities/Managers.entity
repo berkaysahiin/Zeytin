@@ -1,0 +1,17 @@
+{
+    "entity_id": 16330332270873991656,
+    "variants": [
+        {
+            "type": "ZoneManager",
+            "value": {
+                "m_max_radius": 500.0,
+                "m_max_secs": 10.0,
+                "m_min_radius": 200.0,
+                "m_min_secs": 5.0,
+                "m_spawn_every_secs": 5.0,
+                "m_thick_incess_rate": 30.0,
+                "show_debug_visuals": true
+            }
+        }
+    ]
+}
