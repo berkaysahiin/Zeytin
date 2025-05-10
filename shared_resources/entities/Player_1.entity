@@ -4,8 +4,8 @@
         {
             "type": "CharacterController",
             "value": {
-                "acceleration": 600.0,
-                "friction": 10.0
+                "acceleration": 1000.0,
+                "friction": 500.0
             }
         },
         {
@@ -25,7 +25,7 @@
         {
             "type": "Position",
             "value": {
-                "x": 153.39999389648438,
+                "x": 500.0,
                 "y": 316.79998779296875
             }
         },

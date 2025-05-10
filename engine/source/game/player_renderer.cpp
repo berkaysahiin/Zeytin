@@ -38,18 +38,11 @@ void PlayerRenderer::draw_player() {
         draw_trail_effect();
     }
 
-    if(info.index == 0) {
-        player_color = BLUE;
-    }
-    else if (info.index == 1) {
-        player_color = ORANGE;
-    }
-
     if (corner_radius > 0) {
             float effective_radius = fminf(corner_radius, fminf(visual_width, visual_height) / 2);
-            DrawRectangleRounded(rect, effective_radius / visual_width, corner_segments, player_color);
+            DrawRectangleRounded(rect, effective_radius / visual_width, corner_segments, info.color);
     } else {
-        draw_rectangle_rec(rect, player_color);
+        draw_rectangle_rec(rect, info.color);
         if (use_outline && outline_thickness > 0) {
             draw_rectangle_lines_ex(rect, outline_thickness, ColorAlpha(WHITE, 0.7f));
         }
@@ -83,12 +76,14 @@ void PlayerRenderer::update_position_history() {
 void PlayerRenderer::draw_trail_effect() {
     if (!show_trail || m_position_history.size() < 2) return;
 
+    const auto& info = Query::read<PlayerInfo>(this);
+
     for (size_t i = 1; i < m_position_history.size(); i++) {
         float alpha = trail_thickness * pow(m_trail_fade_factor, i);
 
         float size = trail_thickness * (1.0f - (float)i / m_position_history.size());
 
-        Color trail_point_color = ColorAlpha(player_color, alpha);
-        DrawCircleV(m_position_history[i], size, player_color);
+        Color trail_point_color = ColorAlpha(info.color, alpha);
+        DrawCircleV(m_position_history[i], size, info.color);
     }
 }

@@ -2,7 +2,7 @@
 #include "core/raylib_wrapper.h"
 #include "core/zeytin.h"
 
-void ParticleSystem::spawn_collision_particles(const Position& pos1, const Position& pos2, Color color1, Color color2) {
+void ParticleSystem::spawn_collision_particles(const Position& pos1, const Position& pos2, Color color) {
     Vector2 collision_center = {
         (pos1.x + pos2.x) * 0.5f,
         (pos1.y + pos2.y) * 0.5f
@@ -25,40 +25,37 @@ void ParticleSystem::spawn_collision_particles(const Position& pos1, const Posit
         collision_direction.x
     };
 
-    int particles_to_spawn = std::min(MAX_PARTICLES - static_cast<int>(m_particles.size()), 50);
+    int particles_to_spawn = std::min(MAX_PARTICLES - static_cast<int>(m_particles.size()), 500);
     
     for (int i = 0; i < particles_to_spawn; ++i) {
         Particle p;
-        
-        float spread_factor = get_random_value(-100, 100) / 100.0f;
-        float line_factor = get_random_value(-100, 100) / 100.0f;
-        
-        p.position = {
-            collision_center.x + perpendicular.x * spread_factor * 20.0f + 
-                        collision_direction.x * line_factor * 20.0f,
-            collision_center.y + perpendicular.y * spread_factor * 20.0f + 
-                        collision_direction.y * line_factor * 20.0f
-        };
 
+        float angle = get_random_value(0, 628) / 100.0f; 
         float speed_factor = get_random_value(50, 150) / 100.0f;
-        p.velocity = {
-            collision_direction.x * PARTICLE_SPEED * speed_factor,
-            collision_direction.y * PARTICLE_SPEED * speed_factor
+        float radius = get_random_value(0, 100) / 100.0f * 10.0f;
+
+        p.position = {
+            collision_center.x + std::cos(angle) * radius,
+            collision_center.y + std::sin(angle) * radius
         };
 
-        float color_factor = get_random_value(0, 100) / 100.0f;
+        p.velocity = {
+            std::cos(angle) * PARTICLE_SPEED * speed_factor,
+            std::sin(angle) * PARTICLE_SPEED * speed_factor
+        };
+
         p.color = {
-            static_cast<unsigned char>((color1.r * (1.0f - color_factor) + color2.r * color_factor)),
-            static_cast<unsigned char>((color1.g * (1.0f - color_factor) + color2.g * color_factor)),
-            static_cast<unsigned char>((color1.b * (1.0f - color_factor) + color2.b * color_factor)),
-            static_cast<unsigned char>(200)
+            static_cast<unsigned char>(get_random_value(0, 255)),  
+            static_cast<unsigned char>(get_random_value(0, 255)), 
+            static_cast<unsigned char>(get_random_value(0, 255)),
+            200  
         };
 
         p.lifetime = 0.0f;
         p.max_lifetime = PARTICLE_LIFETIME;
 
         m_particles.push_back(p);
-    }
+    }	
 }
 
 void ParticleSystem::on_update() {
@@ -71,6 +68,7 @@ void ParticleSystem::on_update() {
             }, 
             particle.color
         );
+
     }
 }
 

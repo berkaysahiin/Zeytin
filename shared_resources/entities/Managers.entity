@@ -12,6 +12,14 @@
                 "m_thick_incess_rate": 40.20000076293945,
                 "show_debug_visuals": true
             }
+        },
+        {
+            "type": "ParticleSystem",
+            "value": {
+                "MAX_PARTICLES": 10000,
+                "PARTICLE_LIFETIME": 40.0,
+                "PARTICLE_SPEED": 300.0
+            }
         }
     ]
 }

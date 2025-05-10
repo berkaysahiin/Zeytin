@@ -128,7 +128,7 @@ void CharacterController::apply_movement() {
 }
 
 void CharacterController::bounce_from_boundries(Collider& other) {
-    auto [position, collider] = Query::get<Position, Collider>(this);
+    auto [position, collider, info] = Query::get<Position, Collider, PlayerInfo>(this);
     auto& other_position = Query::get<Position>(other.entity_id);
 
     if(other.m_collider_type == 1) { // Rectangle
@@ -170,6 +170,9 @@ void CharacterController::bounce_from_boundries(Collider& other) {
             m_velocity.y = m_velocity.y - 2 * dot_product * normal.y;
         }
     }
+
+    info.color = get_random_color();
+    log_info() << "Randomly changed color" << std::endl;
 }
 
 void CharacterController::push_each_other(Collider& other) {
@@ -230,7 +233,7 @@ void CharacterController::push_each_other(Collider& other) {
 
         if(auto particle_system_ref = Query::try_find_first<ParticleSystem>()) {
             auto& particle_system = particle_system_ref->get();
-            particle_system.spawn_collision_particles(my_position, other_position, my_info.color, other_info.color);
+            particle_system.spawn_collision_particles(my_position, other_position, my_info.color);
 
         }
     }

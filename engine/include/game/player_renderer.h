@@ -26,8 +26,6 @@ public:
     float m_trail_fade_factor = 0.9f; PROPERTY();
     float trail_thickness = 10; PROPERTY();
 
-    Color player_color;
-    
     virtual void on_init() override;
     virtual void on_update() override;
     

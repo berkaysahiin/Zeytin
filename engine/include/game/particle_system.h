@@ -15,7 +15,7 @@ class ParticleSystem : public VariantBase {
     VARIANT(ParticleSystem);
 
 public:
-    void spawn_collision_particles(const Position& pos1, const Position& pos2, Color color1, Color color2);
+    void spawn_collision_particles(const Position& pos1, const Position& pos2, Color color);
     
     virtual void on_update() override;
     virtual void on_play_update() override;

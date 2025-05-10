@@ -105,3 +105,13 @@ inline float get_random_value(int min, int max) { return GetRandomValue(min, max
 inline void set_exit_key(int key) { SetExitKey(key); }
 inline float get_screen_width() { return GetScreenWidth(); }
 inline float get_screen_height() { return GetScreenHeight(); }
+
+inline Color get_random_color() {
+    return {
+        static_cast<unsigned char>(GetRandomValue(0, 255)),
+        static_cast<unsigned char>(GetRandomValue(0, 255)),  
+        static_cast<unsigned char>(GetRandomValue(0, 255)), 
+        255  
+    };
+}
+
