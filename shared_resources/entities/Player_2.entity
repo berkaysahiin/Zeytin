@@ -12,18 +12,18 @@
             "type": "PlayerInfo",
             "value": {
                 "color": {
-                    "r": 0,
-                    "g": 0,
-                    "b": 0,
-                    "a": 0
+                    "r": 42,
+                    "g": 194,
+                    "b": 172,
+                    "a": 255
                 },
                 "in_zone": false,
                 "index": 1,
-                "m_padding": 0.0,
-                "m_panel_height": 160.0,
-                "m_panel_width": 200.0,
-                "m_panel_x": 0.0,
-                "m_panel_y": 30.0,
+                "m_padding": 12.199999809265137,
+                "m_panel_height": 120.0,
+                "m_panel_width": 280.0,
+                "m_panel_x": 29.700000762939453,
+                "m_panel_y": 36.900001525878906,
                 "name": "Player1",
                 "time_spent_zone": 0.0
             }

@@ -13,7 +13,7 @@ public:
     float time_spent_zone = 0; PROPERTY();
 
     // ui
-    float m_panel_width = 200.0f; PROPERTY();
+    float m_panel_width = 280.0f; PROPERTY();
     float m_panel_height = 160.0f; PROPERTY();
     float m_padding = 0; PROPERTY();
     float m_panel_x = 0; PROPERTY();
