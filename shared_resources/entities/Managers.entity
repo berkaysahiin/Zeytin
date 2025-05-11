@@ -17,8 +17,8 @@
             "type": "ParticleSystem",
             "value": {
                 "MAX_PARTICLES": 20000,
-                "PARTICLE_LIFETIME": 40.0,
-                "PARTICLE_SPEED": 300.0
+                "PARTICLE_LIFETIME": 10.0,
+                "PARTICLE_SPEED": 350.0
             }
         },
         {

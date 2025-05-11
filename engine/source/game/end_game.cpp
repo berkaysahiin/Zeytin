@@ -23,7 +23,7 @@ void EndGame::on_play_update() {
         
         draw_game_over_screen();
         
-        if (get_keycode_pressed() != 0 && m_post_game_timer > 1.0f) {
+        if (get_keycode_pressed() != 0 && m_post_game_timer > 2.5f) {
             restart_game();
         }
     }
@@ -113,13 +113,9 @@ void EndGame::end_game(const std::string& reason) {
 }
 
 void EndGame::restart_game() {
-    m_game_over = false;
-    m_post_game_timer = 0.0f;
-    m_fade_timer = 0.0f;
-    m_results.clear();
-
-    Zeytin::get().deserialize_scene(scene);
+    Zeytin::get().reload_scene();
 }
+
 
 void EndGame::draw_game_over_screen() {
     float screen_width = VIRTUAL_WIDTH;

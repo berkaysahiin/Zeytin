@@ -64,5 +64,6 @@ private:
     ConfigValue json_value_to_variant(const rapidjson::Value& value) const;
 };
 
+
 #define CONFIG_GET(key, type, default_value) ConfigManager::get().get<type>(key, default_value)
 #define CONFIG_SET(key, value) ConfigManager::get().set(key, value)

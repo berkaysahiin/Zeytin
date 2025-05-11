@@ -92,12 +92,12 @@ workspace "Zeytin"
             defines {
                 "DEBUG=1",
                 "EDITOR_MODE=1",
-                "TRACY_ENABLE=1"
+                "TRACY_ENABLE=1",
             }
             symbols "On"
             optimize "Off"
 
         filter "configurations:STANDALONE"
-            defines { "TRACY_ENABLE=0", "STANDALONE=1" }
+            defines {"STANDALONE=1", "EMBED_SCENE=1" }
             symbols "On"
             optimize "Off"

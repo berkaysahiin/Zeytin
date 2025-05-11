@@ -25,8 +25,13 @@
 #include "config_manager/config_manager.h"
 
 #ifdef EDITOR_MODE
-#include "editor/editor_event.h"
+    #include "editor/editor_event.h"
 #endif
+
+#ifdef EMBED_SCENE
+    #include "core/embeded_scene.h"
+#endif
+
 
 Zeytin::Zeytin() {
     initialize();
@@ -79,14 +84,18 @@ void Zeytin::initialize_editor_communication() {
 #else
 
 void Zeytin::initialize_standalone() {
+#ifdef EMBED_SCENE
+    deserialize_scene(g_embeded_scene);
+#else
     std::string startup_scene = CONFIG_GET("startup_scene", std::string, "main.scene");
     std::filesystem::path scene_path = ResourceManager::get().get_resource_subdir("scenes") / startup_scene;
     
     if (!load_scene(scene_path)) {
         log_error() << "Failed to load startup scene: " << scene_path << std::endl;
-        //m_state.should_die = true;
+        m_state.should_die = true;
         return;
     }
+#endif
     
     m_state.play_mode = true;
 }
@@ -122,6 +131,16 @@ void Zeytin::run_frame() {
     }
 #endif
 
+    if(m_state.reload_next_frame) { // if setted true last frame
+#ifdef EDITOR_MODE
+        exit_play_mode();
+        enter_play_mode(false);
+#else
+        deserialize_scene(g_embeded_scene);
+#endif
+        m_state.reload_next_frame = false;
+    }
+
     begin_texture_mode(m_render_texture);
     clear_background(BLACK);
 
@@ -130,9 +149,7 @@ void Zeytin::run_frame() {
     post_init_variants();
     update_variants();
     
-    end_mode2d();
-
-    if (m_state.play_mode && !m_state.pause_play_mode && !m_state.holt_game_loop) {
+    if (m_state.play_mode && !m_state.pause_play_mode) {
         clean_dead_variants();
         play_start_variants();
         play_late_start_variants();
@@ -140,6 +157,7 @@ void Zeytin::run_frame() {
         play_late_update_variants();
     }
 
+    end_mode2d();
     end_texture_mode();
 
     begin_drawing();

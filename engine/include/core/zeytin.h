@@ -27,7 +27,7 @@ struct State {
     bool play_mode : 1;   
     bool pause_play_mode : 1; 
     bool synced_once : 1;       
-    bool holt_game_loop : 1; 
+    bool reload_next_frame : 1; 
 };
 
 class Zeytin {
@@ -52,11 +52,6 @@ public:
     bool load_scene(const std::filesystem::path&);
     std::string serialize_scene();
     bool deserialize_scene(const std::string& scene); 
-    inline void reload_scene_expr() {
-        m_state.holt_game_loop = true;
-        deserialize_scene(serialize_scene());
-        m_state.holt_game_loop = false;
-    }
 
     void post_init_variants();
     void update_variants();
@@ -75,6 +70,8 @@ public:
     inline bool is_started() const { return m_state.started; }
     inline bool is_late_started() const { return m_state.late_started; }
     inline bool is_synced_once() const { return m_state.synced_once; }
+
+    inline void reload_scene() { m_state.reload_next_frame = true; } // processed in main loop
 
 #ifdef EDITOR_MODE
     void generate_variants();
