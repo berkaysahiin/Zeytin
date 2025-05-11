@@ -37,8 +37,9 @@ void Application::init_window() {
     InitWindow(window_width, window_height, "Zeytin Game");
 #endif
 
-    int monitor_refresh_rate = GetMonitorRefreshRate(GetCurrentMonitor());
-    set_target_fps(monitor_refresh_rate);
+    //int monitor_refresh_rate = GetMonitorRefreshRate(GetCurrentMonitor());
+    //set_target_fps(monitor_refresh_rate);
+    set_target_fps(144);
     set_exit_key(0);
 }
 
