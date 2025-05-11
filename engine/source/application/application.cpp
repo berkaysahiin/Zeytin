@@ -24,7 +24,7 @@ void Application::init_window() {
     const int window_x = CONFIG_GET("window_x", int, -1);
     const int window_y = CONFIG_GET("window_y", int, -1);
 
-    InitWindow(window_width, window_height, "Engine View");
+    InitWindow(window_width, window_height, "Zeytin");
 
     if(window_x != window_y != -1) {
         SetWindowPosition(window_x, window_y);

@@ -4,11 +4,11 @@
         {
             "type": "ZoneManager",
             "value": {
-                "m_max_radius": 100.0,
-                "m_max_secs": 5.0,
+                "m_max_radius": 250.0,
+                "m_max_secs": 6.0,
                 "m_min_radius": 2.0,
-                "m_min_secs": 2.0,
-                "m_spawn_every_secs": 2.5,
+                "m_min_secs": 6.0,
+                "m_spawn_every_secs": 7.0,
                 "m_thick_incess_rate": 15.0,
                 "show_debug_visuals": true
             }
