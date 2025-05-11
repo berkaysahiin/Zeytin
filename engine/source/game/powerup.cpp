@@ -11,6 +11,7 @@
 #include "core/raylib_wrapper.h"
 #include "raylib.h"
 #include "remote_logger/remote_logger.h"
+#include "game/start_game.h"
 
 void PowerUp::on_post_init() {
     auto& collider = Query::get<Collider>(this);
@@ -101,6 +102,10 @@ void PowerUp::apply_effect_to_player(int player_index) {
 }
 
 void PowerUp::on_update() {
+    const auto& game_started = Query::find_first<StartGame>().game_started;
+    if(!game_started) return;
+
+
     if(m_used) {
         return;
     }
@@ -582,6 +587,9 @@ void PowerUp::draw_teleporter(const Position& position, float pulse, float time)
 }
 
 void PowerUp::on_play_update() {
+    const auto& game_started = Query::find_first<StartGame>().game_started;
+    if(!game_started) return;
+
     if(!m_used) { 
         teleporter_look_others();
         m_since_spawn += get_frame_time();

@@ -2,12 +2,14 @@
 #include "core/query.h"
 #include "core/raylib_wrapper.h"
 #include "game/player_info.h"
+#include "game/start_game.h"
 #include "remote_logger/remote_logger.h"
 
 #include "game/wall.h"
 #include "game/zone.h"
 #include "game/player_info.h"
 #include "game/particle_system.h"
+#include "game/start_game.h"
 
 void CharacterController::on_play_start() {
     auto& collider = Query::get<Collider>(this);
@@ -31,6 +33,9 @@ void CharacterController::on_play_start() {
 }
 
 void CharacterController::on_play_update() {
+    const auto& game_started = Query::find_first<StartGame>().game_started;
+    if(!game_started) return;
+
     auto& collider = Query::get<Collider>(this);
     auto& info = Query::get<PlayerInfo>(this);
     auto zones = Query::find_all<Zone>();

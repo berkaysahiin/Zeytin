@@ -15,7 +15,6 @@ void EndGame::on_init() {
 
 void EndGame::on_play_update() {
     if (!is_game_active) return;
-    //m_game_over = true;
     
     if (!m_game_over) {
         check_victory_conditions();
@@ -91,8 +90,8 @@ void EndGame::draw_game_over_screen() {
 }
 
 void EndGame::draw_results() {
-    float screen_width = get_screen_width();
-    float screen_height = get_screen_height();
+    float screen_width = VIRTUAL_WIDTH;
+    float screen_height = VIRTUAL_HEIGHT;
     
     float start_y = screen_height * 0.4f;
     float line_height = results_font_size * 1.5f;

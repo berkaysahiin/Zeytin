@@ -5,8 +5,8 @@
 #include "core/query.h"
 #include "game/player_info.h"
 #include "game/zone_manager.h"
+#include "game/start_game.h"
 
-#include "game/zone_manager.h"
 
 void Zone::on_init() {
     const ZoneManager& manager = Query::find_first<ZoneManager>();
@@ -17,6 +17,9 @@ void Zone::on_init() {
 }
 
 void Zone::on_play_update() {
+    const auto& game_started = Query::find_first<StartGame>().game_started;
+    if(!game_started) return;
+
     since_spawn_secs += get_frame_time();
 
     auto& collider = Query::get<Collider>(this);

@@ -6,6 +6,8 @@
 #include "raylib.h"
 #include "raymath.h"
 
+#include "game/start_game.h"
+
 enum class ColliderType : int {
     None = 0,
     Rectangle = 1,
@@ -13,10 +15,16 @@ enum class ColliderType : int {
 };
 
 void Collider::on_update() {
+    const auto& game_started = Query::find_first<StartGame>().game_started;
+    if(!game_started) return;
+
     debug_draw();
 }
 
 void Collider::on_play_update() {
+    const auto& game_started = Query::find_first<StartGame>().game_started;
+    if(!game_started) return;
+
     check_collisions();
 }
 

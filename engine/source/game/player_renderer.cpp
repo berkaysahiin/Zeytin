@@ -6,11 +6,15 @@
 #include "game/scale.h"
 #include "game/collider.h"
 #include "game/zone.h"
+#include "game/start_game.h"
 #include "raylib.h"
 
 void PlayerRenderer::on_init() {}
 
 void PlayerRenderer::on_update() {
+    const auto& game_started = Query::find_first<StartGame>().game_started;
+    if(!game_started) return;
+
     draw_player();
     update_position_history();
 }

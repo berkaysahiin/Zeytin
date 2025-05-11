@@ -5,6 +5,7 @@
 #include "game/position.h"
 #include "game/collider.h"
 #include "game/powerup.h"
+#include "game/start_game.h"
 
 #include "remote_logger/remote_logger.h"
 
@@ -37,6 +38,9 @@ void PowerUpSpawner::on_play_start() {
 }
 
 void PowerUpSpawner::on_play_update() {
+    const auto& game_started = Query::find_first<StartGame>().game_started;
+    if(!game_started) return;
+
     m_time_until_next_spawn -= get_frame_time();
 
     if (m_time_until_next_spawn <= 0) {

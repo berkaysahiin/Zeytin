@@ -8,6 +8,7 @@
 #include "game/zone.h"
 
 #include "remote_logger/remote_logger.h"
+#include "game/start_game.h"
 
 #include "core/raylib_wrapper.h"
 
@@ -32,6 +33,9 @@ void ZoneManager::on_play_start() {
 }
 
 void ZoneManager::on_play_update() {
+    const auto& game_started = Query::find_first<StartGame>().game_started;
+    if(!game_started) return;
+
     m_until_next_spawn -= get_frame_time();
 
     if(m_until_next_spawn <= 0) {

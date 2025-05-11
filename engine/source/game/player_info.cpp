@@ -6,12 +6,25 @@
 #include "game/scale.h"
 #include "game/position.h"
 #include "game/collider.h"
+#include "game/start_game.h"
 
 void PlayerInfo::on_post_init() {
-    color = get_random_color();
+    if(index == 0) {
+        color = ORANGE;
+    }
+    else if(index == 1) {
+        color = PURPLE;
+    }
+    else {
+        color = get_random_color();
+    }
 }
 
 void PlayerInfo::on_play_update() {
+    const auto& game_started = Query::find_first<StartGame>().game_started;
+    if(!game_started) return;
+
+
     if (in_zone) {
         since_last_zone = 0;
     } else {
