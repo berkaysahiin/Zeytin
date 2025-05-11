@@ -8,6 +8,8 @@
 #include "game/start_game.h"
 #include "remote_logger/remote_logger.h"
 
+#include "core/embeded_scene.h"
+
 void EndGame::on_init() {
     m_game_over = false;
     m_post_game_timer = 0.0f;
@@ -111,6 +113,12 @@ void EndGame::end_game(const std::string& reason) {
 }
 
 void EndGame::restart_game() {
+    m_game_over = false;
+    m_post_game_timer = 0.0f;
+    m_fade_timer = 0.0f;
+    m_results.clear();
+
+    Zeytin::get().deserialize_scene(scene);
 }
 
 void EndGame::draw_game_over_screen() {

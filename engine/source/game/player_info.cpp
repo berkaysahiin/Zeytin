@@ -44,6 +44,9 @@ void PlayerInfo::on_play_update() {
             }
         }
     }
+    else {
+        since_last_zone = 0;
+    }
     
     draw_ui();
     draw_zone_warning();
