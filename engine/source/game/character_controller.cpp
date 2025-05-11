@@ -44,8 +44,8 @@ void CharacterController::on_play_update() {
 
     for(auto zone_ref : zones) {
         auto& zone_collider = Query::get<Collider>(zone_ref.get().entity_id);
-            const auto& zone_pos = Query::read<Position>(zone_collider.entity_id);
-            info.in_zone = collider.is_point_in_circle(Vector2{position.x, position.y} , Vector2{zone_pos.x,zone_pos.y} , zone_collider.m_radius);
+        const auto& zone_pos = Query::read<Position>(zone_collider.entity_id);
+        info.in_zone = collider.is_point_in_circle(Vector2{position.x, position.y} , Vector2{zone_pos.x,zone_pos.y} , zone_collider.m_radius);
     }
 
     if(info.in_zone) {

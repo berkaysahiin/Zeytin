@@ -26,7 +26,6 @@
             "value": {
                 "countdown_font_size": 60,
                 "game_over_font_size": 80,
-                "is_game_active": true,
                 "post_game_delay": 5.0,
                 "results_font_size": 30,
                 "show_countdown": true,

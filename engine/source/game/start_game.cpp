@@ -42,9 +42,6 @@ void StartGame::on_play_update() {
             
             if (GetKeyPressed() != 0) {
                 game_started = true;
-                if (auto end_game = Query::try_find_first<EndGame>()) {
-                    end_game->get().is_game_active = true;
-                }
                 show_instructions = false;
             }
         }

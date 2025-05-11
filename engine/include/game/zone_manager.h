@@ -22,6 +22,8 @@ public:
 
     bool show_debug_visuals = true; PROPERTY();
 
+    bool once = false;
+
 private:
     float m_until_next_spawn = 0;
 };

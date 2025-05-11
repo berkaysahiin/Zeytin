@@ -1,5 +1,5 @@
 {
-    "entity_id": 10114343595349741071,
+    "entity_id": 2413787206585981430,
     "variants": [
         {
             "type": "CharacterController",
@@ -17,8 +17,8 @@
                     "b": 86,
                     "a": 255
                 },
-                "critical_threshold": 4.0,
-                "danger_threshold": 3.0,
+                "critical_threshold": 8.0,
+                "danger_threshold": 6.0,
                 "in_zone": false,
                 "index": 0,
                 "m_padding": 12.199999809265137,
@@ -26,11 +26,11 @@
                 "m_panel_width": 280.0,
                 "m_panel_x": 29.700000762939453,
                 "m_panel_y": 36.900001525878906,
-                "max_time_outside": 5.0,
+                "max_time_outside": 10.0,
                 "name": "Player1",
                 "shield": false,
                 "time_spent_zone": 0.0,
-                "warning_threshold": 2.0
+                "warning_threshold": 4.0
             }
         },
         {
@@ -50,7 +50,7 @@
             "type": "Collider",
             "value": {
                 "m_collider_type": 1,
-                "m_draw_debug": false,
+                "m_draw_debug": true,
                 "m_height": 100.0,
                 "m_is_trigger": false,
                 "m_radius": 0.0,

@@ -20,7 +20,9 @@ public:
     virtual void on_init() override;
     virtual void on_play_update() override;
     
-    bool is_game_active = true; PROPERTY();
+    void mark_player_lost(int player_index, const std::string& reason = "");
+    void end_game(const std::string& reason = "");
+    void restart_game();
     
     bool show_countdown = true; PROPERTY();
     bool show_winner_screen = true; PROPERTY();
@@ -30,16 +32,15 @@ public:
     float ui_transparency = 0.85f; PROPERTY();
     float post_game_delay = 5.0f; PROPERTY(); 
     
-    void end_game(); 
-    void restart_game(); 
-    
 private:
     std::vector<PlayerResult> m_results;
     float m_post_game_timer = 0.0f;
+    float m_fade_timer = 0.0f;
     bool m_game_over = false;
+    std::string m_lose_reason;
     
-    void check_victory_conditions();
-    void calculate_results();
     void draw_game_over_screen();
-    void draw_results();
+    void draw_results(float alpha);
+    void try_spawn_winner_particles();
+    int get_keycode_pressed();
 };

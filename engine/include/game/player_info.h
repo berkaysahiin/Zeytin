@@ -27,6 +27,8 @@ public:
 
     float since_last_zone = 0;
 
+    float since_game_started = 0;
+
     virtual void on_post_init() override;
     virtual void on_play_update() override;
 

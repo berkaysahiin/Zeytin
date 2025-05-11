@@ -2,6 +2,7 @@
 #include "core/raylib_wrapper.h"
 #include "core/query.h"
 #include "core/zeytin.h"
+#include "game/end_game.h"
 #include "raylib.h"
 #include "game/scale.h"
 #include "game/position.h"
@@ -24,14 +25,23 @@ void PlayerInfo::on_play_update() {
     const auto& game_started = Query::find_first<StartGame>().game_started;
     if(!game_started) return;
 
+    since_game_started += get_frame_time();
+
 
     if (in_zone) {
         since_last_zone = 0;
-    } else {
+    } else if(since_game_started > 10){
         since_last_zone += get_frame_time();
         
         if (since_last_zone >= max_time_outside) {
             time_spent_zone = fmaxf(0.0f, time_spent_zone - get_frame_time() * 2.0f);
+            auto& end_game = Query::find_first<EndGame>();
+            if(index == 0) {
+                end_game.mark_player_lost(index, "Careful with the zones Player 0");
+            }
+            else  {
+                end_game.mark_player_lost(index, "Careful with the zones Player 1");
+            }
         }
     }
     

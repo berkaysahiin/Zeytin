@@ -12,7 +12,7 @@ public:
     bool show_instructions = true; PROPERTY()
     bool show_controls = true; PROPERTY()
     float fade_in_duration = 1.0f; PROPERTY()
-    float display_duration = 10.0f; PROPERTY() // How long to show the screen before auto-starting
+    float display_duration = 10.0f; PROPERTY() 
     float background_opacity = 0.8f; PROPERTY()
     
     int title_font_size = 60; PROPERTY()
