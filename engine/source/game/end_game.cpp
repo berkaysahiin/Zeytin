@@ -228,12 +228,6 @@ void EndGame::draw_results(float alpha) {
             float pulse = 0.8f + 0.2f * sinf(m_fade_timer * 3.0f + i * 0.5f);
             text_color = ColorAlpha(result.color, alpha * pulse);
             
-            const char* winner_text = "WINNER!";
-            draw_text(winner_text,
-                    screen_width * 0.7f,
-                    y_pos,
-                    results_font_size,
-                    ColorAlpha(GOLD, alpha * pulse));
         } else {
             text_color = ColorAlpha(text_color, alpha);
         }

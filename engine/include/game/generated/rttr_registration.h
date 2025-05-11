@@ -136,6 +136,7 @@ RTTR_REGISTRATION
         .property("m_panel_x", &PlayerInfo::m_panel_x)
         .property("m_panel_y", &PlayerInfo::m_panel_y)
         .property("max_time_outside", &PlayerInfo::max_time_outside)
+        .property("max_zone_time", &PlayerInfo::max_zone_time)
         .property("name", &PlayerInfo::name)
         .property("shield", &PlayerInfo::shield)
         .property("time_spent_zone", &PlayerInfo::time_spent_zone)

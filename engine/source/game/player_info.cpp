@@ -8,6 +8,10 @@
 #include "game/position.h"
 #include "game/collider.h"
 #include "game/start_game.h"
+#include "game/end_game.h"
+
+#include <ostream>
+#include <sstream>
 
 void PlayerInfo::on_post_init() {
     if(index == 0) {
@@ -24,9 +28,19 @@ void PlayerInfo::on_post_init() {
 void PlayerInfo::on_play_update() {
     const auto& game_started = Query::find_first<StartGame>().game_started;
     if(!game_started) return;
-
+    
     since_game_started += get_frame_time();
+    
+    if(time_spent_zone >= max_zone_time) {
+        auto& end_game = Query::find_first<EndGame>();
+        if(index == 0) {
+            end_game.end_game("Player 1 has wooooon!");
+        }
+        else {
+            end_game.end_game("Player 2 has wooooon!");
+        }
 
+    }
 
     if (in_zone) {
         since_last_zone = 0;
@@ -37,10 +51,10 @@ void PlayerInfo::on_play_update() {
             time_spent_zone = fmaxf(0.0f, time_spent_zone - get_frame_time() * 2.0f);
             auto& end_game = Query::find_first<EndGame>();
             if(index == 0) {
-                end_game.mark_player_lost(index, "Careful with the zones Player 0");
+                end_game.mark_player_lost(index, "Player 1 has lost. Congrats to Player 2");
             }
             else  {
-                end_game.mark_player_lost(index, "Careful with the zones Player 1");
+                end_game.mark_player_lost(index, "Player 2 has lost. Congrats to Player 1");
             }
         }
     }
@@ -94,25 +108,15 @@ void PlayerInfo::draw_ui() {
             DrawText("ZONE PENALTY ACTIVE!", panel_x + m_padding, m_panel_y + m_padding + 55, 18, RED);
         }
         
-        char time_text[32];
-        sprintf(time_text, "%.1f / 100s", time_spent_zone);
-        DrawText(time_text, panel_x + m_padding, m_panel_y + m_padding + 80, 18, WHITE);
-        
         float bar_y = m_panel_y + m_padding + 105;
         float bar_width = m_panel_width - m_padding * 2;
         Rectangle bar_bg = {panel_x + m_padding, bar_y, bar_width, 16};
-        float max_zone_time = 100.0f;
         float fill_ratio = Clamp(time_spent_zone / max_zone_time, 0.0f, 1.0f);
         Rectangle bar_fill = {panel_x + m_padding, bar_y, bar_width * fill_ratio, 16};
         
         DrawRectangleRec(bar_bg, DARKGRAY);
         DrawRectangleRec(bar_fill, zone_color);
     } else {
-        char time_text[32];
-        sprintf(time_text, "%.1f / 100s", time_spent_zone);
-        DrawText(time_text, panel_x + m_padding, m_panel_y + m_padding + 55, 18, WHITE);
-        
-        float max_zone_time = 100.0f;
         float fill_ratio = Clamp(time_spent_zone / max_zone_time, 0.0f, 1.0f);
         
         float bar_y = m_panel_y + m_padding + 80;

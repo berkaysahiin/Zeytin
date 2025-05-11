@@ -27,7 +27,7 @@ struct State {
     bool play_mode : 1;   
     bool pause_play_mode : 1; 
     bool synced_once : 1;       
-    bool reserved : 1; 
+    bool holt_game_loop : 1; 
 };
 
 class Zeytin {
@@ -53,7 +53,9 @@ public:
     std::string serialize_scene();
     bool deserialize_scene(const std::string& scene); 
     inline void reload_scene_expr() {
+        m_state.holt_game_loop = true;
         deserialize_scene(serialize_scene());
+        m_state.holt_game_loop = false;
     }
 
     void post_init_variants();

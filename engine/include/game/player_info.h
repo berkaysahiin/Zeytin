@@ -25,8 +25,9 @@ public:
     float danger_threshold = 6.0f; PROPERTY();
     float critical_threshold = 9.0f; PROPERTY();
 
-    float since_last_zone = 0;
+    float max_zone_time = 100.0f; PROPERTY();
 
+    float since_last_zone = 0;
     float since_game_started = 0;
 
     virtual void on_post_init() override;

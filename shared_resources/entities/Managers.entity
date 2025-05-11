@@ -6,7 +6,7 @@
             "value": {
                 "m_max_radius": 250.0,
                 "m_max_secs": 6.0,
-                "m_min_radius": 2.0,
+                "m_min_radius": 1.0,
                 "m_min_secs": 6.0,
                 "m_spawn_every_secs": 7.0,
                 "m_thick_incess_rate": 15.0,

@@ -4,8 +4,8 @@
         {
             "type": "CharacterController",
             "value": {
-                "acceleration": 3500.0,
-                "friction": 1400.0
+                "acceleration": 1500.0,
+                "friction": 1000.0
             }
         },
         {
@@ -26,8 +26,9 @@
                 "m_panel_width": 280.0,
                 "m_panel_x": 29.700000762939453,
                 "m_panel_y": 36.900001525878906,
-                "max_time_outside": 14.0,
-                "name": "Player1",
+                "max_time_outside": 12.0,
+                "max_zone_time": 21.0,
+                "name": "Player 1",
                 "shield": false,
                 "time_spent_zone": 0.0,
                 "warning_threshold": 7.0
@@ -43,7 +44,7 @@
         {
             "type": "Speed",
             "value": {
-                "value": 600.0
+                "value": 700.0
             }
         },
         {
