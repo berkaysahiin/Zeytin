@@ -4,12 +4,12 @@
         {
             "type": "ZoneManager",
             "value": {
-                "m_max_radius": 600.0,
-                "m_max_secs": 4.599999904632568,
-                "m_min_radius": 50.0,
-                "m_min_secs": 3.0,
-                "m_spawn_every_secs": 2.700000047683716,
-                "m_thick_incess_rate": 40.20000076293945,
+                "m_max_radius": 100.0,
+                "m_max_secs": 5.0,
+                "m_min_radius": 2.0,
+                "m_min_secs": 2.0,
+                "m_spawn_every_secs": 1.5,
+                "m_thick_incess_rate": 15.0,
                 "show_debug_visuals": true
             }
         },
@@ -19,6 +19,22 @@
                 "MAX_PARTICLES": 10000,
                 "PARTICLE_LIFETIME": 40.0,
                 "PARTICLE_SPEED": 300.0
+            }
+        },
+        {
+            "type": "EndGame",
+            "value": {
+                "countdown_font_size": 60,
+                "game_duration": 120.0,
+                "game_over_font_size": 80,
+                "is_game_active": true,
+                "post_game_delay": 5.0,
+                "results_font_size": 30,
+                "show_countdown": true,
+                "show_winner_screen": true,
+                "time_elapsed": 0.0,
+                "ui_transparency": 0.8500000238418579,
+                "victory_score": 100.0
             }
         }
     ]

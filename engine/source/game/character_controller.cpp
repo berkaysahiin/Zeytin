@@ -17,7 +17,6 @@ void CharacterController::on_play_start() {
             bounce_from_boundries(other);
         }
 
-        //const bool is_player = Query::has<PlayerInfo>(other.entity_id);
         if(auto p = Query::try_get<PlayerInfo>(other.entity_id)) {
             if(p->get().shield) return;
             if(Query::get<PlayerInfo>(entity_id).shield) return;
@@ -36,9 +35,12 @@ void CharacterController::on_play_update() {
     auto& info = Query::get<PlayerInfo>(this);
     auto zones = Query::find_all<Zone>();
 
+    const auto& position = Query::read<Position>(this);
+
     for(auto zone_ref : zones) {
         auto& zone_collider = Query::get<Collider>(zone_ref.get().entity_id);
-         info.in_zone = collider.intersects(zone_collider);
+            const auto& zone_pos = Query::read<Position>(zone_collider.entity_id);
+            info.in_zone = collider.is_point_in_circle(Vector2{position.x, position.y} , Vector2{zone_pos.x,zone_pos.y} , zone_collider.m_radius);
     }
 
     if(info.in_zone) {

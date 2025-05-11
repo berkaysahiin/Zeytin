@@ -1,6 +1,7 @@
 #pragma once
 #include "game/character_controller.h"
 #include "game/collider.h"
+#include "game/end_game.h"
 #include "game/particle_system.h"
 #include "game/player_info.h"
 #include "game/player_renderer.h"
@@ -93,6 +94,18 @@ RTTR_REGISTRATION
         .property("m_width", &Collider::m_width)
         .property("thickness", &Collider::thickness);
 
+    rttr::registration::class_<EndGame>("EndGame")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
+        .property("countdown_font_size", &EndGame::countdown_font_size)
+        .property("game_over_font_size", &EndGame::game_over_font_size)
+        .property("is_game_active", &EndGame::is_game_active)
+        .property("post_game_delay", &EndGame::post_game_delay)
+        .property("results_font_size", &EndGame::results_font_size)
+        .property("show_countdown", &EndGame::show_countdown)
+        .property("show_winner_screen", &EndGame::show_winner_screen)
+        .property("ui_transparency", &EndGame::ui_transparency);
+
     rttr::registration::class_<Particle>("Particle")
         .constructor<>()(rttr::policy::ctor::as_object)
         .property("color", &Particle::color)
@@ -143,6 +156,15 @@ RTTR_REGISTRATION
         .property("show_trail", &PlayerRenderer::show_trail)
         .property("trail_thickness", &PlayerRenderer::trail_thickness)
         .property("use_outline", &PlayerRenderer::use_outline);
+
+    rttr::registration::class_<PlayerResult>("PlayerResult")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .property("color", &PlayerResult::color)
+        .property("index", &PlayerResult::index)
+        .property("name", &PlayerResult::name)
+        .property("score", &PlayerResult::score)
+        .property("winner", &PlayerResult::winner)
+        (rttr::metadata("NO_VARIANT", true));
 
     rttr::registration::class_<Position>("Position")
         .constructor<>()(rttr::policy::ctor::as_object)

@@ -123,7 +123,7 @@ void Zeytin::run_frame() {
 #endif
 
     begin_texture_mode(m_render_texture);
-    clear_background(RAYWHITE);
+    clear_background(BLACK);
 
     begin_mode2d(m_camera);
     

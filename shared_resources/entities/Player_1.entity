@@ -17,6 +17,8 @@
                     "b": 86,
                     "a": 255
                 },
+                "critical_threshold": 4.0,
+                "danger_threshold": 3.0,
                 "in_zone": false,
                 "index": 0,
                 "m_padding": 12.199999809265137,
@@ -24,16 +26,18 @@
                 "m_panel_width": 280.0,
                 "m_panel_x": 29.700000762939453,
                 "m_panel_y": 36.900001525878906,
+                "max_time_outside": 5.0,
                 "name": "Player1",
                 "shield": false,
-                "time_spent_zone": 0.0
+                "time_spent_zone": 0.0,
+                "warning_threshold": 2.0
             }
         },
         {
             "type": "Position",
             "value": {
-                "x": 500.0,
-                "y": 316.79998779296875
+                "x": 960.0,
+                "y": 540.0
             }
         },
         {

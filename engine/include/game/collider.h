@@ -38,6 +38,14 @@ public:
     float scaled_width() const;
     float scaled_height() const;
 
+    inline bool is_point_in_circle(Vector2 point, Vector2 circle_center, float radius) {
+        float distance_squared =
+            (point.x - circle_center.x) * (point.x - circle_center.x) +
+            (point.y - circle_center.y) * (point.y - circle_center.y);
+
+        return distance_squared <= radius * radius;
+    }
+
 private:
     void debug_draw();
     void check_collisions();

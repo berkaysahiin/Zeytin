@@ -8,7 +8,7 @@
                 "m_min_lifetime": 5.0,
                 "m_randomize_type": true,
                 "m_show_debug_visuals": false,
-                "m_spawn_interval": 2.5,
+                "m_spawn_interval": 2.0,
                 "m_spawn_radius": 70.0
             }
         }

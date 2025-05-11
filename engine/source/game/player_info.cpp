@@ -1,6 +1,7 @@
 #include "game/player_info.h"
 #include "core/raylib_wrapper.h"
 #include "core/query.h"
+#include "core/zeytin.h"
 #include "raylib.h"
 #include "game/scale.h"
 #include "game/position.h"
@@ -26,8 +27,8 @@ void PlayerInfo::on_play_update() {
 }
 
 void PlayerInfo::draw_ui() {
-    const float screen_width = get_screen_width();
-    const float screen_height = get_screen_height();
+    const float screen_width = VIRTUAL_WIDTH;
+    const float screen_height = VIRTUAL_HEIGHT;
 
     float panel_x = (index == 0) ? screen_width - m_panel_width - m_panel_x : m_panel_x;
     Rectangle panel_rect = {panel_x, m_panel_y, m_panel_width, m_panel_height};
