@@ -1,66 +1,39 @@
 ![image](https://github.com/user-attachments/assets/39fd0f50-88a5-4f9e-9342-9ea6bf911c9e)
 
-Table of Contents
-=================
-
-* [Table of Contents](#table-of-contents)
-* [What is Zeytin ?](#what-is-zeytin-)
-* [Features](#features)
-* [Prerequisites](#prerequisites)
-   * [Windows](#windows)
-   * [Linux](#linux)
-   * [Editor Dependencies](#editor-dependencies)
-   * [Engine Dependencies](#engine-dependencies)
-   * [Installation Steps](#installation-steps)
-      * [1. Clone the Repository](#1-clone-the-repository)
-      * [2. Setting up the Editor](#2-setting-up-the-editor)
-      * [3. Setting up the Engine](#3-setting-up-the-engine)
-      * [4. Running the Engine](#4-running-the-engine)
-   * [Troubleshooting](#troubleshooting)
-      * [Windows](#windows-1)
-      * [Linux](#linux-1)
-* [A Tour of Zeytin](#a-tour-of-zeytin)
-   * [Hierarchy Panel (Left)](#hierarchy-panel-left)
-   * [Console (Bottom)](#console-bottom)
-   * [Asset Browser (Right)](#asset-browser-right)
-   * [Engine View (Middle)](#engine-view-middle)
-   * [Running the Engine](#running-the-engine)
-* [Your First Game: Adding a Moving Cube](#your-first-game-adding-a-moving-cube)
-   * [Project Structure](#project-structure)
-   * [Creating a Variant](#creating-a-variant)
-      * [Step 1: Define a Simple Position Variant](#step-1-define-a-simple-position-variant)
-      * [Key Concepts](#key-concepts)
-      * [Example: position.h](#example-positionh)
-      * [Example: speed.h](#example-speedh)
-      * [Example: cube.h](#example-cubeh)
-   * [Creating a Design-time Entity](#creating-a-design-time-entity)
-   * [Putting it all together](#putting-it-all-together)
-* [Query API](#query-api)
-   * [Key Functions](#key-functions)
-   * [Example Usage](#example-usage)
-* [SET_CALLBACK](#set_callback)
-   * [Usage](#usage)
-* [Profiling](#profiling)
-* [Automated Smoke Tests](#automated-smoke-tests)
-   * [Example Test](#example-test)
-* [Contribution Guidelines](#contribution-guidelines)
-   * [How to Contribute](#how-to-contribute)
-   * [Coding Standards](#coding-standards)
-   * [Bug Reports and Feature Requests](#bug-reports-and-feature-requests)
- 
----
-
 # What is Zeytin ?
 
-**Zeytin** is a lightweight and modular game engine written in **C++**, built on top of [Raylib](https://github.com/raysan5/raylib). It features a fully integrated editor built using [Dear ImGui](https://github.com/ocornut/imgui), offering a streamlined and efficient development workflow.
+**Zeytin** is a lightweight game engine written in **C++**, built on top of [Raylib](https://github.com/raysan5/raylib). It features a fully integrated editor built using [Dear ImGui](https://github.com/ocornut/imgui), offering a streamlined and efficient development workflow.
 
 # Features
 
--  Lightweight, modular core engine
--  Editor developed as a separate C++ application
+-  Lightweight core engine
+-  Editor as a separate C++ application designed around WYSIWYG principal
+-  Live runtime value editing
 -  Component-based design (similar to Unity)
--  Advanced runtime type information with automatic code generation
+-  Built-in advanced runtime type information
 -  Cross-platform build system powered by [Premake](https://premake.github.io/)
+
+# Built With Zeytin
+- [Zone Control](https://berkaysahiin.itch.io/zone-control) is a frantic 2-player battle for zone dominance, created in 48 hours for YILDIZ Game Jam!
+
+# Future Plans
+
+## Production Testing & Validation
+The Zeytin engine is currently in a production-ready state, but as with any game engine, extensive real-world usage is crucial for validation. I am actively working on:
+- Developing complete game projects to identify edge cases and performance bottlenecks
+- Stress-testing the component system with large-scale entity hierarchies
+
+## Badem: Advanced Static Analysis Tool
+I am making progress on [Badem](https://github.com/berkaysahiin/badem), a Clang-based static analysis tool specifically designed for Zeytin will provide:
+
+- **Dependency Analysis**: Automatically detect and validate component dependencies to prevent runtime errors
+- **Parallelization Opportunities**: Identify isolated components that can be safely parallelized
+- **Custom Diagnostic Rules**: Define engine-specific code rules and quality guidelines
+
+## Community & Documentation
+- Comprehensive documentation and tutorials
+- Sample projects and template games
+- Community contribution guidelines
 
 # Prerequisites
 
