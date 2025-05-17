@@ -3,9 +3,13 @@
 Table of Contents
 =================
 
-* [Table of Contents](#table-of-contents)
 * [What is Zeytin ?](#what-is-zeytin-)
 * [Features](#features)
+* [Built With Zeytin](#built-with-zeytin)
+* [Future Plans](#future-plans)
+   * [Production Testing &amp; Validation](#production-testing--validation)
+   * [Badem: Advanced Static Analysis Tool](#badem-advanced-static-analysis-tool)
+   * [Community &amp; Documentation](#community--documentation)
 * [Prerequisites](#prerequisites)
    * [Windows](#windows)
    * [Linux](#linux)
@@ -47,20 +51,41 @@ Table of Contents
    * [How to Contribute](#how-to-contribute)
    * [Coding Standards](#coding-standards)
    * [Bug Reports and Feature Requests](#bug-reports-and-feature-requests)
- 
----
 
 # What is Zeytin ?
 
-**Zeytin** is a lightweight and modular game engine written in **C++**, built on top of [Raylib](https://github.com/raysan5/raylib). It features a fully integrated editor built using [Dear ImGui](https://github.com/ocornut/imgui), offering a streamlined and efficient development workflow.
+**Zeytin** is a lightweight game engine written in **C++**, built on top of [Raylib](https://github.com/raysan5/raylib). It features a fully integrated editor built using [Dear ImGui](https://github.com/ocornut/imgui), offering a streamlined and efficient development workflow.
 
 # Features
 
--  Lightweight, modular core engine
--  Editor developed as a separate C++ application
+-  Lightweight core engine
+-  Editor as a separate C++ application designed around WYSIWYG principal
+-  Live runtime value editing
 -  Component-based design (similar to Unity)
--  Advanced runtime type information with automatic code generation
+-  Built-in advanced runtime type information
 -  Cross-platform build system powered by [Premake](https://premake.github.io/)
+
+# Built With Zeytin
+- [Zone Control](https://berkaysahiin.itch.io/zone-control) is a frantic 2-player battle for zone dominance, created in 48 hours for YILDIZ Game Jam!
+
+# Future Plans
+
+## Production Testing & Validation
+The Zeytin engine is currently in a production-ready state, but as with any game engine, extensive real-world usage is crucial for validation. I am actively working on:
+- Developing complete game projects to identify edge cases and performance bottlenecks
+- Stress-testing the component system with large-scale entity hierarchies
+
+## Badem: Advanced Static Analysis Tool
+I am making progress on [Badem](https://github.com/berkaysahiin/badem), a Clang-based static analysis tool specifically designed for Zeytin will provide:
+
+- **Dependency Analysis**: Automatically detect and validate component dependencies to prevent runtime errors
+- **Parallelization Opportunities**: Identify isolated components that can be safely parallelized
+- **Custom Diagnostic Rules**: Define engine-specific code rules and quality guidelines
+
+## Community & Documentation
+- Comprehensive documentation and tutorials
+- Sample projects and template games
+- Community contribution guidelines
 
 # Prerequisites
 
