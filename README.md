@@ -78,7 +78,7 @@ The Zeytin engine is currently in a production-ready state, but as with any game
 ## Badem: Advanced Static Analysis Tool
 I am making progress on [Badem](https://github.com/berkaysahiin/badem), a Clang-based static analysis tool specifically designed for Zeytin will provide:
 
-- **Dependency Analysis**: Automatically detect and validate component dependencies to prevent runtime errors
+- **Dependency Analysis**: Automatically detect and validate component dependencies to prevent runtime errors (Already exists, but uses Python-based parser)
 - **Parallelization Opportunities**: Identify isolated components that can be safely parallelized
 - **Custom Diagnostic Rules**: Define engine-specific code rules and quality guidelines
 
