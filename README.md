@@ -7,7 +7,7 @@ Table of Contents
 * [Features](#features)
 * [Built With Zeytin](#built-with-zeytin)
 * [Future Plans](#future-plans)
-   * [Next Big Thing: Visual scripting](#next-big-thing-visual-scripting) 
+   * [Next Big Thing: Visual Scripting](#next-big-thing-visual-scripting) 
    * [Production Testing &amp; Validation](#production-testing--validation)
    * [Badem: Advanced Static Analysis Tool](#badem-advanced-static-analysis-tool)
    * [Community &amp; Documentation](#community--documentation)
