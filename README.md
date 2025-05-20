@@ -7,6 +7,7 @@ Table of Contents
 * [Features](#features)
 * [Built With Zeytin](#built-with-zeytin)
 * [Future Plans](#future-plans)
+   * [Next Big Thing: Visual scripting](#next-big-thing-visual-scripting) 
    * [Production Testing &amp; Validation](#production-testing--validation)
    * [Badem: Advanced Static Analysis Tool](#badem-advanced-static-analysis-tool)
    * [Community &amp; Documentation](#community--documentation)
@@ -69,6 +70,14 @@ Table of Contents
 - [Zone Control](https://berkaysahiin.itch.io/zone-control) is a frantic 2-player battle for zone dominance, created in 48 hours for YILDIZ Game Jam!
 
 # Future Plans
+
+## Next Big Thing: Visual Scripting
+
+Visual scripting is on the roadmap for Zeytin's future development. While implementation hasn't begun yet, I'm actively working on the design. Several structural changes to the engine will be necessary before visual scripting can be properly integrated:
+
+- Currently, only *variants* can interact with the gameplay loop and execute logic. I plan to change this limitation so that callbacks won't necessarily require a C++ variant backing them.
+
+- The engine will transition toward an **Action** system, where logic is separated across discrete *actions*. Each action will have clearly defined inputs and outputs and will implement an execute method. Actions are easily serializable, making them ideal for use in both the visual scripting environment and traditional C++ code.
 
 ## Production Testing & Validation
 The Zeytin engine is currently in a production-ready state, but as with any game engine, extensive real-world usage is crucial for validation. I am actively working on:
