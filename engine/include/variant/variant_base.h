@@ -23,8 +23,6 @@ struct VariantBase {
     virtual void on_play_update() {}
     virtual void on_play_late_update() {}
 
-    virtual bool check_dependencies(const std::string& method_name) const { return true; }
-
     uint64_t get_id() { return entity_id; }
     const uint64_t get_id() const { return entity_id; }
 
