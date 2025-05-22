@@ -1,0 +1,24 @@
+{
+  "actions": [
+    {
+      "name": "DamageAction",
+      "inputs": [
+        {
+          "name": "amount",
+          "type": "float"
+        },
+        {
+          "name": "entity",
+          "type": "entity_id"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "died",
+          "type": "std::string"
+        }
+      ]
+    }
+  ],
+  "count": 1
+}
