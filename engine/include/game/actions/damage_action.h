@@ -6,10 +6,12 @@
 #include "remote_logger/remote_logger.h"
 
 struct DamageAction : IAction {
-    float amount; IN();
-    entity_id entity; IN();
+    ACTION(DamageAction);
 
-    std::string died; OUT();
+    float amount; PROPERTY(IN);
+    entity_id entity; PROPERTY(OUT)
+
+    std::string died; PROPERTY(OUT)
     
     virtual void execute() override {
         log_info() << "Executing DamageAction on entity: " << entity << " with amount: " << amount << std::endl;

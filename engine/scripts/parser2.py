@@ -12,19 +12,19 @@ from typing import Dict, List, Tuple, Optional, Set, Any, Union
 class ClassParser:
     def __init__(self):
         self.variant_pattern = re.compile(r'VARIANT\((\w+)\)')
+        self.action_pattern = re.compile(r'ACTION\((\w+)\)')
         self.class_pattern = re.compile(r'(struct|class)\s+(\w+)\s*(?::\s*public\s+(\w+))?')
         self.requires_pattern = re.compile(r'REQUIRES\s*\(\s*(.*?)\s*\)')
         self.ignore_queries_pattern = re.compile(r'IGNORE_QUERIES\s*\(\s*\)')
 
         self.property_pattern = re.compile(r'(\w+(?:::\w+)*(?:\s*\*)?)\s+(\w+)(?:\s*=\s*[^;]*)?;\s*PROPERTY\(\)(?:\s+SET_CALLBACK\((\w+)\))?')
+        self.action_property_pattern = re.compile(r'(\w+(?:::\w+)*(?:\s*\*)?)\s+(\w+)(?:\s*=\s*[^;]*)?;\s*PROPERTY\((IN|OUT)\)(?:\s+SET_CALLBACK\((\w+)\))?')
         
         self.regular_property_pattern = re.compile(r'^\s*(?:public|private|protected)?:?\s*(\w+(?:::\w+)*(?:\s*\*)?)\s+(\w+)\s*;')
         
-        self.query_get_pattern = re.compile(r'Query::get<([\w,\s]+)>\(this\)')
-        self.query_read_pattern = re.compile(r'Query::read<([\w,\s]+)>\(this\)')
-        self.query_try_get_pattern = re.compile(r'Query::try_get<([\w,\s]+)>\(this\)')
+
         
-        self.skip_classes = ["VariantCreateInfo", "VariantBase"]
+        self.skip_classes = ["VariantCreateInfo", "VariantBase", "IAction"]
 
     def clean_content(self, content: str) -> str:
         content = re.sub(r'/\*.*?\*/', '', content, flags=re.DOTALL)
@@ -87,7 +87,6 @@ class ClassParser:
         for match in property_matches:
             prop_type = match.group(1).strip()
             prop_name = match.group(2).strip()
-
             callback_name = match.group(3)
             
             properties.append((prop_type, prop_name, callback_name))
@@ -100,7 +99,34 @@ class ClassParser:
             'properties': properties,
             'required_variants': required_variants,
             'is_variant': True,
+            'is_action': False,
             'ignore_queries': ignore_queries
+        }
+
+    def parse_action_class(self, class_block: str, class_name: str, base_class: str) -> Optional[Dict[str, Any]]:
+        if class_name in self.skip_classes:
+            return None
+        
+        properties = []
+        action_property_matches = self.action_property_pattern.finditer(class_block)
+        for match in action_property_matches:
+            prop_type = match.group(1).strip()
+            prop_name = match.group(2).strip()
+            prop_direction = match.group(3).strip()  
+            callback_name = match.group(4) if match.group(4) else None
+            
+            properties.append((prop_type, prop_name, callback_name, prop_direction))
+        
+        base_class = base_class if base_class else "IAction"
+        
+        return {
+            'class_name': class_name,
+            'base_class': base_class,
+            'properties': properties,
+            'required_variants': [],
+            'is_variant': False,
+            'is_action': True,
+            'ignore_queries': False
         }
 
     def parse_regular_class(self, class_block: str, class_name: str, base_class: str) -> Optional[Dict[str, Any]]:
@@ -135,6 +161,7 @@ class ClassParser:
             'properties': properties,
             'required_variants': [],
             'is_variant': False,
+            'is_action': False,
             'ignore_queries': False
         }
 
@@ -149,13 +176,18 @@ class ClassParser:
         content = self.clean_content(content)
         
         class_matches = list(self.class_pattern.finditer(content))
-        
         variant_matches = list(self.variant_pattern.finditer(content))
+        action_matches = list(self.action_pattern.finditer(content))
         
         variant_classes = {}
         for variant_match in variant_matches:
             variant_class_name = variant_match.group(1)
             variant_classes[variant_class_name] = True
+        
+        action_classes = {}
+        for action_match in action_matches:
+            action_class_name = action_match.group(1)
+            action_classes[action_class_name] = True
         
         results = []
         
@@ -170,11 +202,16 @@ class ClassParser:
             class_block = self.find_class_block(content, class_match)
             
             is_variant = class_name in variant_classes
+            is_action = class_name in action_classes
             
             if is_variant:
                 variant_info = self.parse_variant_class(class_block, class_name, base_class)
                 if variant_info:
                     results.append(variant_info)
+            elif is_action:
+                action_info = self.parse_action_class(class_block, class_name, base_class)
+                if action_info:
+                    results.append(action_info)
             else:
                 regular_info = self.parse_regular_class(class_block, class_name, base_class)
                 if regular_info:
@@ -182,55 +219,7 @@ class ClassParser:
         
         return results
     
-    def find_cpp_file(self, header_path: str, source_root: str) -> Optional[str]:
-        header_basename = os.path.basename(os.path.splitext(header_path)[0])
-        cpp_filename = header_basename + ".cpp"
-        
-        header_dir_parts = os.path.dirname(header_path).split(os.sep)
-        category_dir = None
-        for part in header_dir_parts:
-            if part != "include" and part != "engine" and part != "editor":
-                category_dir = part
-                break
-        
-        potential_paths = []
-        
-        if category_dir:
-            potential_paths.append(os.path.join(source_root, category_dir, cpp_filename))
-        
-        potential_paths.append(os.path.join(source_root, cpp_filename))
-        
-        for path in potential_paths:
-            if os.path.exists(path):
-                return path
-        
-        for root, _, files in os.walk(source_root):
-            if cpp_filename in files:
-                return os.path.join(root, cpp_filename)
-        
-        return None
-    
-    def extract_query_dependencies(self, cpp_content: str) -> Set[str]:
-        dependencies = set()
-        
-        cpp_content = self.clean_content(cpp_content)
-        
-        for match in self.query_get_pattern.finditer(cpp_content):
-            template_params = match.group(1)
-            variants = [param.strip() for param in template_params.split(',')]
-            dependencies.update(variants)
-        
-        for match in self.query_read_pattern.finditer(cpp_content):
-            template_params = match.group(1)
-            variants = [param.strip() for param in template_params.split(',')]
-            dependencies.update(variants)
-        
-        for match in self.query_try_get_pattern.finditer(cpp_content):
-            template_params = match.group(1)
-            variants = [param.strip() for param in template_params.split(',')]
-            dependencies.update(variants)
-        
-        return dependencies
+
 
 
 class CodeGenerator:
@@ -318,6 +307,33 @@ class CodeGenerator:
         return code
 
     @staticmethod
+    def generate_action_class_registration(class_info: Dict[str, Any]) -> str:
+        class_name = class_info["class_name"]
+        
+        code = f'    rttr::registration::class_<{class_name}>("{class_name}")\n'
+        code += '        .constructor<>()(rttr::policy::ctor::as_object)'
+        
+        for prop_type, prop_name, callback_name, direction in sorted(class_info['properties'], key=lambda x: x[1]):
+            code += f'\n        .property("{prop_name}", &{class_name}::{prop_name})'
+            code += f'(rttr::metadata("{direction}", true)'
+            
+            if callback_name:
+                code += f', rttr::metadata("SET_CALLBACK", "{callback_name}")'
+            
+            code += ')'
+        
+        code += f'\n        .method("execute", &{class_name}::execute)'
+        
+        has_callbacks = any(callback_name for _, _, callback_name, _ in class_info['properties'] if callback_name)
+        if has_callbacks:
+            for prop_type, prop_name, callback_name, direction in sorted(class_info['properties'], key=lambda x: x[1]):
+                if callback_name:
+                    code += f'\n        .method("{callback_name}", &{class_name}::{callback_name})'
+        
+        code += ';\n\n'
+        return code
+
+    @staticmethod
     def generate_regular_class_registration(class_info: Dict[str, Any]) -> str:
         class_name = class_info["class_name"]
         
@@ -339,12 +355,13 @@ class CodeGenerator:
         registration_code = "RTTR_REGISTRATION\n{\n"
         
         registration_code += CodeGenerator.generate_base_classes_registration()
-        
         registration_code += CodeGenerator.generate_raylib_registration()
         
         for class_info in sorted_classes:
             if class_info['is_variant']:
                 registration_code += CodeGenerator.generate_variant_class_registration(class_info)
+            elif class_info['is_action']:
+                registration_code += CodeGenerator.generate_action_class_registration(class_info)
             else:
                 registration_code += CodeGenerator.generate_regular_class_registration(class_info)
         
@@ -479,34 +496,6 @@ class RTTRGenerator:
                     self.classes_info.append(class_info)
                     self.includes.add(f'#include "{relative_path}"')
 
-    def analyze_implementation_files(self) -> None:
-        print("Analyzing implementation files for dependencies...")
-        for class_info in self.classes_info:
-            if not class_info['is_variant'] or class_info['ignore_queries']:
-                if class_info['is_variant'] and class_info['ignore_queries']:
-                    print(f"Skipping dependency analysis for {class_info['class_name']} (IGNORE_QUERIES is set)")
-                continue
-                
-            class_name = class_info['class_name'].lower()
-            
-            for header_file in glob.glob(os.path.join(self.headers_dir, "**/*.h"), recursive=True):
-                if os.path.basename(header_file).lower() == f"{class_name}.h":
-                    cpp_file = self.parser.find_cpp_file(header_file, self.source_dir)
-                    if cpp_file:
-                        try:
-                            with open(cpp_file, 'r') as f:
-                                cpp_content = f.read()
-                            
-                            dependencies = self.parser.extract_query_dependencies(cpp_content)
-                            
-                            for dep in dependencies:
-                                if dep not in class_info['required_variants'] and dep != class_info['class_name']:
-                                    class_info['required_variants'].append(dep)
-                                    print(f"Added auto-detected dependency: {class_info['class_name']} requires {dep}")
-                        except Exception as e:
-                            print(f"Error analyzing cpp file {cpp_file}: {e}")
-                    break
-
     def generate_rttr_header(self, output_path: str) -> None:
         sorted_includes = sorted(self.includes)
         includes_code = "#pragma once\n" + "\n".join(sorted_includes) + "\n\n"
@@ -532,10 +521,12 @@ class RTTRGenerator:
                 f.write(final_code)
             
             variant_count = sum(1 for c in self.classes_info if c['is_variant'])
-            regular_count = sum(1 for c in self.classes_info if not c['is_variant'])
+            action_count = sum(1 for c in self.classes_info if c['is_action'])
+            regular_count = sum(1 for c in self.classes_info if not c['is_variant'] and not c['is_action'])
             
             print(f"Generated RTTR registration code for {len(self.classes_info)} classes:")
             print(f"  - {variant_count} variant classes")
+            print(f"  - {action_count} action classes")
             print(f"  - {regular_count} regular classes")
             print(f"Output written to {output_path}")
         except Exception as e:
@@ -573,7 +564,6 @@ class RTTRGenerator:
 
     def run(self) -> None:
         self.process_headers()
-        self.analyze_implementation_files()
 
         output_path = os.path.join(self.game_headers_dir, "generated/rttr_registration.h")
         

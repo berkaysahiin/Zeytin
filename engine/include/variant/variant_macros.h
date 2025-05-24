@@ -1,7 +1,7 @@
 #include "core/zeytin.h"
 #include "remote_logger/remote_logger.h"
+#include "common/property.h"
 
-#define PROPERTY() 
 #define IGNORE_QUERIES()
 #define REQUIRES(...)
 

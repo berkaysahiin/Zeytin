@@ -1,4 +1,5 @@
 #pragma once
+#include "game/actions/damage_action.h"
 #include "raylib.h"
 #include "rttr/registration.h"
 #include "variant/variant_base.h"
@@ -59,5 +60,12 @@ RTTR_REGISTRATION
         .property("mipmaps", &Texture2D::mipmaps)
         .property("format", &Texture2D::format)
         (rttr::metadata("NO_VARIANT", true));
+
+    rttr::registration::class_<DamageAction>("DamageAction")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .property("amount", &DamageAction::amount)(rttr::metadata("IN", true))
+        .property("died", &DamageAction::died)(rttr::metadata("OUT", true))
+        .property("entity", &DamageAction::entity)(rttr::metadata("OUT", true))
+        .method("execute", &DamageAction::execute);
 
 }
