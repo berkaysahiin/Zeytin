@@ -9,21 +9,13 @@ from typing import Dict, List, Optional
 
 class ActionParser:
     def __init__(self):
-        # Match struct/class that inherits from IAction
         self.action_pattern = re.compile(r'(?:struct|class)\s+(\w+)\s*:\s*(?:public\s+)?IAction')
-        
-        # Match input fields: type name; IN();
         self.input_pattern = re.compile(r'(\w+(?:::\w+)*(?:\s*\*)?)\s+(\w+);\s*IN\(\);')
-        
-        # Match output fields: type name; OUT();
         self.output_pattern = re.compile(r'(\w+(?:::\w+)*(?:\s*\*)?)\s+(\w+);\s*OUT\(\);')
 
     def clean_content(self, content: str) -> str:
-        """Remove comments and clean up content"""
-        # Remove multi-line comments
         content = re.sub(r'/\*.*?\*/', '', content, flags=re.DOTALL)
         
-        # Remove single-line comments
         lines = content.split('\n')
         cleaned_lines = []
         for line in lines:
@@ -35,7 +27,6 @@ class ActionParser:
         return '\n'.join(cleaned_lines)
 
     def parse_action_file(self, file_path: str) -> Optional[Dict]:
-        """Parse a single action file"""
         try:
             with open(file_path, 'r') as f:
                 content = f.read()
@@ -45,14 +36,12 @@ class ActionParser:
         
         content = self.clean_content(content)
         
-        # Find action struct/class
         action_match = self.action_pattern.search(content)
         if not action_match:
             return None
         
         action_name = action_match.group(1)
         
-        # Find all input fields
         inputs = []
         for match in self.input_pattern.finditer(content):
             field_type = match.group(1).strip()
@@ -62,7 +51,6 @@ class ActionParser:
                 "type": field_type
             })
         
-        # Find all output fields
         outputs = []
         for match in self.output_pattern.finditer(content):
             field_type = match.group(1).strip()
@@ -79,10 +67,8 @@ class ActionParser:
         }
 
     def parse_directory(self, directory: str) -> List[Dict]:
-        """Parse all action files in a directory"""
         actions = []
         
-        # Look for .h and .hpp files
         header_files = glob.glob(os.path.join(directory, "**/*.h"), recursive=True)
         header_files.extend(glob.glob(os.path.join(directory, "**/*.hpp"), recursive=True))
         
@@ -94,7 +80,6 @@ class ActionParser:
         return actions
 
     def generate_json(self, actions: List[Dict], output_file: Optional[str] = None) -> str:
-        """Generate JSON output"""
         result = {
             "actions": actions,
             "count": len(actions)
@@ -104,7 +89,6 @@ class ActionParser:
         
         if output_file:
             try:
-                # Only create directories if there's actually a directory path
                 dir_path = os.path.dirname(output_file)
                 if dir_path:
                     os.makedirs(dir_path, exist_ok=True)
@@ -120,7 +104,6 @@ class ActionParser:
 def main():
     parser = ActionParser()
     
-    # Default to current directory if no args provided
     import sys
     if len(sys.argv) > 1:
         directory = sys.argv[1]
