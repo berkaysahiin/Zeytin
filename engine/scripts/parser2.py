@@ -461,6 +461,7 @@ class RTTRGenerator:
         
         self.includes.add('#include "raylib.h"')
         self.includes.add('#include "rttr/registration.h"')
+        self.includes.add('#include "variant/variant_base.h"')
 
     def process_headers(self) -> None:
         header_files = glob.glob(os.path.join(self.game_headers_dir, "**/*.h"), recursive=True)
