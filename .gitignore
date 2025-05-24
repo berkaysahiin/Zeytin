@@ -34,3 +34,4 @@ compile_commands.json
 .clang-format
 .cache/
 config.json
+shared_resources/config/config.json
