@@ -22,7 +22,8 @@ workspace "Zeytin"
         buildoptions {
             "-w",
             "-std=c++17",
-            "-static-libstdc++"
+            "-static-libstdc++",
+            "-Wa,-mbig-obj"
         }
 
     filter { "system:linux", "configurations:EDITOR_MODE" }
@@ -58,7 +59,8 @@ workspace "Zeytin"
             "-std=c++17",
             "-w",
             "-static-libgcc",
-            "-static-libstdc++"
+            "-static-libstdc++",
+            "-Wa,-mbig-obj"
         }
 
     filter { "system:windows", "configurations:STANDALONE" }
