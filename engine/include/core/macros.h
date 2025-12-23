@@ -11,6 +11,6 @@
              return instance; \
          } \
 
-#define CONSTRUCT_SINGLETON(ClassName) ClassName :: get(); 
+#define CONSTRUCT_SINGLETON(ClassName) (void)ClassName :: get(); 
 #define GET_SINGLETON(ClassName) ClassName :: get(); 
 

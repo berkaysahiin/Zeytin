@@ -87,7 +87,7 @@ void Zeytin::initialize_standalone() {
 #ifdef EMBED_SCENE
     deserialize_scene(g_embeded_scene);
 #else
-    std::string startup_scene = CONFIG_GET("startup_scene", std::string, "main.scene");
+    std::string startup_scene = "main.scene";
     std::filesystem::path scene_path = ResourceManager::get().get_resource_subdir("scenes") / startup_scene;
     
     if (!load_scene(scene_path)) {

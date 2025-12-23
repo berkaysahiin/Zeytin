@@ -43,7 +43,9 @@ void Application::init_window() {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     const int window_width = GetScreenWidth();
     const int window_height = GetScreenHeight();
-    InitWindow(window_width, window_height, "Zeytin Game");
+	const std::string window_name = pImpl->config.get_or("window_name", "Zeytin Game");
+
+    InitWindow(window_width, window_height, window_name.c_str());
 #endif
 
     set_target_fps(144);

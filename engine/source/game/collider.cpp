@@ -3,6 +3,7 @@
 #include "game/position.h"
 
 #include "core/query.h"
+#include "game/scale.h"
 #include "raylib.h"
 #include "raymath.h"
 

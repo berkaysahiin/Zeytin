@@ -1,12 +1,9 @@
 #pragma once
 
 #include "variant/variant_base.h"
-#include "game/position.h"
-#include "game/speed.h"
-#include "game/player_info.h"
-#include "game/collider.h"
-
 #include <unordered_map>
+
+class Collider;
 
 enum class MappedKey {
     None,

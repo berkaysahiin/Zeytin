@@ -2,8 +2,9 @@
 #include "core/query.h"
 #include "core/raylib_wrapper.h"
 #include "game/player_info.h"
+#include "game/scale.h"
+#include "game/speed.h"
 #include "game/start_game.h"
-#include "remote_logger/remote_logger.h"
 
 #include "game/wall.h"
 #include "game/zone.h"

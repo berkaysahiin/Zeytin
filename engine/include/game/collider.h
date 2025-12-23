@@ -1,8 +1,6 @@
 #pragma once
 
 #include "variant/variant_base.h"
-#include "game/position.h"
-#include "game/scale.h"
 
 class Collider : public VariantBase {
     VARIANT(Collider);

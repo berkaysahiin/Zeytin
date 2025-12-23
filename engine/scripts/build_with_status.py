@@ -115,7 +115,7 @@ def main():
         
     engine_dir = project_root / "engine"
     engine_scripts_dir = engine_dir / "scripts"
-    build_status_dir = engine_dir / "build_status"
+    build_status_dir = engine_dir / ".build_status"
     
     if not engine_scripts_dir.exists():
         print(f"ERROR: Engine scripts directory not found at {engine_scripts_dir}")

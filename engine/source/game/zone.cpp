@@ -3,7 +3,7 @@
 #include "core/raylib_wrapper.h"
 #include "game/collider.h"
 #include "core/query.h"
-#include "game/player_info.h"
+#include "game/position.h"
 #include "game/zone_manager.h"
 #include "game/start_game.h"
 
