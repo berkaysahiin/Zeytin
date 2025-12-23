@@ -15,3 +15,5 @@ public: \
     RTTR_ENABLE(VariantBase); \
     static constexpr const char* get_variant_name() { return #ClassName; } \
 private:
+
+#define REGISTER(CLASS_NAME) VARIANT(CLASS_NAME)

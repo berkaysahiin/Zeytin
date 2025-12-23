@@ -21,6 +21,9 @@ workspace "Zeytin"
         }
         buildoptions {
             "-w",
+			"-Wall",
+			"-Wextra",
+			"-Werror",
             "-std=c++17",
             "-static-libstdc++"
         }
@@ -35,11 +38,11 @@ workspace "Zeytin"
             "3rdparty/zmq/linux", 
         }
         files {
-            "3rdparty/backward-cpp/backward.cpp", -- not included in windows 
+            --"3rdparty/backward-cpp/backward.cpp", -- not included in windows 
             "3rdparty/tracy/TracyClient.cpp", -- not included in windows
         }
         defines {
-            "PROFILE=1",
+            --"PROFILE=1",
         }
 
     filter { "system:linux", "configurations:STANDALONE" }
@@ -92,7 +95,7 @@ workspace "Zeytin"
             defines {
                 "DEBUG=1",
                 "EDITOR_MODE=1",
-                "TRACY_ENABLE=1",
+                --"TRACY_ENABLE=1",
             }
             symbols "On"
             optimize "Off"

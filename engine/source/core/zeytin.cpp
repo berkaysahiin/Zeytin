@@ -10,19 +10,18 @@
 
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
-#include "rapidjson/prettywriter.h"
 
 #include "core/json/from_json.h"
 #include "core/json/to_json.h"
-#include "core/guid/guid.h"
 #include "core/raylib_wrapper.h"
 #include "core/utils.h"
 #include "core/profiling.h"
 
+#include "editor/editor_communication.h"
+
 #include "raylib.h"
 #include "variant/variant_base.h"
 #include "resource_manager/resource_manager.h"
-#include "config_manager/config_manager.h"
 
 #ifdef EDITOR_MODE
     #include "editor/editor_event.h"
@@ -78,6 +77,7 @@ void Zeytin::initialize_editor_communication() {
         // black screen while waiting for connection
         begin_drawing();
         clear_background(BLACK);
+		draw_text("Connecting to the editor...", 0, 0, 20, WHITE);
         end_drawing();
     }
 }

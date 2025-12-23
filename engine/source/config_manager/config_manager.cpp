@@ -1,4 +1,5 @@
-#include "config_manager/config_manager.h""
+#include "config_manager/config_manager.h"
+#include "rapidjson/document.h"
 #include "raylib.h"
 
 #include "remote_logger/remote_logger.h"
@@ -6,35 +7,58 @@
 #include <fstream>
 #include <sstream>
 
-#include "rapidjson/prettywriter.h""
-#include "resource_manager/resource_manager.h""
+#include "rapidjson/prettywriter.h"
+#include "resource_manager/resource_manager.h"
 
-#include "core/raylib_wrapper.h"
+#include <string>
+#include <unordered_map>
+
+static rapidjson::Value variant_to_json_value(const ConfigManager::ConfigValue& value, rapidjson::Document::AllocatorType& allocator);
+static ConfigManager::ConfigValue json_value_to_variant(const rapidjson::Value& value);
+static std::string variant_as_string(const ConfigManager::ConfigValue&);
 
 static const char* config_file = "config.json";
 
-ConfigManager::~ConfigManager() {
-    // we want to save window position in editor mode everytime
-    int screen_width = GetScreenWidth();
-    int screen_height = GetScreenHeight();
-    int window_x = GetWindowPosition().x;
-    int window_y = GetWindowPosition().y;
+struct ConfigManager::Impl 
+{
+	std::unordered_map<std::string, ConfigManager::ConfigValue> m_config_values;
+};
 
-    CONFIG_SET("window_width", screen_width);
-    CONFIG_SET("window_height", screen_height);
-    CONFIG_SET("window_x", window_x);
-    CONFIG_SET("window_y", window_y);
+ConfigManager::ConfigManager() : pImpl(new Impl()) {
+	load_config();
+}
+
+ConfigManager::~ConfigManager() {
+
+#ifdef EDITOR_MODE
+	std::cout << "I am doing" << std::endl;
+
+    // we want to save window position in editor mode everytime
+    const int screen_width = GetScreenWidth();
+    const int screen_height = GetScreenHeight();
+    const int window_x = GetWindowPosition().x;
+    const int window_y = GetWindowPosition().y;
+
+	set("screen_width", screen_width);
+	set("screen_height", screen_height);
+	set("window_x", window_x);
+	set("window_y", window_y);
+#endif
 
     save_config();
+	clear();
+	delete pImpl;
 }
 
 bool ConfigManager::load_config() {
     std::filesystem::path path = ResourceManager::get().get_resource_subdir("config") / config_file;
 
     if (!std::filesystem::exists(path)) {
-        log_warning() << "Config file not found: " << path << std::endl;
+		std::cout << "Config file not found: " << path << std::endl;
         return false;
     }
+
+	std::cout << "Config file: " << path << std::endl;
 
     std::ifstream file(path);
     if (!file.is_open()) {
@@ -60,13 +84,17 @@ bool ConfigManager::load_config() {
         return false;
     }
 
-    m_config_values.clear();
+    pImpl->m_config_values.clear();
 
     for (auto it = doc.MemberBegin(); it != doc.MemberEnd(); ++it) {
         std::string key = it->name.GetString();
         ConfigValue value = json_value_to_variant(it->value);
-        m_config_values[key] = value;
+        pImpl->m_config_values[key] = value;
     }
+
+	for(const auto& [key, value] : pImpl->m_config_values) {
+		std::cout << "CONFIG " << key << " as: " << variant_as_string(value) << " " << std::endl;
+	}
 
     return true;
 }
@@ -78,7 +106,7 @@ bool ConfigManager::save_config() {
     doc.SetObject();
     auto& allocator = doc.GetAllocator();
 
-    for (const auto& [key, value] : m_config_values) {
+    for (const auto& [key, value] : pImpl->m_config_values) {
         rapidjson::Value json_key(key.c_str(), allocator);
         rapidjson::Value json_value = variant_to_json_value(value, allocator);
         doc.AddMember(json_key, json_value, allocator);
@@ -100,19 +128,35 @@ bool ConfigManager::save_config() {
     return true;
 }
 
+void ConfigManager::set(const std::string& key, ConfigValue value) 
+{
+    pImpl->m_config_values[key] = value;
+}
+
+ConfigManager::MaybeConfig ConfigManager::get_impl(const std::string& key) const
+{
+	auto it = pImpl->m_config_values.find(key);
+	if(it == pImpl->m_config_values.end()) {
+		std::cout << "Cannot find config with name: " << key << std::endl;
+		return {};
+	}
+	std::cout << "Found config with name: " << key << std::endl;
+	return it->second;
+}
+
 bool ConfigManager::has(const std::string& key) const {
-    return m_config_values.find(key) != m_config_values.end();
+    auto it = pImpl->m_config_values.find(key);
 }
 
 void ConfigManager::remove(const std::string& key) {
-    m_config_values.erase(key);
+    pImpl->m_config_values.erase(key);
 }
 
 void ConfigManager::clear() {
-    m_config_values.clear();
+    pImpl->m_config_values.clear();
 }
 
-rapidjson::Value ConfigManager::variant_to_json_value(const ConfigValue& value, rapidjson::Document::AllocatorType& allocator) const {
+rapidjson::Value variant_to_json_value(const ConfigManager::ConfigValue& value, rapidjson::Document::AllocatorType& allocator) {
     rapidjson::Value json_value;
 
     std::visit([&](auto&& arg) {
@@ -131,7 +175,7 @@ rapidjson::Value ConfigManager::variant_to_json_value(const ConfigValue& value, 
     return json_value;
 }
 
-ConfigManager::ConfigValue ConfigManager::json_value_to_variant(const rapidjson::Value& value) const {
+ConfigManager::ConfigValue json_value_to_variant(const rapidjson::Value& value) {
     if (value.IsInt()) {
         return value.GetInt();
     } else if (value.IsFloat() || value.IsDouble()) {
@@ -144,3 +188,24 @@ ConfigManager::ConfigValue ConfigManager::json_value_to_variant(const rapidjson:
 
     return std::string();
 }
+
+
+static std::string variant_as_string(const ConfigManager::ConfigValue& value)
+{
+	std::string rv;
+ 	std::visit([&](auto&& arg) {
+        using T = std::decay_t<decltype(arg)>;
+        if constexpr (std::is_same_v<T, int>) {
+			rv = std::to_string(std::get<int>(value));
+        } else if constexpr (std::is_same_v<T, float>) {
+			rv = std::to_string(std::get<float>(value));
+        } else if constexpr (std::is_same_v<T, bool>) {
+			rv = std::to_string(std::get<bool>(value));
+        } else if constexpr (std::is_same_v<T, std::string>) {
+			rv = std::get<std::string>(value);
+        }
+    }, value);
+
+	return rv;
+}
+

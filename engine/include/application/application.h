@@ -3,6 +3,7 @@
 class Application {
 public:
     Application();
+    ~Application();
 
     void run_frame();
     void shutdown();
@@ -11,4 +12,7 @@ public:
 private:
     void init_window();
     void init_engine();
+
+	struct Impl;
+	Impl *pImpl;
 };

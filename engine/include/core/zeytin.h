@@ -8,7 +8,6 @@
 
 #include "core/guid/guid.h"
 #include "entity/entity.h"
-#include "editor/editor_communication.h"
 #include "core/macros.h"
 #include "rapidjson/document.h"
 #include "rttr/variant.h"
@@ -18,6 +17,8 @@ constexpr float VIRTUAL_HEIGHT = 1080;
 
 using VariantList = std::vector<rttr::variant>;
 using Storage = std::unordered_map<entity_id, VariantList>;
+
+class EditorCommunication;
 
 struct State {
     bool started : 1;            

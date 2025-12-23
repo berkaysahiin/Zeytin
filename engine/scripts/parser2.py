@@ -574,7 +574,7 @@ class RTTRGenerator:
         self.process_headers()
         self.analyze_implementation_files()
 
-        output_path = os.path.join(self.game_headers_dir, "generated/rttr_registration.h")
+        output_path = os.path.join(self.game_source_dir, "generated/rttr_registration.cpp")
         
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         

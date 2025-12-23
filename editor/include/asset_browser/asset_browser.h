@@ -1,13 +1,12 @@
 #pragma once
 
 #include <filesystem>
-#include <functional>
 #include <string>
 #include <unordered_map>
 #include <vector>
 #include "raylib.h"
 
-#include "utility/singleton.h""
+#include "utility/singleton.h"
 
 namespace fs = std::filesystem;
 
@@ -64,5 +63,4 @@ public:
 private:
     AssetBrowser();
     ~AssetBrowser();
-
 };

@@ -1,15 +1,24 @@
 #include "application/application.h"
 #include "core/raylib_wrapper.h"
 #include "core/zeytin.h"
-#include "core/macros.h""
+#include "core/macros.h"
 #include "raylib.h"
 
-#include "config_manager/config_manager.h""
-#include "remote_logger/remote_logger.h""
+#include "config_manager/config_manager.h"
 
-Application::Application() {
+struct Application::Impl 
+{
+	ConfigManager config;
+};
+
+Application::Application() : pImpl(new Impl()){
     init_window();
     init_engine();
+}
+
+Application::~Application()
+{
+	delete pImpl;
 }
 
 void Application::init_window() {
@@ -18,13 +27,13 @@ void Application::init_window() {
     SetTraceLogLevel(LOG_ERROR);
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_TOPMOST | FLAG_WINDOW_ALWAYS_RUN);
 
-    const int window_width = CONFIG_GET("window_width", int, 1280);
-    const int window_height = CONFIG_GET("window_height", int, 720);
+	const int screen_width = pImpl->config.get_or("screen_width", 1280);
+    const int screen_height = pImpl->config.get_or("screen_height",  720);
 
-    const int window_x = CONFIG_GET("window_x", int, -1);
-    const int window_y = CONFIG_GET("window_y", int, -1);
+    const int window_x = pImpl->config.get_or("window_x", -1);
+    const int window_y = pImpl->config.get_or("window_y", -1);
 
-    InitWindow(window_width, window_height, "Zeytin");
+    InitWindow(screen_width, screen_height, "Zeytin");
 
     if(window_x != window_y != -1) {
         SetWindowPosition(window_x, window_y);
@@ -37,8 +46,6 @@ void Application::init_window() {
     InitWindow(window_width, window_height, "Zeytin Game");
 #endif
 
-    //int monitor_refresh_rate = GetMonitorRefreshRate(GetCurrentMonitor());
-    //set_target_fps(monitor_refresh_rate);
     set_target_fps(144);
     set_exit_key(0);
 }

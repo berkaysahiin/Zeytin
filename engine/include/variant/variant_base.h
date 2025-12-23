@@ -1,6 +1,6 @@
 #pragma once
 
-#include "rttr/rttr_enable.h"
+#include "rttr/registration.h"
 #include "variant/variant_macros.h"
 #include <functional>
 #include "core/raylib_wrapper.h"
@@ -32,4 +32,29 @@ struct VariantBase {
 
     RTTR_ENABLE();
 };
+
+#define BEGIN_ZEYTIN(ClassName)   														\
+	static void ___register()       													\
+    { 															                        \
+		using Type = ClassName; 														\
+        rttr::registration::class_<PlayerRenderer>( #ClassName ) 						\ 
+        	.constructor<>()(rttr::policy::ctor::as_object)                             \
+            .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
+
+#define PROPERTY_(Name) .property( #Name , & Type :: Name)
+#define META(Key, Value) (rttr::metadata( #Key , Value ))
+
+#define END_ZEYTIN ; }                                                                  \
+	namespace                                                                           \
+	{                                                                                   \
+	    struct rttr__auto__register__                                                   \
+	    {                                                                               \
+	        rttr__auto__register__()                                                    \
+	        {                                                                           \
+	            ___register();                                                          \
+	        }                                                                           \
+	    };                                                                              \
+	}                                                                                   \
+	static const rttr__auto__register__ RTTR_CAT(auto_register__, __LINE__);            \
+
 

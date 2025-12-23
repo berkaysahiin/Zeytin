@@ -3,7 +3,7 @@
 #include "logger.h"
 #include "imgui.h"
 
-#include "utility/singleton.h""
+#include "utility/singleton.h"
 
 class ConsoleWindow {
     MAKE_SINGLETON(ConsoleWindow);
