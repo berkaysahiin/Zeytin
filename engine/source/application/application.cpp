@@ -43,7 +43,9 @@ void Application::init_window() {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     const int window_width = GetScreenWidth();
     const int window_height = GetScreenHeight();
-	const std::string window_name = pImpl->config.get_or("window_name", "Zeytin Game");
+
+	std::string ZeytinGame = "ZeytinGame";
+	const std::string window_name = pImpl->config.get_or("window_name", ZeytinGame);
 
     InitWindow(window_width, window_height, window_name.c_str());
 #endif

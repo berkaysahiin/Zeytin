@@ -2,7 +2,9 @@
 
 static constexpr std::string_view DEFAULT_CONFIG = "weditor";
 
-int main() {
+int main(int argc, char* argv[]) {
+	Entry::Parse(argc, argv);
+
 	Entry::Platform platform = Entry::GetPlatform();
 	std::string_view config = Entry::GetOptionStringOr("config", DEFAULT_CONFIG);
 
