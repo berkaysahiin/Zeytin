@@ -20,10 +20,10 @@ public:
     int controls_font_size = 24; PROPERTY()
     std::string game_title = "ZONE CONTROL"; PROPERTY()
     
-    Color title_color = WHITE; PROPERTY()
-    Color instruction_color = RAYWHITE; PROPERTY()
-    Color highlight_color = YELLOW; PROPERTY()
-    Color background_color = BLACK; PROPERTY()
+    Color title_color = WHITE; 
+    Color instruction_color = RAYWHITE; 
+    Color highlight_color = YELLOW; 
+    Color background_color = BLACK;
 
     std::string instruction_text = "Stay in zones to gain points. Compete for the highest score!"; PROPERTY()
     
