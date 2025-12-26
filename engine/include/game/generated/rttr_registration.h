@@ -1,5 +1,7 @@
 #pragma once
+#include "game/collider.h"
 #include "game/countdown.h"
+#include "game/obstacle.h"
 #include "game/player.h"
 #include "game/position.h"
 #include "game/scale.h"
@@ -64,6 +66,13 @@ RTTR_REGISTRATION
         .property("format", &Texture2D::format)
         (rttr::metadata("NO_VARIANT", true));
 
+    rttr::registration::class_<Collider>("Collider")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
+        .property("height", &Collider::height)
+        .property("show_debug", &Collider::show_debug)
+        .property("width", &Collider::width);
+
     rttr::registration::class_<Countdown>("Countdown")
         .constructor<>()(rttr::policy::ctor::as_object)
         .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
@@ -75,6 +84,12 @@ RTTR_REGISTRATION
         .property("offset_y", &Countdown::offset_y)
         .property("pause_when_zero", &Countdown::pause_when_zero)
         .property("warning_threshold", &Countdown::warning_threshold);
+
+    rttr::registration::class_<Obstacle>("Obstacle")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
+        .property("outline_thickness", &Obstacle::outline_thickness)
+        .property("show_outline", &Obstacle::show_outline);
 
     rttr::registration::class_<Player>("Player")
         .constructor<>()(rttr::policy::ctor::as_object)

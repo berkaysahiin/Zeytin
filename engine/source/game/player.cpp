@@ -1,6 +1,9 @@
 #include "game/player.h"
 #include "core/query.h"
 #include "core/raylib_wrapper.h"
+#include "entity/entity.h"
+#include "game/collider.h"
+#include "game/obstacle.h"
 #include "game/position.h"
 #include "game/scale.h"
 
@@ -42,11 +45,9 @@ void Player::handle_input() {
     
     m_velocity.x = horizontal * move_speed;
     
-    // Jump logic with double jump support
     bool jump_pressed = is_key_down(KEY_SPACE) || is_key_down(KEY_UP);
     
     if (jump_pressed && !m_jump_pressed_last_frame) {
-        // Can jump if grounded OR if double jump is enabled and jumps remain
         if (m_is_grounded || (enable_double_jump && m_jumps_remaining > 0)) {
             m_velocity.y = -jump_force;
             m_jumps_remaining--;
@@ -73,18 +74,43 @@ void Player::apply_physics() {
 }
 
 void Player::check_ground() {
-    auto& position = Query::read<Position>(this);
+    auto& position = Query::get<Position>(this);
+    auto& player_collider = Query::get<Collider>(this);
     
     float ground_level = VIRTUAL_HEIGHT - body_size / 2;
+    bool landed = false;
     
-    if (position.y >= ground_level) {
-        auto& pos = Query::get<Position>(this);
-        pos.y = ground_level;
+    Rectangle player_bounds = player_collider.get_bounds();
+    float player_bottom = position.y + player_collider.height / 2;
+    
+    auto obstacle_entities = Query::find_all_with<Collider, Obstacle>();
+    
+    for (::entity_id obstacle_id : obstacle_entities) {
+        auto& obstacle_collider = Query::get<Collider>(obstacle_id);
+        Rectangle obstacle_bounds = obstacle_collider.get_bounds();
+        
+        if (m_velocity.y >= 0 &&  // Falling down
+            player_bounds.x + player_bounds.width > obstacle_bounds.x &&
+            player_bounds.x < obstacle_bounds.x + obstacle_bounds.width &&
+            player_bottom >= obstacle_bounds.y &&
+            player_bottom <= obstacle_bounds.y + 10) {  
+            
+            position.y = obstacle_bounds.y - player_collider.height / 2;
+            m_velocity.y = 0.0f;
+            landed = true;
+            break;
+        }
+    }
+    
+    if (!landed && position.y >= ground_level) {
+        position.y = ground_level;
         m_velocity.y = 0.0f;
-        m_is_grounded = true;
-        m_jumps_remaining = max_jumps; // Reset jumps when landing
-    } else {
-        m_is_grounded = false;
+        landed = true;
+    }
+    
+    m_is_grounded = landed;
+    if (landed) {
+        m_jumps_remaining = max_jumps;
     }
 }
 

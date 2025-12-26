@@ -1,0 +1,34 @@
+{
+    "entity_id": 4891465687895190095,
+    "variants": [
+        {
+            "type": "Obstacle",
+            "value": {
+                "outline_thickness": 2.0,
+                "show_outline": true
+            }
+        },
+        {
+            "type": "Collider",
+            "value": {
+                "height": 100.0,
+                "show_debug": false,
+                "width": 100.0
+            }
+        },
+        {
+            "type": "Position",
+            "value": {
+                "x": 400.0,
+                "y": 1000.0
+            }
+        },
+        {
+            "type": "Scale",
+            "value": {
+                "x": 1.0,
+                "y": 1.0
+            }
+        }
+    ]
+}

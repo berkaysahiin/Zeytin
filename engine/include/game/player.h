@@ -4,26 +4,24 @@
 
 class Player : public VariantBase {
     VARIANT(Player);
-    REQUIRES(Position, Scale);
+    REQUIRES(Position, Scale, Collider);
 
 public:
-    // Movement
     float move_speed = 300.0f; PROPERTY();
     float jump_force = 500.0f; PROPERTY();
     float gravity = 1500.0f; PROPERTY();
     float max_fall_speed = 800.0f; PROPERTY();
     
-    // Double jump
     bool enable_double_jump = true; PROPERTY();
     int max_jumps = 2; PROPERTY();
     
-    // Character appearance
+	// Kept sync with collider
     float body_size = 50.0f; PROPERTY();
+
     float eye_size = 8.0f; PROPERTY();
     float eye_offset_x = 12.0f; PROPERTY();
     float eye_offset_y = -8.0f; PROPERTY();
     float eye_spacing = 10.0f; PROPERTY();
-    
 
     virtual void on_init() override;
     virtual void on_update() override;
