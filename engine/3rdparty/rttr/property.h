@@ -34,8 +34,6 @@
 #include "rttr/access_levels.h"
 #include "rttr/string_view.h"
 
-#include <string>
-
 namespace rttr
 {
 class variant;

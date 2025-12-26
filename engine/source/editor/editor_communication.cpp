@@ -183,6 +183,7 @@ void EditorCommunication::raise_events() {
         }
         else if (type == "scene") {
             std::cout << "Scene is received" << std::endl;
+			std::cout << msg << std::endl;
             EditorEventBus::get().publish<const std::string&>(EditorEvent::Scene, msg);
         }
         else if(type == "die") {

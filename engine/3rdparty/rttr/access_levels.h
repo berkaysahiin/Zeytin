@@ -28,8 +28,6 @@
 #ifndef RTTR_ACCESS_LEVELS_H_
 #define RTTR_ACCESS_LEVELS_H_
 
-#include "rttr/detail/base/core_prerequisites.h"
-
 namespace rttr
 {
 

@@ -29,9 +29,9 @@
 #ifndef RTTR_ARRAY_RANGE_H_
 #define RTTR_ARRAY_RANGE_H_
 
-#include "rttr/detail/base/core_prerequisites.h"
-#include <vector>
 #include <cstddef>
+#include <iterator>
+#include <functional> // IWYU pragma: keep
 
 namespace rttr
 {

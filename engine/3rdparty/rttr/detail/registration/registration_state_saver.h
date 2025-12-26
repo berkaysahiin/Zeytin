@@ -35,6 +35,9 @@
 
 namespace rttr
 {
+
+class type;
+
 namespace detail
 {
 

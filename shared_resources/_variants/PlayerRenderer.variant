@@ -1,0 +1,17 @@
+{
+    "type": "PlayerRenderer",
+    "value": {
+        "corner_radius": 8.0,
+        "corner_segments": 10,
+        "m_max_history_length": 10,
+        "m_trail_fade_factor": 0.8999999761581421,
+        "outline_thickness": 2.0,
+        "player_label_size": 20,
+        "pulse_intensity": 0.05000000074505806,
+        "pulse_speed": 5.0,
+        "show_player_number": true,
+        "show_trail": true,
+        "trail_thickness": 10.0,
+        "use_outline": true
+    }
+}

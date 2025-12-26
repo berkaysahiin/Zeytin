@@ -1,0 +1,11 @@
+{
+    "type": "PowerUpSpawner",
+    "value": {
+        "m_max_lifetime": 15.0,
+        "m_min_lifetime": 5.0,
+        "m_randomize_type": true,
+        "m_show_debug_visuals": true,
+        "m_spawn_interval": 5.0,
+        "m_spawn_radius": 50.0
+    }
+}

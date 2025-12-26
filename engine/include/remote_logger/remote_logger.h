@@ -1,11 +1,12 @@
 #pragma once
 
+
 #ifdef EDITOR_MODE
 
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <functional>
+
 
 enum class LogLevel {
     TRACE,  

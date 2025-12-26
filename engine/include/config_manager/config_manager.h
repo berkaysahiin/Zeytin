@@ -36,5 +36,5 @@ private:
 	MaybeConfig get_impl(const std::string& key) const;
 
 	struct Impl;
-	Impl* pImpl;
+	Impl* pImpl; // TODO: change this to a unique ptr ?
 };

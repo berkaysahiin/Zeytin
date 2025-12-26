@@ -29,9 +29,6 @@
 #define RTTR_ARRAY_RANGE_IMPL_H_
 
 #include "rttr/detail/base/core_prerequisites.h"
-#include "rttr/property.h"
-#include "rttr/type.h"
-#include <memory>
 
 namespace rttr
 {

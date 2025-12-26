@@ -679,7 +679,8 @@ class RTTR_API type
          *
          * \return Returns an instance of the given type.
          */
-        variant create(std::vector<argument> args = std::vector<argument>()) const;
+        variant create(std::vector<argument> args) const;
+        variant create() const;
 
         /*!
          * \brief Returns the corresponding destructor for this type.

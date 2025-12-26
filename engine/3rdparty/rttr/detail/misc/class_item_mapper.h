@@ -28,10 +28,7 @@
 #ifndef RTTR_CLASS_ITEM_MAPPER_H_
 #define RTTR_CLASS_ITEM_MAPPER_H_
 
-#include "rttr/detail/base/core_prerequisites.h"
 #include "rttr/detail/misc/std_type_traits.h"
-
-#include <vector>
 #include <type_traits>
 
 namespace rttr

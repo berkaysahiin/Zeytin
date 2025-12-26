@@ -28,15 +28,16 @@
 #ifndef RTTR_ARGUMENT_H_
 #define RTTR_ARGUMENT_H_
 
-#include "rttr/detail/base/core_prerequisites.h"
-#include "rttr/detail/misc/misc_type_traits.h"
-#include "rttr/detail/misc/std_type_traits.h"
+//#include "rttr/detail/base/core_prerequisites.h"
+//#include "rttr/detail/misc/std_type_traits.h"
+//#include "rttr/type.h"
 
 #include <type_traits>
 #include <utility>
 
 namespace rttr
 {
+
 class type;
 class variant;
 class variant_array;

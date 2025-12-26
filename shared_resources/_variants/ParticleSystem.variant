@@ -1,0 +1,8 @@
+{
+    "type": "ParticleSystem",
+    "value": {
+        "MAX_PARTICLES": 10000,
+        "PARTICLE_LIFETIME": 0.5,
+        "PARTICLE_SPEED": 200.0
+    }
+}

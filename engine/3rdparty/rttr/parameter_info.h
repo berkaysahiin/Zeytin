@@ -28,11 +28,7 @@
 #define RTTR_PARAMETER_INFO_H_
 
 #include "rttr/detail/base/core_prerequisites.h"
-
 #include "rttr/string_view.h"
-
-#include <string>
-#include <vector>
 #include <cstdint>
 
 namespace rttr

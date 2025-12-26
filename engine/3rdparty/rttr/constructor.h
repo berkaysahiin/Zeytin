@@ -35,7 +35,6 @@
 #include "rttr/array_range.h"
 #include "rttr/string_view.h"
 
-#include <string>
 #include <vector>
 
 namespace rttr

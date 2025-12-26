@@ -1,0 +1,12 @@
+{
+    "type": "EndGame",
+    "value": {
+        "countdown_font_size": 60,
+        "game_over_font_size": 80,
+        "post_game_delay": 5.0,
+        "results_font_size": 30,
+        "show_countdown": true,
+        "show_winner_screen": true,
+        "ui_transparency": 0.8500000238418579
+    }
+}

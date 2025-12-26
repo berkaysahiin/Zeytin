@@ -5,21 +5,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-include_directories(
-    include
-    3rdparty
-    3rdparty/imgui
-    3rdparty/zmq
-    3rdparty/rapidjson
-    3rdparty/raylib
-    3rdparty/imgui_test_engine
-)
-
-link_directories(
-    3rdparty/raylib/lib/linux
-    3rdparty/zmq/linux
-)
-
 file(GLOB_RECURSE SOURCES
     source/*.cpp
     source/*.c
@@ -32,9 +17,22 @@ list(APPEND SOURCES 3rdparty/backward-cpp/backward.cpp)
 
 add_executable(ZeytinEditor ${SOURCES})
 
-target_compile_options(ZeytinEditor PRIVATE
-    -w
+target_include_directories(ZeytinEditor PRIVATE
+    include
+    3rdparty
+    3rdparty/imgui
+    3rdparty/zmq
+    3rdparty/rapidjson
+    3rdparty/raylib
+    3rdparty/imgui_test_engine
 )
+
+target_link_directories(ZeytinEditor PRIVATE
+    3rdparty/raylib/lib/linux
+    3rdparty/zmq/linux
+)
+
+target_compile_options(ZeytinEditor PRIVATE -w)
 
 target_compile_definitions(ZeytinEditor PRIVATE
     DEBUG=1
