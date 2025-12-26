@@ -1,4 +1,5 @@
 #pragma once
+#include "game/countdown.h"
 #include "game/player.h"
 #include "game/position.h"
 #include "game/scale.h"
@@ -62,6 +63,18 @@ RTTR_REGISTRATION
         .property("mipmaps", &Texture2D::mipmaps)
         .property("format", &Texture2D::format)
         (rttr::metadata("NO_VARIANT", true));
+
+    rttr::registration::class_<Countdown>("Countdown")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
+        .property("countdown_active", &Countdown::countdown_active)
+        .property("danger_threshold", &Countdown::danger_threshold)
+        .property("duration", &Countdown::duration)
+        .property("font_size", &Countdown::font_size)
+        .property("offset_x", &Countdown::offset_x)
+        .property("offset_y", &Countdown::offset_y)
+        .property("pause_when_zero", &Countdown::pause_when_zero)
+        .property("warning_threshold", &Countdown::warning_threshold);
 
     rttr::registration::class_<Player>("Player")
         .constructor<>()(rttr::policy::ctor::as_object)
