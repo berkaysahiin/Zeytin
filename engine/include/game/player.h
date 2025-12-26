@@ -13,6 +13,10 @@ public:
     float gravity = 1500.0f; PROPERTY();
     float max_fall_speed = 800.0f; PROPERTY();
     
+    // Double jump
+    bool enable_double_jump = true; PROPERTY();
+    int max_jumps = 2; PROPERTY();
+    
     // Character appearance
     float body_size = 50.0f; PROPERTY();
     float eye_size = 8.0f; PROPERTY();
@@ -38,4 +42,5 @@ private:
     bool m_is_grounded = false;
     bool m_jump_pressed_last_frame = false;
     int m_facing_direction = 1; // 1 = right, -1 = left
+    int m_jumps_remaining = 0;
 };

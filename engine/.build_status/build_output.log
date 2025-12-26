@@ -4,13 +4,19 @@ Using source directory: /home/redgrain/Dev/Zeytin/engine/source
 Using shared resources directory: /home/redgrain/Dev/Zeytin/shared_resources
 Processing 4 header files...
 Analyzing implementation files for dependencies...
-RTTR header file unchanged, skipping: /home/redgrain/Dev/Zeytin/engine/include/game/generated/rttr_registration.h
+Generated RTTR registration code for 3 classes:
+  - 3 variant classes
+  - 0 regular classes
+Output written to /home/redgrain/Dev/Zeytin/engine/include/game/generated/rttr_registration.h
 Requirements file unchanged, skipping: /home/redgrain/Dev/Zeytin/shared_resources/variants/requires/Player.requires
 Requirements files written to /home/redgrain/Dev/Zeytin/shared_resources/variants/requires
 Building configurations...
 Running action 'gmake'...
-Done (33ms).
+Done (21ms).
 ==== Building Zeytin (editor_mode) ====
+application.cpp
+player.cpp
+Linking Zeytin
 Changed directory to: /home/redgrain/Dev/Zeytin/engine/scripts
 Running parser...
 Parser command: python3 parser2.py

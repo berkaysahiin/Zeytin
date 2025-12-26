@@ -8,6 +8,7 @@ void Player::on_init() {
     m_velocity = {0.0f, 0.0f};
     m_is_grounded = false;
     m_facing_direction = 1;
+    m_jumps_remaining = max_jumps;
     
     body_color = {88, 83, 86, 255};
     eye_color = WHITE;
@@ -41,11 +42,18 @@ void Player::handle_input() {
     
     m_velocity.x = horizontal * move_speed;
     
+    // Jump logic with double jump support
     bool jump_pressed = is_key_down(KEY_SPACE) || is_key_down(KEY_UP);
-    if (jump_pressed && !m_jump_pressed_last_frame && m_is_grounded) {
-        m_velocity.y = -jump_force;
-        m_is_grounded = false;
+    
+    if (jump_pressed && !m_jump_pressed_last_frame) {
+        // Can jump if grounded OR if double jump is enabled and jumps remain
+        if (m_is_grounded || (enable_double_jump && m_jumps_remaining > 0)) {
+            m_velocity.y = -jump_force;
+            m_jumps_remaining--;
+            m_is_grounded = false;
+        }
     }
+    
     m_jump_pressed_last_frame = jump_pressed;
 }
 
@@ -74,6 +82,7 @@ void Player::check_ground() {
         pos.y = ground_level;
         m_velocity.y = 0.0f;
         m_is_grounded = true;
+        m_jumps_remaining = max_jumps; // Reset jumps when landing
     } else {
         m_is_grounded = false;
     }

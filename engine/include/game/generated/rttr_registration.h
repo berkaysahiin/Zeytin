@@ -67,6 +67,7 @@ RTTR_REGISTRATION
         .constructor<>()(rttr::policy::ctor::as_object)
         .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
         .property("body_size", &Player::body_size)
+        .property("enable_double_jump", &Player::enable_double_jump)
         .property("eye_offset_x", &Player::eye_offset_x)
         .property("eye_offset_y", &Player::eye_offset_y)
         .property("eye_size", &Player::eye_size)
@@ -74,6 +75,7 @@ RTTR_REGISTRATION
         .property("gravity", &Player::gravity)
         .property("jump_force", &Player::jump_force)
         .property("max_fall_speed", &Player::max_fall_speed)
+        .property("max_jumps", &Player::max_jumps)
         .property("move_speed", &Player::move_speed);
 
     rttr::registration::class_<Position>("Position")

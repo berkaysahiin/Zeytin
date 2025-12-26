@@ -1,0 +1,35 @@
+{
+    "entity_id": 13333839445483371916,
+    "variants": [
+        {
+            "type": "Player",
+            "value": {
+                "body_size": 50.0,
+                "enable_double_jump": true,
+                "eye_offset_x": 12.0,
+                "eye_offset_y": -8.0,
+                "eye_size": 8.0,
+                "eye_spacing": 10.0,
+                "gravity": 1500.0,
+                "jump_force": 600.0,
+                "max_fall_speed": 800.0,
+                "max_jumps": 2,
+                "move_speed": 300.0
+            }
+        },
+        {
+            "type": "Position",
+            "value": {
+                "x": 0.0,
+                "y": 0.0
+            }
+        },
+        {
+            "type": "Scale",
+            "value": {
+                "x": 1.0,
+                "y": 1.0
+            }
+        }
+    ]
+}
