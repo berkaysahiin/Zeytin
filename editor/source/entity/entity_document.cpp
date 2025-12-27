@@ -10,6 +10,9 @@
 
 
 void EntityDocument::save_to_file() const {
+	if(m_dead) return;
+
+
     std::filesystem::path path = ResourceManager::get().get_entity_path(m_name);
     std::ofstream out_file(path);
 
@@ -68,6 +71,7 @@ void EntityDocument::load_from_file() {
 }
 
 void EntityDocument::save_to_file(const std::filesystem::path& path) const {
+	if(m_dead) return;
 
     std::filesystem::create_directories(path.parent_path());
     

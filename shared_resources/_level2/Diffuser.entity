@@ -1,0 +1,29 @@
+{
+    "entity_id": 6024978356862723899,
+    "variants": [
+        {
+            "type": "Diffuser",
+            "value": {
+                "bob_amount": 10.0,
+                "bob_speed": 3.0,
+                "icon_offset_y": -40.0,
+                "icon_size": 20.0,
+                "pickup_radius": 80.0
+            }
+        },
+        {
+            "type": "Position",
+            "value": {
+                "x": 1800.0,
+                "y": 990.7999877929688
+            }
+        },
+        {
+            "type": "Scale",
+            "value": {
+                "x": 1.0,
+                "y": 1.0
+            }
+        }
+    ]
+}

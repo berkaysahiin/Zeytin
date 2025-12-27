@@ -222,7 +222,7 @@ void Bomb::draw_bomb() {
             char time_text[10];
             sprintf(time_text, "%d", seconds);
             
-            int font_size = 24;
+            int font_size = 40;
             int text_width = MeasureText(time_text, font_size);
             
             Color time_color;
