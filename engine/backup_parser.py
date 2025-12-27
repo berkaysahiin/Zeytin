@@ -57,7 +57,7 @@ class ClassParser:
             elif char == '}':
                 open_braces -= 1
                 if open_braces == 0:
-                    close_pos = i + 1
+                    close_pos = i + 1  
                     break
         
         if close_pos > 0:
@@ -87,6 +87,7 @@ class ClassParser:
         for match in property_matches:
             prop_type = match.group(1).strip()
             prop_name = match.group(2).strip()
+
             callback_name = match.group(3)
             
             properties.append((prop_type, prop_name, callback_name))
@@ -163,7 +164,7 @@ class ClassParser:
         results = []
         
         for class_match in class_matches:
-            class_type = class_match.group(1)
+            class_type = class_match.group(1)  
             class_name = class_match.group(2)
             base_class = class_match.group(3)
             
@@ -238,53 +239,44 @@ class ClassParser:
 
 class CodeGenerator:
     @staticmethod
-    def generate_raylib_registration_file() -> str:
-        """Generate standalone raylib RTTR registration file"""
-        code = '#include "raylib.h"\n'
-        code += '#include "rttr/registration.h"\n\n'
-        code += 'RTTR_REGISTRATION\n{\n'
-        code += '    rttr::registration::class_<Vector2>("Vector2")\n'
-        code += '        .constructor<>()(rttr::policy::ctor::as_object)\n'
-        code += '        .property("x", &Vector2::x)\n'
-        code += '        .property("y", &Vector2::y);\n\n'
-        code += '    rttr::registration::class_<Color>("Color")\n'
-        code += '        .constructor<>()(rttr::policy::ctor::as_object)\n'
-        code += '        .property("r", &Color::r)\n'
-        code += '        .property("g", &Color::g)\n'
-        code += '        .property("b", &Color::b)\n'
-        code += '        .property("a", &Color::a);\n\n'
-        code += '    rttr::registration::class_<Rectangle>("Rectangle")\n'
-        code += '        .constructor<>()(rttr::policy::ctor::as_object)\n'
-        code += '        .property("x", &Rectangle::x)\n'
-        code += '        .property("y", &Rectangle::y)\n'
-        code += '        .property("width", &Rectangle::width)\n'
-        code += '        .property("height", &Rectangle::height);\n'
-        code += '}\n'
-        return code
+    def generate_base_classes_registration() -> str:
+        return """    rttr::registration::class_<VariantCreateInfo>("VariantCreateInfo")
+        .constructor<>()(rttr::policy::ctor::as_object);
+
+    rttr::registration::class_<VariantBase>("VariantBase")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object);
+
+"""
 
     @staticmethod
-    def generate_variant_base_registration_file() -> str:
-        """Generate standalone VariantBase/VariantCreateInfo RTTR registration file"""
-        code = '#include "variant/variant_base.h"\n'
-        code += '#include "rttr/registration.h"\n\n'
-        code += 'RTTR_REGISTRATION\n{\n'
-        code += '    rttr::registration::class_<VariantCreateInfo>("VariantCreateInfo")\n'
-        code += '        .constructor<>()(rttr::policy::ctor::as_object);\n\n'
-        code += '    rttr::registration::class_<VariantBase>("VariantBase")\n'
-        code += '        .constructor<>()(rttr::policy::ctor::as_object)\n'
-        code += '        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object);\n'
-        code += '}\n'
-        return code
+    def generate_raylib_registration() -> str:
+        return """    rttr::registration::class_<Vector2>("Vector2")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .property("x", &Vector2::x)
+        .property("y", &Vector2::y);
+
+    rttr::registration::class_<Color>("Color")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .property("r", &Color::r)
+        .property("g", &Color::g)
+        .property("b", &Color::b)
+        .property("a", &Color::a);
+
+    rttr::registration::class_<Rectangle>("Rectangle")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .property("x", &Rectangle::x)
+        .property("y", &Rectangle::y)
+        .property("width", &Rectangle::width)
+        .property("height", &Rectangle::height);
+
+"""
 
     @staticmethod
-    def generate_variant_registration_file(class_info: Dict[str, Any], header_include: str) -> str:
-        """Generate standalone registration file for a single variant class"""
+    def generate_variant_class_registration(class_info: Dict[str, Any]) -> str:
         class_name = class_info["class_name"]
         
-        code = f'#include "{header_include}"\n'
-        code += '#include "rttr/registration.h"\n\n'
-        code += 'RTTR_REGISTRATION\n{\n'
-        code += f'    rttr::registration::class_<{class_name}>("{class_name}")\n'
+        code = f'    rttr::registration::class_<{class_name}>("{class_name}")\n'
         code += '        .constructor<>()(rttr::policy::ctor::as_object)\n'
         code += '        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)'
         
@@ -301,19 +293,14 @@ class CodeGenerator:
                 if callback_name:
                     code += f'\n        .method("{callback_name}", &{class_name}::{callback_name})'
         
-        code += ';\n'
-        code += '}\n'
+        code += ';\n\n'
         return code
 
     @staticmethod
-    def generate_regular_class_registration_file(class_info: Dict[str, Any], header_include: str) -> str:
-        """Generate standalone registration file for a single regular class"""
+    def generate_regular_class_registration(class_info: Dict[str, Any]) -> str:
         class_name = class_info["class_name"]
         
-        code = f'#include "{header_include}"\n'
-        code += '#include "rttr/registration.h"\n\n'
-        code += 'RTTR_REGISTRATION\n{\n'
-        code += f'    rttr::registration::class_<{class_name}>("{class_name}")\n'
+        code = f'    rttr::registration::class_<{class_name}>("{class_name}")\n'
         code += '        .constructor<>()(rttr::policy::ctor::as_object)'
         
         for prop_type, prop_name, _ in sorted(class_info['properties'], key=lambda x: x[1]):
@@ -321,9 +308,27 @@ class CodeGenerator:
         
         code += '\n        (rttr::metadata("NO_VARIANT", true))'
         
-        code += ';\n'
-        code += '}\n'
+        code += ';\n\n'
         return code
+
+    @staticmethod
+    def generate_full_registration(classes_info: List[Dict[str, Any]]) -> str:
+        sorted_classes = sorted(classes_info, key=lambda x: x['class_name'])
+        
+        registration_code = "RTTR_REGISTRATION\n{\n"
+        
+        registration_code += CodeGenerator.generate_base_classes_registration()
+        
+        registration_code += CodeGenerator.generate_raylib_registration()
+        
+        for class_info in sorted_classes:
+            if class_info['is_variant']:
+                registration_code += CodeGenerator.generate_variant_class_registration(class_info)
+            else:
+                registration_code += CodeGenerator.generate_regular_class_registration(class_info)
+        
+        registration_code += "}\n"
+        return registration_code
 
     @staticmethod
     def generate_requires_file(class_name: str, required_variants: List[str], output_dir: str) -> None:
@@ -343,6 +348,7 @@ class CodeGenerator:
                 with open(requires_file_path, 'r') as f:
                     existing_data = json.load(f)
                     if existing_data == requires_data:
+                        print(f"Requirements file unchanged, skipping: {requires_file_path}")
                         return
             except Exception:
                 pass
@@ -351,6 +357,7 @@ class CodeGenerator:
             os.makedirs(output_dir, exist_ok=True)
             with open(requires_file_path, 'w') as f:
                 json.dump(requires_data, f, indent=4)
+            print(f"Generated requirements file: {requires_file_path}")
         except Exception as e:
             print(f"Error writing requirements file {requires_file_path}: {e}")
 
@@ -383,7 +390,7 @@ class ProjectFinder:
                     engine_dir = search_path
             
             parent_path = os.path.dirname(search_path)
-            if parent_path == search_path:
+            if parent_path == search_path:  
                 break
             
             search_path = parent_path
@@ -412,25 +419,28 @@ class RTTRGenerator:
         self.engine_dir = paths.get("engine_dir")
         if not self.engine_dir:
             print("Error: Could not locate the engine directory")
+            print("Please run this script from within the project directory structure")
             sys.exit(1)
             
         self.headers_dir = os.path.join(self.engine_dir, "include")
         self.source_dir = os.path.join(self.engine_dir, "source")
         self.game_headers_dir = os.path.join(self.headers_dir, "game")
         self.game_source_dir = os.path.join(self.source_dir, "game")
-        self.generated_dir = os.path.join(self.game_source_dir, "generated")
 
         self.shared_resources_dir = paths.get("shared_resources_dir")
 
         print(f"Found engine directory: {self.engine_dir}")
         print(f"Using headers directory: {self.headers_dir}")
         print(f"Using source directory: {self.source_dir}")
-        print(f"Using generated directory: {self.generated_dir}")
         print(f"Using shared resources directory: {self.shared_resources_dir}")
         
         self.parser = ClassParser()
         self.classes_info = []
-        self.header_includes = {}
+        self.includes = set()
+        
+        self.includes.add('#include "raylib.h"')
+        self.includes.add('#include "rttr/registration.h"')
+        self.includes.add('#include "variant/variant_base.h"')
 
     def process_headers(self) -> None:
         header_files = glob.glob(os.path.join(self.game_headers_dir, "**/*.h"), recursive=True)
@@ -438,14 +448,15 @@ class RTTRGenerator:
         print(f"Processing {len(header_files)} header files...")
         
         for header_file in header_files:
+            relative_path = os.path.normpath(header_file).replace('\\', '/')
+            
             relative_path = os.path.relpath(header_file, self.headers_dir)
-            relative_path = relative_path.replace('\\', '/')
             
             class_infos = self.parser.parse_header(header_file)
             if class_infos:
                 for class_info in class_infos:
                     self.classes_info.append(class_info)
-                    self.header_includes[class_info['class_name']] = relative_path
+                    self.includes.add(f'#include "{relative_path}"')
 
     def analyze_implementation_files(self) -> None:
         print("Analyzing implementation files for dependencies...")
@@ -475,69 +486,39 @@ class RTTRGenerator:
                             print(f"Error analyzing cpp file {cpp_file}: {e}")
                     break
 
-    def generate_separate_registration_files(self) -> None:
-        """Generate separate .cpp registration files for each class"""
-        os.makedirs(self.generated_dir, exist_ok=True)
+    def generate_rttr_header(self, output_path: str) -> None:
+        sorted_includes = sorted(self.includes)
+        includes_code = "#pragma once\n" + "\n".join(sorted_includes) + "\n\n"
+        registration_code = CodeGenerator.generate_full_registration(self.classes_info)
+        final_code = includes_code + registration_code
         
-        generated_files = set()
-        
-        raylib_file = os.path.join(self.generated_dir, "raylib_rttr_register.cpp")
-        raylib_code = CodeGenerator.generate_raylib_registration_file()
-        self._write_file_if_changed(raylib_file, raylib_code)
-        generated_files.add(raylib_file)
-        
-        variant_base_file = os.path.join(self.generated_dir, "variant_rttr_register.cpp")
-        variant_base_code = CodeGenerator.generate_variant_base_registration_file()
-        self._write_file_if_changed(variant_base_file, variant_base_code)
-        generated_files.add(variant_base_file)
-        
-        for class_info in self.classes_info:
-            class_name = class_info['class_name']
-            header_include = self.header_includes.get(class_name, f"game/{class_name.lower()}.h")
-            
-            filename = f"variant_{class_name.lower()}.cpp"
-            filepath = os.path.join(self.generated_dir, filename)
-            
-            if class_info['is_variant']:
-                code = CodeGenerator.generate_variant_registration_file(class_info, header_include)
-            else:
-                code = CodeGenerator.generate_regular_class_registration_file(class_info, header_include)
-            
-            self._write_file_if_changed(filepath, code)
-            generated_files.add(filepath)
-        
-        if os.path.exists(self.generated_dir):
-            for file in os.listdir(self.generated_dir):
-                filepath = os.path.join(self.generated_dir, file)
-                if filepath not in generated_files and file.endswith('.cpp'):
-                    try:
-                        os.remove(filepath)
-                        print(f"Removed obsolete file: {filepath}")
-                    except Exception as e:
-                        print(f"Error removing file {filepath}: {e}")
-        
-        print(f"\nGenerated {len(generated_files)} registration files in {self.generated_dir}")
-
-    def _write_file_if_changed(self, filepath: str, content: str) -> None:
-        """Write file only if content has changed"""
-        if os.path.exists(filepath):
+        if os.path.exists(output_path):
             try:
-                with open(filepath, 'r') as f:
+                with open(output_path, 'r') as f:
                     existing_content = f.read()
                     existing_hash = hashlib.md5(existing_content.encode()).hexdigest()
-                    new_hash = hashlib.md5(content.encode()).hexdigest()
+                    new_hash = hashlib.md5(final_code.encode()).hexdigest()
                     
                     if existing_hash == new_hash:
+                        print(f"RTTR header file unchanged, skipping: {output_path}")
                         return
             except Exception:
                 pass
-        
+                
         try:
-            with open(filepath, 'w') as f:
-                f.write(content)
-            print(f"Generated: {filepath}")
+            os.makedirs(os.path.dirname(output_path), exist_ok=True)
+            with open(output_path, "w") as f:
+                f.write(final_code)
+            
+            variant_count = sum(1 for c in self.classes_info if c['is_variant'])
+            regular_count = sum(1 for c in self.classes_info if not c['is_variant'])
+            
+            print(f"Generated RTTR registration code for {len(self.classes_info)} classes:")
+            print(f"  - {variant_count} variant classes")
+            print(f"  - {regular_count} regular classes")
+            print(f"Output written to {output_path}")
         except Exception as e:
-            print(f"Error writing file {filepath}: {e}")
+            print(f"Error writing RTTR header {output_path}: {e}")
 
     def generate_requires_files(self, requires_dir: str) -> None:
         os.makedirs(requires_dir, exist_ok=True)
@@ -572,8 +553,12 @@ class RTTRGenerator:
     def run(self) -> None:
         self.process_headers()
         self.analyze_implementation_files()
+
+        output_path = os.path.join(self.game_headers_dir, "generated/rttr_registration.h")
         
-        self.generate_separate_registration_files()
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        
+        self.generate_rttr_header(output_path)
         
         requires_dir = os.path.join(self.shared_resources_dir, "variants", "requires")
         self.generate_requires_files(requires_dir)

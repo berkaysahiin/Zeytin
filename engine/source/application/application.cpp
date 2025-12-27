@@ -6,8 +6,6 @@
 
 #include "config_manager/config_manager.h"
 
-#include "game/generated/rttr_registration.h"
-
 struct Application::Impl 
 {
 	ConfigManager config;
