@@ -9,6 +9,9 @@ struct VariantCreateInfo {
     RTTR_ENABLE();
 };
 
+
+#define DATA_CLASS() public:
+
 struct VariantBase {
     VariantBase() = default;
     VariantBase(VariantCreateInfo info) : entity_id(info.entity_id) {}

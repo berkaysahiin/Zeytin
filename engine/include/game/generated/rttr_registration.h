@@ -1,6 +1,9 @@
 #pragma once
+#include "game/bullet.h"
+#include "game/bullet_config.h"
 #include "game/collider.h"
 #include "game/countdown.h"
+#include "game/enemy.h"
 #include "game/obstacle.h"
 #include "game/player.h"
 #include "game/position.h"
@@ -66,6 +69,18 @@ RTTR_REGISTRATION
         .property("format", &Texture2D::format)
         (rttr::metadata("NO_VARIANT", true));
 
+    rttr::registration::class_<Bullet>("Bullet")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object);
+
+    rttr::registration::class_<BulletConfig>("BulletConfig")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
+        .property("height", &BulletConfig::height)
+        .property("lifetime", &BulletConfig::lifetime)
+        .property("speed", &BulletConfig::speed)
+        .property("width", &BulletConfig::width);
+
     rttr::registration::class_<Collider>("Collider")
         .constructor<>()(rttr::policy::ctor::as_object)
         .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
@@ -84,6 +99,25 @@ RTTR_REGISTRATION
         .property("offset_y", &Countdown::offset_y)
         .property("pause_when_zero", &Countdown::pause_when_zero)
         .property("warning_threshold", &Countdown::warning_threshold);
+
+    rttr::registration::class_<Enemy>("Enemy")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
+        .property("body_size", &Enemy::body_size)
+        .property("eye_offset_x", &Enemy::eye_offset_x)
+        .property("eye_offset_y", &Enemy::eye_offset_y)
+        .property("eye_size", &Enemy::eye_size)
+        .property("eye_spacing", &Enemy::eye_spacing)
+        .property("gravity", &Enemy::gravity)
+        .property("gun_length", &Enemy::gun_length)
+        .property("gun_offset_x", &Enemy::gun_offset_x)
+        .property("gun_offset_y", &Enemy::gun_offset_y)
+        .property("gun_width", &Enemy::gun_width)
+        .property("max_fall_speed", &Enemy::max_fall_speed)
+        .property("patrol_distance", &Enemy::patrol_distance)
+        .property("patrol_speed", &Enemy::patrol_speed)
+        .property("shoot_interval", &Enemy::shoot_interval)
+        .property("shoot_range", &Enemy::shoot_range);
 
     rttr::registration::class_<Obstacle>("Obstacle")
         .constructor<>()(rttr::policy::ctor::as_object)

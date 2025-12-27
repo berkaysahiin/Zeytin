@@ -1,0 +1,14 @@
+{
+    "entity_id": 3570475889673975003,
+    "variants": [
+        {
+            "type": "BulletConfig",
+            "value": {
+                "height": 4.0,
+                "lifetime": 3.0,
+                "speed": 800.0,
+                "width": 8.0
+            }
+        }
+    ]
+}

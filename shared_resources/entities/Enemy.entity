@@ -1,0 +1,47 @@
+{
+    "entity_id": 664778632488317844,
+    "variants": [
+        {
+            "type": "Enemy",
+            "value": {
+                "body_size": 50.0,
+                "eye_offset_x": 10.0,
+                "eye_offset_y": -8.0,
+                "eye_size": 6.0,
+                "eye_spacing": 8.0,
+                "gravity": 1500.0,
+                "gun_length": 25.0,
+                "gun_offset_x": 15.0,
+                "gun_offset_y": 5.0,
+                "gun_width": 8.0,
+                "max_fall_speed": 800.0,
+                "patrol_distance": 200.0,
+                "patrol_speed": 150.0,
+                "shoot_interval": 2.0,
+                "shoot_range": 500.0
+            }
+        },
+        {
+            "type": "Collider",
+            "value": {
+                "height": 50.0,
+                "show_debug": true,
+                "width": 50.0
+            }
+        },
+        {
+            "type": "Position",
+            "value": {
+                "x": 1000.0,
+                "y": 800.0
+            }
+        },
+        {
+            "type": "Scale",
+            "value": {
+                "x": 1.0,
+                "y": 1.0
+            }
+        }
+    ]
+}
