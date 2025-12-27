@@ -83,7 +83,7 @@ public:
     void initial_sync_editor();
     void sync_editor();
 
-    void enter_play_mode(const bool is_paused);
+    void enter_play_mode(const bool is_paused = false);
     void exit_play_mode();
     void pause_play_mode();
 
@@ -115,6 +115,7 @@ private:
     RenderTexture2D m_render_texture;
     Camera2D m_camera;
 	std::string m_pending_level_name;  
+	std::string m_current_level_name;  
 
 #ifdef EDITOR_MODE
     std::unique_ptr<EditorCommunication> m_editor_communication;

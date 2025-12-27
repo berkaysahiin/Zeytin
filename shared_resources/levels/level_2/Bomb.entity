@@ -18,17 +18,17 @@
                 "glow_size": 60.0,
                 "label_size": 35,
                 "pulse_intensity": 0.20000000298023224,
-                "pulse_speed": 3.0,
+                "pulse_speed": 4.0,
                 "ring_speed": 100.0,
-                "shake_intensity": 2.0,
+                "shake_intensity": 4.0,
                 "show_danger_rings": true
             }
         },
         {
             "type": "Position",
             "value": {
-                "x": 200.0,
-                "y": 1015.7999877929688
+                "x": 1521.300048828125,
+                "y": 951.0
             }
         },
         {

@@ -139,6 +139,7 @@ void Zeytin::run_frame() {
                 if (deserialize_scene(scene_json)) {
                     m_state.started = false;
                     m_state.late_started = false;
+					m_current_level_name = m_pending_level_name;  
                     log_info() << "Successfully loaded level: " << m_pending_level_name << std::endl;
                 } else {
                     log_error() << "Failed to deserialize level: " << m_pending_level_name << std::endl;
@@ -152,15 +153,16 @@ void Zeytin::run_frame() {
         m_state.load_level_next_frame = false;
     }
 
-    if(m_state.reload_next_frame) { // if setted true last frame
-#ifdef EDITOR_MODE
-        exit_play_mode();
-        enter_play_mode(false);
-#else
-        deserialize_scene(g_embeded_scene);
-#endif
-        m_state.reload_next_frame = false;
-    }
+	if(m_state.reload_next_frame) {
+    	// If we have a current level, reload it; otherwise use backup
+    	if (!m_current_level_name.empty()) {
+    	    request_level_load(m_current_level_name);  // Reuse existing API
+    	} else {
+    	    exit_play_mode();
+    	    enter_play_mode();
+    	}
+    	m_state.reload_next_frame = false;
+	}
 
     begin_texture_mode(m_render_texture);
     clear_background(BLACK);
@@ -829,6 +831,7 @@ void Zeytin::exit_play_mode() {
     m_state.late_started = false;
     m_state.play_mode = false;
     m_state.pause_play_mode = false;
+	m_pending_level_name = "";
 
     std::filesystem::path backup_path = "temp/backup.scene";
     if (!std::filesystem::exists(backup_path)) {
