@@ -17,6 +17,8 @@
 #include "game/position.h"
 #include "game/rewind_effect.h"
 #include "game/scale.h"
+#include "game/start_menu.h"
+#include "game/test_variant.h"
 #include "game/time_controller.h"
 #include "game/time_stopped_indicator.h"
 #include "raylib.h"
@@ -249,6 +251,26 @@ RTTR_REGISTRATION
         .property("x", &Star::x)
         .property("y", &Star::y)
         (rttr::metadata("NO_VARIANT", true));
+
+    rttr::registration::class_<StartMenu>("StartMenu")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
+        .property("title_font_size", &StartMenu::title_font_size);
+
+    rttr::registration::class_<TestVariant>("TestVariant")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
+        .property("can_move", &TestVariant::can_move)
+        .property("gravity", &TestVariant::gravity)
+        .property("health", &TestVariant::health)
+        .property("is_active", &TestVariant::is_active)
+        .property("is_invincible", &TestVariant::is_invincible)
+        .property("jump_force", &TestVariant::jump_force)
+        .property("level", &TestVariant::level)
+        .property("max_health", &TestVariant::max_health)
+        .property("name", &TestVariant::name)
+        .property("speed", &TestVariant::speed)
+        .property("tag", &TestVariant::tag);
 
     rttr::registration::class_<TimeController>("TimeController")
         .constructor<>()(rttr::policy::ctor::as_object)

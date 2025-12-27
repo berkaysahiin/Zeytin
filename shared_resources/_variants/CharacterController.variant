@@ -1,7 +1,0 @@
-{
-    "type": "CharacterController",
-    "value": {
-        "acceleration": 5.0,
-        "friction": 10.0
-    }
-}

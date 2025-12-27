@@ -1,6 +1,7 @@
 #include "game/time_controller.h"
 #include "core/query.h"
 #include "core/raylib_wrapper.h"
+#include "game/bomb.h"
 #include "game/game_manager.h"
 #include "game/player.h"
 #include "game/enemy.h"
@@ -85,6 +86,11 @@ void TimeController::record_snapshot() {
     if (m_history.size() > static_cast<size_t>(max_history_frames)) {
         m_history.pop_front();
     }
+
+	auto bomb_opt = Query::try_find_first<Bomb>();
+	if (bomb_opt) {
+		snapshot.bomb_defuse_progress = bomb_opt->get().get_defuse_progress();
+	}
 }
 
 void TimeController::apply_rewind() {
@@ -144,4 +150,9 @@ void TimeController::apply_rewind() {
         auto& countdown = countdown_opt->get();
         countdown.set_time_remaining(snapshot.countdown_time);
     }
+
+	auto bomb_opt = Query::try_find_first<Bomb>();
+	if (bomb_opt) {
+		bomb_opt->get().set_defuse_progress(snapshot.bomb_defuse_progress);
+	}
 }

@@ -257,7 +257,7 @@ void Hierarchy::render_entity(EntityDocument& entity_document) {
 }
 
 void Hierarchy::render_add_variant_menu(EntityDocument& entity_document) {
-    const int items_per_column = 20;
+    const int items_per_column = 40;
     int variant_count = 0;
 
     for (const auto& variant : m_variants) {

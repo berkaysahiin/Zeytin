@@ -38,6 +38,7 @@ public:
     bool is_defused() const { return m_is_defused; }
     bool is_being_defused() const { return m_player_defusing; }
     float get_defuse_progress() const { return m_defuse_progress; }
+	void set_defuse_progress(float progress) { m_defuse_progress = progress; }
 
 private:
     Color bomb_color = {50, 50, 50, 255};

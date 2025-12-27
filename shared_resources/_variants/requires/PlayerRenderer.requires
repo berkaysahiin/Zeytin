@@ -1,6 +1,0 @@
-{
-    "requires": [
-        "Collider",
-        "PlayerInfo"
-    ]
-}

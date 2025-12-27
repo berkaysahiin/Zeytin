@@ -2,7 +2,7 @@ Found engine directory: /home/redgrain/Dev/Zeytin/engine
 Using headers directory: /home/redgrain/Dev/Zeytin/engine/include
 Using source directory: /home/redgrain/Dev/Zeytin/engine/source
 Using shared resources directory: /home/redgrain/Dev/Zeytin/shared_resources
-Processing 22 header files...
+Processing 24 header files...
 Skipping file (PP_SKIP found): /home/redgrain/Dev/Zeytin/engine/include/game/gamesnophot.h
 Analyzing implementation files for dependencies...
 RTTR header file unchanged, skipping: /home/redgrain/Dev/Zeytin/engine/include/game/generated/rttr_registration.h
@@ -19,12 +19,6 @@ Building configurations...
 Running action 'gmake'...
 Done (32ms).
 ==== Building Zeytin (editor_mode) ====
-application.cpp
-bomb.cpp
-countdown.cpp
-game_manager.cpp
-objective_arrow.cpp
-Linking Zeytin
 Changed directory to: /home/redgrain/Dev/Zeytin/engine/scripts
 Running parser...
 Parser command: python3 parser2.py

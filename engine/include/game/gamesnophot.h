@@ -26,4 +26,5 @@ struct GameSnapshot {
     std::vector<EnemyState> enemies;
     std::vector<BulletState> bullets;
     float countdown_time;
+	float bomb_defuse_progress;
 };
