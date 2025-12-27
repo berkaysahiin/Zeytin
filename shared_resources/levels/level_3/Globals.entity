@@ -36,7 +36,7 @@
             "type": "EndGame",
             "value": {
                 "game_over_font_size": 80,
-                "next_level": "level_1",
+                "next_level": "level_4",
                 "reason_font_size": 50,
                 "ui_transparency": 0.8500000238418579,
                 "win_font_size": 80

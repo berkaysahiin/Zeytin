@@ -220,12 +220,13 @@ void Player::check_enemy_collision() {
         
         if (CheckCollisionRecs(player_bounds, enemy_bounds)) {
             float enemy_top = enemy_bounds.y;
+            float enemy_center_y = enemy_bounds.y + enemy_bounds.height / 2;
             
-            if (m_velocity.y > 0 && player_bottom <= enemy_top + 15) {
+            if (player_bottom < enemy_center_y) {
                 enemy.kill();
                 m_velocity.y = -jump_force * 0.7f;
                 m_jumps_remaining = std::min(m_jumps_remaining + 1, max_jumps);
-                m_just_jumped = true;  // NEW: Trigger stretch on enemy bounce
+                m_just_jumped = true;
                 continue;
             }
             
