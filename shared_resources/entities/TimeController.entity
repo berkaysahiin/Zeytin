@@ -4,7 +4,7 @@
         {
             "type": "TimeController",
             "value": {
-                "max_history_frames": 300
+                "max_history_frames": 1000
             }
         }
     ]

@@ -7,6 +7,9 @@
 #include "game/position.h"
 #include "game/scale.h"
 #include "game/enemy.h"
+#include "game/bullet.h"
+#include "game/end_game.h"
+#include "game/countdown.h"
 
 void Player::on_init() {
     m_velocity = {0.0f, 0.0f};
@@ -23,10 +26,18 @@ void Player::on_update() {
 }
 
 void Player::on_play_update() {
+    check_game_over();
+    
+    auto end_game_opt = Query::try_find_first<EndGame>();
+    if (end_game_opt && end_game_opt->get().is_game_over()) {
+        return; 
+    }
+    
     handle_input();
     apply_physics();
     check_ground();
     check_enemy_collision();
+    check_bullet_collision();
 }
 
 void Player::handle_input() {
@@ -91,11 +102,11 @@ void Player::check_ground() {
         auto& obstacle_collider = Query::get<Collider>(obstacle_id);
         Rectangle obstacle_bounds = obstacle_collider.get_bounds();
         
-        if (m_velocity.y >= 0 &&  // Falling down
+        if (m_velocity.y >= 0 &&
             player_bounds.x + player_bounds.width > obstacle_bounds.x &&
             player_bounds.x < obstacle_bounds.x + obstacle_bounds.width &&
             player_bottom >= obstacle_bounds.y &&
-            player_bottom <= obstacle_bounds.y + 10) {  
+            player_bottom <= obstacle_bounds.y + 10) {
             
             position.y = obstacle_bounds.y - player_collider.height / 2;
             m_velocity.y = 0.0f;
@@ -122,23 +133,64 @@ void Player::check_enemy_collision() {
     Rectangle player_bounds = player_collider.get_bounds();
     float player_bottom = player_pos.y + player_collider.height / 2;
     
-    auto enemy_entities = Query::find_all_with<Enemy, Position, Collider>();
+    auto enemy_entities = Query::find_all_with<Enemy, Collider>();
     
     for (::entity_id enemy_id : enemy_entities) {
         auto& enemy = Query::get<Enemy>(enemy_id);
         
         if (enemy.is_dead()) continue;
         
-        auto& enemy_pos = Query::get<Position>(enemy_id);
         auto& enemy_collider = Query::get<Collider>(enemy_id);
-        
         Rectangle enemy_bounds = enemy_collider.get_bounds();
-        float enemy_top = enemy_pos.y - enemy_collider.height / 2;
         
-        if (check_collision_recs(player_bounds, enemy_bounds)) {
-            if (m_velocity.y > 0 && player_bottom <= enemy_top + 15.0f) {
+        if (CheckCollisionRecs(player_bounds, enemy_bounds)) {
+            float enemy_top = enemy_bounds.y;
+            
+            if (m_velocity.y > 0 && player_bottom <= enemy_top + 15) {
                 enemy.kill();
-                m_velocity.y = -jump_force * 0.5f;
+                m_velocity.y = -jump_force * 0.7f;
+                continue;
+            }
+            
+            auto end_game_opt = Query::try_find_first<EndGame>();
+            if (end_game_opt) {
+                end_game_opt->get().trigger_game_over("Hit by enemy!");
+            }
+            break;
+        }
+    }
+}
+
+void Player::check_bullet_collision() {
+    auto& player_collider = Query::get<Collider>(this);
+    Rectangle player_bounds = player_collider.get_bounds();
+    
+    auto bullet_entities = Query::find_all_with<Bullet, Collider>();
+    for (::entity_id bullet_id : bullet_entities) {
+        auto& bullet_collider = Query::get<Collider>(bullet_id);
+        Rectangle bullet_bounds = bullet_collider.get_bounds();
+        
+        if (CheckCollisionRecs(player_bounds, bullet_bounds)) {
+            // Trigger game over
+            auto end_game_opt = Query::try_find_first<EndGame>();
+            if (end_game_opt) {
+                end_game_opt->get().trigger_game_over("Hit by enemy bullet!");
+            }
+            
+            Query::remove_entity(bullet_id);
+            break;
+        }
+    }
+}
+
+void Player::check_game_over() {
+    auto countdown_opt = Query::try_find_first<Countdown>();
+    if (countdown_opt) {
+        auto& countdown = countdown_opt->get();
+        if (countdown.is_finished()) {
+            auto end_game_opt = Query::try_find_first<EndGame>();
+            if (end_game_opt && !end_game_opt->get().is_game_over()) {
+                end_game_opt->get().trigger_game_over("Time's up!");
             }
         }
     }
@@ -148,24 +200,30 @@ void Player::draw_character() {
     auto& position = Query::get<Position>(this);
     auto& scale = Query::get<Scale>(this);
     
-    float scaled_body_size = body_size * scale.x;
+    float scaled_size = body_size * scale.x;
     float scaled_eye_size = eye_size * scale.x;
-    float scaled_eye_offset_x = eye_offset_x * scale.x;
-    float scaled_eye_offset_y = eye_offset_y * scale.y;
-    float scaled_eye_spacing = eye_spacing * scale.x;
     
     draw_rectangle(
-        position.x - scaled_body_size / 2,
-        position.y - scaled_body_size / 2,
-        scaled_body_size,
-        scaled_body_size,
+        position.x - scaled_size / 2,
+        position.y - scaled_size / 2,
+        scaled_size,
+        scaled_size,
         body_color
     );
     
-    float left_eye_x = position.x + (scaled_eye_offset_x - scaled_eye_spacing / 2) * m_facing_direction;
-    float right_eye_x = position.x + (scaled_eye_offset_x + scaled_eye_spacing / 2) * m_facing_direction;
-    float eyes_y = position.y + scaled_eye_offset_y;
+    float eye_y = position.y + eye_offset_y * scale.y;
     
-    draw_circle(left_eye_x, eyes_y, scaled_eye_size, eye_color);
-    draw_circle(right_eye_x, eyes_y, scaled_eye_size, eye_color);
+    if (m_facing_direction > 0) {
+        float left_eye_x = position.x + (eye_offset_x - eye_spacing / 2) * scale.x;
+        float right_eye_x = position.x + (eye_offset_x + eye_spacing / 2) * scale.x;
+        
+        draw_circle(left_eye_x, eye_y, scaled_eye_size, eye_color);
+        draw_circle(right_eye_x, eye_y, scaled_eye_size, eye_color);
+    } else {
+        float left_eye_x = position.x - (eye_offset_x + eye_spacing / 2) * scale.x;
+        float right_eye_x = position.x - (eye_offset_x - eye_spacing / 2) * scale.x;
+        
+        draw_circle(left_eye_x, eye_y, scaled_eye_size, eye_color);
+        draw_circle(right_eye_x, eye_y, scaled_eye_size, eye_color);
+    }
 }

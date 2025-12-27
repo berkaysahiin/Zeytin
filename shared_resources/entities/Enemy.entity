@@ -19,7 +19,8 @@
                 "patrol_distance": 200.0,
                 "patrol_speed": 150.0,
                 "shoot_interval": 2.0,
-                "shoot_range": 500.0
+                "shoot_range": 500.0,
+                "use_global_config": true
             }
         },
         {

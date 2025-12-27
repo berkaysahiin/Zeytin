@@ -9,6 +9,35 @@
                 "speed": 800.0,
                 "width": 8.0
             }
+        },
+        {
+            "type": "EnemyConfig",
+            "value": {
+                "body_size": 50.0,
+                "death_fade_duration": 1.0,
+                "eye_offset_x": 10.0,
+                "eye_offset_y": -8.0,
+                "eye_size": 6.0,
+                "eye_spacing": 8.0,
+                "gravity": 1500.0,
+                "gun_length": 25.0,
+                "gun_offset_x": 15.0,
+                "gun_offset_y": 5.0,
+                "gun_width": 8.0,
+                "max_fall_speed": 800.0,
+                "patrol_distance": 200.0,
+                "patrol_speed": 150.0,
+                "shoot_interval": 2.0,
+                "shoot_range": 500.0
+            }
+        },
+        {
+            "type": "EndGame",
+            "value": {
+                "game_over_font_size": 80,
+                "reason_font_size": 30,
+                "ui_transparency": 0.8500000238418579
+            }
         }
     ]
 }

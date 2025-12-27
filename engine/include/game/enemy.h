@@ -8,27 +8,31 @@ class Enemy : public VariantBase {
     REQUIRES(Position, Scale, Collider);
 
 public:
-    float patrol_speed = 150.0f; PROPERTY();
-    float patrol_distance = 200.0f; PROPERTY();
-    
-    float gravity = 1500.0f; PROPERTY();
-    float max_fall_speed = 800.0f; PROPERTY();
-    
-    float shoot_interval = 2.0f; PROPERTY();  
-    float shoot_range = 500.0f; PROPERTY();  
-    
-    float body_size = 50.0f; PROPERTY();
-    float eye_size = 6.0f; PROPERTY();
-    float eye_offset_x = 10.0f; PROPERTY();
-    float eye_offset_y = -8.0f; PROPERTY();
-    float eye_spacing = 8.0f; PROPERTY();
-    
-    float gun_length = 25.0f; PROPERTY();
-    float gun_width = 8.0f; PROPERTY();
-    float gun_offset_x = 15.0f; PROPERTY();
-    float gun_offset_y = 5.0f; PROPERTY();
+    bool use_global_config = true; PROPERTY(); 
 
-    float death_fade_duration = 1.0f; PROPERTY();
+	// if use global config is set to false, use below
+
+    float patrol_speed = -1; PROPERTY();
+    float patrol_distance = -1; PROPERTY();
+    
+    float gravity = -1; PROPERTY();
+    float max_fall_speed = -1; PROPERTY();
+    
+    float shoot_interval = -1; PROPERTY();  
+    float shoot_range = -1; PROPERTY();  
+    
+    float body_size = -1; PROPERTY();
+    float eye_size = -1; PROPERTY();
+    float eye_offset_x = -1; PROPERTY();
+    float eye_offset_y = -1; PROPERTY();
+    float eye_spacing = -1; PROPERTY();
+    
+    float gun_length = -1; PROPERTY();
+    float gun_width = -1; PROPERTY();
+    float gun_offset_x = -1; PROPERTY();
+    float gun_offset_y = -1; PROPERTY();
+
+    float death_fade_duration = -1; PROPERTY();
 
     virtual void on_play_start() override;
     virtual void on_update() override;

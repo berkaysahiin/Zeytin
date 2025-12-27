@@ -35,6 +35,8 @@ private:
     void draw_character();
     void check_ground();
     void check_enemy_collision();
+    void check_bullet_collision();
+    void check_game_over();
     
     Vector2 m_velocity = {0.0f, 0.0f};
     bool m_is_grounded = false;

@@ -2,11 +2,12 @@ Found engine directory: /home/redgrain/Dev/Zeytin/engine
 Using headers directory: /home/redgrain/Dev/Zeytin/engine/include
 Using source directory: /home/redgrain/Dev/Zeytin/engine/source
 Using shared resources directory: /home/redgrain/Dev/Zeytin/shared_resources
-Processing 12 header files...
+Processing 15 header files...
 Skipping file (PP_SKIP found): /home/redgrain/Dev/Zeytin/engine/include/game/gamesnophot.h
 Analyzing implementation files for dependencies...
 RTTR header file unchanged, skipping: /home/redgrain/Dev/Zeytin/engine/include/game/generated/rttr_registration.h
 Requirements file unchanged, skipping: /home/redgrain/Dev/Zeytin/shared_resources/variants/requires/Obstacle.requires
+Requirements file unchanged, skipping: /home/redgrain/Dev/Zeytin/shared_resources/variants/requires/Bomb.requires
 Requirements file unchanged, skipping: /home/redgrain/Dev/Zeytin/shared_resources/variants/requires/Bullet.requires
 Requirements file unchanged, skipping: /home/redgrain/Dev/Zeytin/shared_resources/variants/requires/Enemy.requires
 Requirements file unchanged, skipping: /home/redgrain/Dev/Zeytin/shared_resources/variants/requires/Player.requires
@@ -14,10 +15,9 @@ Requirements file unchanged, skipping: /home/redgrain/Dev/Zeytin/shared_resource
 Requirements files written to /home/redgrain/Dev/Zeytin/shared_resources/variants/requires
 Building configurations...
 Running action 'gmake'...
-Done (36ms).
+Done (31ms).
 ==== Building Zeytin (editor_mode) ====
-application.cpp
-time_controller.cpp
+bomb.cpp
 Linking Zeytin
 Changed directory to: /home/redgrain/Dev/Zeytin/engine/scripts
 Running parser...

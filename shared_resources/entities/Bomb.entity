@@ -1,0 +1,30 @@
+{
+    "entity_id": 10942971517693221024,
+    "variants": [
+        {
+            "type": "Bomb",
+            "value": {
+                "bar_height": 8.0,
+                "bar_offset_y": -30.0,
+                "bar_width": 60.0,
+                "bomb_size": 40.0,
+                "defuse_radius": 150.0,
+                "defuse_time": 5.0
+            }
+        },
+        {
+            "type": "Position",
+            "value": {
+                "x": 1500.0,
+                "y": 1000.0
+            }
+        },
+        {
+            "type": "Scale",
+            "value": {
+                "x": 1.0,
+                "y": 1.0
+            }
+        }
+    ]
+}

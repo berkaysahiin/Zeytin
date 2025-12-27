@@ -1,6 +1,9 @@
 #include "game/countdown.h"
 #include "core/raylib_wrapper.h"
 #include "core/zeytin.h"
+#include "core/query.h"
+#include "game/bomb.h"
+#include "game/end_game.h"
 #include <sstream>
 #include <iomanip>
 
@@ -28,7 +31,18 @@ void Countdown::on_play_update() {
         m_time_remaining = 0.0f;
         m_has_finished = true;
         
+        auto bomb_opt = Query::try_find_first<Bomb>();
+        bool bomb_defused = bomb_opt && bomb_opt->get().is_defused();
+        
+        if (!bomb_defused) {
+            auto end_game_opt = Query::try_find_first<EndGame>();
+            if (end_game_opt) {
+                end_game_opt->get().trigger_game_over("Bomb exploded!");
+            }
+        }
+        
         if (pause_when_zero) {
+
         }
     }
 }
