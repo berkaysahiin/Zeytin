@@ -23,6 +23,11 @@ public:
     float eye_offset_y = -8.0f; PROPERTY();
     float eye_spacing = 10.0f; PROPERTY();
 
+    // Squash/Stretch parameters - tweak these for different feels!
+    float squash_amount = 0.3f; PROPERTY();      // How much to squash (0.3 = squash to 70% height)
+    float stretch_amount = 0.3f; PROPERTY();     // How much to stretch (0.3 = stretch to 130% height)
+    float squash_speed = 8.0f; PROPERTY();       // How fast to squash/stretch back to normal
+    
     virtual void on_init() override;
     virtual void on_play_update() override;
     virtual void on_update() override;
@@ -31,7 +36,7 @@ public:
     bool has_diffuser() const { return m_has_diffuser; }
     void set_has_diffuser(bool has) { m_has_diffuser = has; }
 
-	Vector2 get_velocity() { return m_velocity; }
+    Vector2 get_velocity() { return m_velocity; }
 
 private:
     Color body_color; 
@@ -39,12 +44,13 @@ private:
 
     void handle_input();
     void apply_physics();
-	void check_horizontal_collision();
+    void check_horizontal_collision();
     void draw_character();
     void draw_diffuser_icon();
     void check_ground();
     void check_enemy_collision();
     void check_bullet_collision();
+    void update_squash_stretch();  
     
     Vector2 m_velocity = {0.0f, 0.0f};
     bool m_is_grounded = false;
@@ -52,4 +58,8 @@ private:
     int m_facing_direction = 1; // 1 = right, -1 = left
     int m_jumps_remaining = 0;
     bool m_has_diffuser = false;
+    
+    bool m_was_grounded_last_frame = false;
+    bool m_just_jumped = false;
+    Vector2 m_target_scale = {1.0f, 1.0f};  
 };

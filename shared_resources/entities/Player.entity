@@ -14,7 +14,10 @@
                 "jump_force": 600.0,
                 "max_fall_speed": 800.0,
                 "max_jumps": 2,
-                "move_speed": 300.0
+                "move_speed": 300.0,
+                "squash_amount": 100.0,
+                "squash_speed": 8.0,
+                "stretch_amount": 0.30000001192092896
             }
         },
         {
@@ -35,7 +38,7 @@
             "type": "Collider",
             "value": {
                 "height": 50.0,
-                "show_debug": true,
+                "show_debug": false,
                 "width": 50.0
             }
         }

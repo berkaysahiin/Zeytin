@@ -8,6 +8,8 @@
 #include <fstream>
 #include <algorithm>
 
+#include "core/query.h"
+#include "game/crt_effect.h"
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 
@@ -522,6 +524,11 @@ void Zeytin::render() {
     
     float pos_x = (screen_width - render_width) * 0.5f;
     float pos_y = (screen_height - render_height) * 0.5f;
+
+    auto crt_opt = Query::try_find_first<CRTEffect>();
+    if (crt_opt && crt_opt->get().enabled && crt_opt->get().is_shader_loaded()) {
+        BeginShaderMode(crt_opt->get().get_shader());
+    }
     
     draw_texture_pro(
         m_render_texture.texture,
@@ -531,6 +538,10 @@ void Zeytin::render() {
         0.0f,
         WHITE
     );
+
+	if (crt_opt && crt_opt->get().enabled && crt_opt->get().is_shader_loaded()) {
+        EndShaderMode();
+    }
 }
 
 #ifdef EDITOR_MODE

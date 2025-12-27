@@ -27,7 +27,7 @@
             "type": "Collider",
             "value": {
                 "height": 50.0,
-                "show_debug": true,
+                "show_debug": false,
                 "width": 50.0
             }
         },

@@ -57,6 +57,55 @@
                 "star_speed_max": 50.0,
                 "star_speed_min": 10.0
             }
+        },
+        {
+            "type": "TimeStoppedIndicator",
+            "value": {
+                "activate_threshhold": 0.07000000029802322,
+                "enabled": true,
+                "font_size": 60,
+                "padding": 20.0
+            }
+        },
+        {
+            "type": "RewindEffect",
+            "value": {
+                "arrow_bg_color": {
+                    "r": 0,
+                    "g": 0,
+                    "b": 0,
+                    "a": 100
+                },
+                "arrow_color": {
+                    "r": 255,
+                    "g": 255,
+                    "b": 255,
+                    "a": 200
+                },
+                "arrow_count": 5,
+                "arrow_size": 40.0,
+                "arrow_spacing": 80.0,
+                "enabled": true,
+                "pulse_intensity": 0.20000000298023224,
+                "pulse_speed": 2.0
+            }
+        },
+        {
+            "type": "TimeController",
+            "value": {
+                "max_history_frames": 600
+            }
+        },
+        {
+            "type": "CRTEffect",
+            "value": {
+                "chromatic_aberration": 0.5,
+                "curvature": 20.0,
+                "enabled": true,
+                "noise_intensity": 0.05000000074505806,
+                "scanline_intensity": 0.30000001192092896,
+                "vignette_intensity": 0.30000001192092896
+            }
         }
     ]
 }

@@ -5,6 +5,7 @@
 #include "game/bullet_config.h"
 #include "game/collider.h"
 #include "game/countdown.h"
+#include "game/crt_effect.h"
 #include "game/diffuser.h"
 #include "game/end_game.h"
 #include "game/enemy.h"
@@ -13,8 +14,10 @@
 #include "game/obstacle.h"
 #include "game/player.h"
 #include "game/position.h"
+#include "game/rewind_effect.h"
 #include "game/scale.h"
 #include "game/time_controller.h"
+#include "game/time_stopped_indicator.h"
 #include "raylib.h"
 #include "rttr/registration.h"
 #include "variant/variant_base.h"
@@ -76,6 +79,16 @@ RTTR_REGISTRATION
         .property("lifetime", &BulletConfig::lifetime)
         .property("speed", &BulletConfig::speed)
         .property("width", &BulletConfig::width);
+
+    rttr::registration::class_<CRTEffect>("CRTEffect")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
+        .property("chromatic_aberration", &CRTEffect::chromatic_aberration)
+        .property("curvature", &CRTEffect::curvature)
+        .property("enabled", &CRTEffect::enabled)
+        .property("noise_intensity", &CRTEffect::noise_intensity)
+        .property("scanline_intensity", &CRTEffect::scanline_intensity)
+        .property("vignette_intensity", &CRTEffect::vignette_intensity);
 
     rttr::registration::class_<Collider>("Collider")
         .constructor<>()(rttr::policy::ctor::as_object)
@@ -177,13 +190,28 @@ RTTR_REGISTRATION
         .property("jump_force", &Player::jump_force)
         .property("max_fall_speed", &Player::max_fall_speed)
         .property("max_jumps", &Player::max_jumps)
-        .property("move_speed", &Player::move_speed);
+        .property("move_speed", &Player::move_speed)
+        .property("squash_amount", &Player::squash_amount)
+        .property("squash_speed", &Player::squash_speed)
+        .property("stretch_amount", &Player::stretch_amount);
 
     rttr::registration::class_<Position>("Position")
         .constructor<>()(rttr::policy::ctor::as_object)
         .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
         .property("x", &Position::x)
         .property("y", &Position::y);
+
+    rttr::registration::class_<RewindEffect>("RewindEffect")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
+        .property("arrow_bg_color", &RewindEffect::arrow_bg_color)
+        .property("arrow_color", &RewindEffect::arrow_color)
+        .property("arrow_count", &RewindEffect::arrow_count)
+        .property("arrow_size", &RewindEffect::arrow_size)
+        .property("arrow_spacing", &RewindEffect::arrow_spacing)
+        .property("enabled", &RewindEffect::enabled)
+        .property("pulse_intensity", &RewindEffect::pulse_intensity)
+        .property("pulse_speed", &RewindEffect::pulse_speed);
 
     rttr::registration::class_<Scale>("Scale")
         .constructor<>()(rttr::policy::ctor::as_object)
@@ -204,5 +232,13 @@ RTTR_REGISTRATION
         .constructor<>()(rttr::policy::ctor::as_object)
         .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
         .property("max_history_frames", &TimeController::max_history_frames);
+
+    rttr::registration::class_<TimeStoppedIndicator>("TimeStoppedIndicator")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
+        .property("activate_threshhold", &TimeStoppedIndicator::activate_threshhold)
+        .property("enabled", &TimeStoppedIndicator::enabled)
+        .property("font_size", &TimeStoppedIndicator::font_size)
+        .property("padding", &TimeStoppedIndicator::padding);
 
 }

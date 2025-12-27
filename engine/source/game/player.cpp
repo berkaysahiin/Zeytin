@@ -11,6 +11,7 @@
 #include "game/end_game.h"
 #include "remote_logger/remote_logger.h"
 #include <algorithm>
+#include <cmath>
 
 void Player::on_init() {
     m_velocity = {0.0f, 0.0f};
@@ -18,6 +19,9 @@ void Player::on_init() {
     m_facing_direction = 1;
     m_jumps_remaining = max_jumps;
     m_has_diffuser = false;
+    m_was_grounded_last_frame = false;
+    m_just_jumped = false;
+    m_target_scale = {1.0f, 1.0f};
     
     body_color = {88, 83, 86, 255};
     eye_color = WHITE;
@@ -40,6 +44,7 @@ void Player::on_play_update() {
     handle_input();
     apply_physics();
     check_ground();
+    update_squash_stretch();  // NEW: Update squash/stretch after physics
     check_enemy_collision();
     check_bullet_collision();
 }
@@ -69,6 +74,7 @@ void Player::handle_input() {
             m_velocity.y = -jump_force;
             m_jumps_remaining--;
             m_is_grounded = false;
+            m_just_jumped = true;  // NEW: Mark that we just jumped
         }
     }
     
@@ -114,7 +120,7 @@ void Player::apply_physics() {
         if (CheckCollisionRecs(player_bounds, obstacle_bounds)) {
             position.y = old_y;
             m_velocity.y = 0;
-			m_jumps_remaining = max_jumps;
+            m_jumps_remaining = max_jumps;
             break;
         }
     }
@@ -160,6 +166,41 @@ void Player::check_ground() {
     m_is_grounded = landed;
 }
 
+void Player::update_squash_stretch() {
+	#if 0
+    auto& scale = Query::get<Scale>(this);
+    
+    bool just_landed = !m_was_grounded_last_frame && m_is_grounded;
+    
+    if (just_landed) {
+        m_target_scale.y = 1.0f - squash_amount; 
+        m_target_scale.x = 1.0f + squash_amount;  
+    }
+    else if (m_just_jumped) {
+        m_target_scale.y = 1.0f + stretch_amount;  // e.g., 1.3 (stretched up)
+        m_target_scale.x = 1.0f - stretch_amount * 0.5f;  // e.g., 0.85 (narrower)
+        m_just_jumped = false;
+    }
+    else {
+        m_target_scale = {1.0f, 1.0f};
+    }
+    
+    // Smoothly lerp current scale towards target scale
+    float delta = get_frame_time();
+    float lerp_factor = 1.0f - std::pow(0.001f, delta * squash_speed);
+    
+    scale.x += (m_target_scale.x - scale.x) * lerp_factor;
+    scale.y += (m_target_scale.y - scale.y) * lerp_factor;
+    
+    // Clamp to reasonable values (prevent extreme scaling bugs)
+    scale.x = std::clamp(scale.x, 0.3f, 2.0f);
+    scale.y = std::clamp(scale.y, 0.3f, 2.0f);
+    
+    // Update state for next frame
+    m_was_grounded_last_frame = m_is_grounded;
+#endif
+}
+
 void Player::check_enemy_collision() {
     auto& player_pos = Query::get<Position>(this);
     auto& player_collider = Query::get<Collider>(this);
@@ -183,7 +224,8 @@ void Player::check_enemy_collision() {
             if (m_velocity.y > 0 && player_bottom <= enemy_top + 15) {
                 enemy.kill();
                 m_velocity.y = -jump_force * 0.7f;
-				m_jumps_remaining = std::min(m_jumps_remaining + 1, max_jumps);
+                m_jumps_remaining = std::min(m_jumps_remaining + 1, max_jumps);
+                m_just_jumped = true;  // NEW: Trigger stretch on enemy bounce
                 continue;
             }
             
@@ -210,8 +252,6 @@ void Player::check_bullet_collision() {
             if (end_game_opt) {
                 end_game_opt->get().trigger_game_over("Hit by enemy bullet!");
             }
-            
-            Query::remove_entity(bullet_id);
             break;
         }
     }
@@ -221,62 +261,52 @@ void Player::draw_character() {
     auto& position = Query::get<Position>(this);
     auto& scale = Query::get<Scale>(this);
     
-    float scaled_size = body_size * scale.x;
-    float scaled_eye_size = eye_size * scale.x;
+    // Apply scale to body size
+    float scaled_width = body_size * scale.x;
+    float scaled_height = body_size * scale.y;
     
+    // Draw body (rectangle with scale)
     draw_rectangle(
-        position.x - scaled_size / 2,
-        position.y - scaled_size / 2,
-        scaled_size,
-        scaled_size,
+        position.x - scaled_width / 2,
+        position.y - scaled_height / 2,
+        scaled_width,
+        scaled_height,
         body_color
     );
     
-    float eye_y = position.y + eye_offset_y * scale.y;
+    // Draw eyes (also scale them)
+    float scaled_eye_size = eye_size * std::min(scale.x, scale.y);
+    float scaled_eye_offset_x = eye_offset_x * scale.x;
+    float scaled_eye_offset_y = eye_offset_y * scale.y;
+    float scaled_eye_spacing = eye_spacing * scale.x;
     
-    if (m_facing_direction > 0) {
-        float left_eye_x = position.x + (eye_offset_x - eye_spacing / 2) * scale.x;
-        float right_eye_x = position.x + (eye_offset_x + eye_spacing / 2) * scale.x;
-        
-        draw_circle(left_eye_x, eye_y, scaled_eye_size, eye_color);
-        draw_circle(right_eye_x, eye_y, scaled_eye_size, eye_color);
-    } else {
-        float left_eye_x = position.x - (eye_offset_x + eye_spacing / 2) * scale.x;
-        float right_eye_x = position.x - (eye_offset_x - eye_spacing / 2) * scale.x;
-        
-        draw_circle(left_eye_x, eye_y, scaled_eye_size, eye_color);
-        draw_circle(right_eye_x, eye_y, scaled_eye_size, eye_color);
-    }
+    float left_eye_x = position.x - scaled_eye_spacing / 2 + (m_facing_direction * scaled_eye_offset_x);
+    float right_eye_x = position.x + scaled_eye_spacing / 2 + (m_facing_direction * scaled_eye_offset_x);
+    float eye_y = position.y + scaled_eye_offset_y;
+    
+    draw_circle(left_eye_x, eye_y, scaled_eye_size, eye_color);
+    draw_circle(right_eye_x, eye_y, scaled_eye_size, eye_color);
 }
 
 void Player::draw_diffuser_icon() {
     auto& position = Query::get<Position>(this);
     auto& scale = Query::get<Scale>(this);
     
-    float icon_size = 15.0f;
-    float offset_y = -body_size * 0.7f;
+    float icon_size = 20.0f;
+    float scaled_icon_size = icon_size * scale.x;
     
     float icon_x = position.x;
-    float icon_y = position.y + offset_y;
+    float icon_y = position.y - (body_size * scale.y) / 2 - scaled_icon_size - 10;
     
-    Color icon_color = {0, 255, 255, 255};
-    
-    draw_rectangle(
-        icon_x - icon_size / 4,
-        icon_y - icon_size / 2,
-        icon_size / 2,
-        icon_size,
-        icon_color
-    );
+    Color diffuser_color = {255, 215, 0, 255};
     
     draw_rectangle(
-        icon_x - icon_size / 6,
-        icon_y + icon_size / 4,
-        icon_size / 3,
-        icon_size / 2,
-        icon_color
+        icon_x - scaled_icon_size / 4,
+        icon_y - scaled_icon_size / 2,
+        scaled_icon_size / 2,
+        scaled_icon_size,
+        diffuser_color
     );
     
-    draw_circle(icon_x, icon_y, icon_size * 0.6f, 
-               ColorAlpha(icon_color, 0.3f));
+    draw_circle(icon_x, icon_y, scaled_icon_size * 0.6f, ColorAlpha(diffuser_color, 0.4f));
 }
