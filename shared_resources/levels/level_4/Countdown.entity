@@ -1,0 +1,18 @@
+{
+    "entity_id": 12687533074446572919,
+    "variants": [
+        {
+            "type": "Countdown",
+            "value": {
+                "countdown_active": true,
+                "danger_threshold": 10.0,
+                "duration": 15.0,
+                "font_size": 48,
+                "offset_x": 50.0,
+                "offset_y": 50.0,
+                "pause_when_zero": false,
+                "warning_threshold": 30.0
+            }
+        }
+    ]
+}

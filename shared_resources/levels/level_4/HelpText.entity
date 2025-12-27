@@ -1,0 +1,41 @@
+{
+    "entity_id": 4572968353315827130,
+    "variants": [
+        {
+            "type": "HelpText",
+            "value": {
+                "auto_destroy_after_fade": false,
+                "background_border_radius": 10.0,
+                "background_color": {
+                    "r": 0,
+                    "g": 0,
+                    "b": 0,
+                    "a": 180
+                },
+                "background_padding": 0.0,
+                "center_horizontally": false,
+                "center_on_screen": false,
+                "center_vertically": false,
+                "display_duration": 0.0,
+                "fade_in_duration": 0.5,
+                "fade_out_duration": 0.5,
+                "font_size": 40,
+                "show_background": true,
+                "text": "Let it happen...",
+                "text_color": {
+                    "r": 255,
+                    "g": 255,
+                    "b": 255,
+                    "a": 255
+                }
+            }
+        },
+        {
+            "type": "Position",
+            "value": {
+                "x": 53.0,
+                "y": 210.8999938964844
+            }
+        }
+    ]
+}

@@ -1,0 +1,49 @@
+{
+    "entity_id": 8255689768343501107,
+    "variants": [
+        {
+            "type": "Enemy",
+            "value": {
+                "body_size": -1.0,
+                "death_fade_duration": -1.0,
+                "eye_offset_x": -1.0,
+                "eye_offset_y": -1.0,
+                "eye_size": -1.0,
+                "eye_spacing": -1.0,
+                "gravity": -1.0,
+                "gun_length": -1.0,
+                "gun_offset_x": -1.0,
+                "gun_offset_y": -1.0,
+                "gun_width": -1.0,
+                "max_fall_speed": -1.0,
+                "patrol_distance": -1.0,
+                "patrol_speed": -1.0,
+                "shoot_interval": -1.0,
+                "shoot_range": -1.0,
+                "use_global_config": true
+            }
+        },
+        {
+            "type": "Collider",
+            "value": {
+                "height": 50.0,
+                "show_debug": true,
+                "width": 50.0
+            }
+        },
+        {
+            "type": "Position",
+            "value": {
+                "x": 550.5,
+                "y": 1045.5999755859375
+            }
+        },
+        {
+            "type": "Scale",
+            "value": {
+                "x": 1.0,
+                "y": 1.0
+            }
+        }
+    ]
+}

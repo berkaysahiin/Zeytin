@@ -1,0 +1,138 @@
+{
+    "entity_id": 3570475889673975003,
+    "variants": [
+        {
+            "type": "BulletConfig",
+            "value": {
+                "airtime_threshold": 0.10000000149011612,
+                "height": 9.0,
+                "lifetime": 3.0,
+                "speed": 800.0,
+                "width": 12.0
+            }
+        },
+        {
+            "type": "EnemyConfig",
+            "value": {
+                "body_size": 50.0,
+                "death_fade_duration": 1.0,
+                "eye_offset_x": 10.899999618530272,
+                "eye_offset_y": -9.0,
+                "eye_size": 5.599999904632568,
+                "eye_spacing": 14.699999809265137,
+                "gravity": 1500.0,
+                "gun_length": 25.0,
+                "gun_offset_x": 15.0,
+                "gun_offset_y": 8.199999809265137,
+                "gun_width": 8.0,
+                "max_fall_speed": 800.0,
+                "patrol_distance": 200.0,
+                "patrol_speed": 150.0,
+                "shoot_interval": 1.5,
+                "shoot_range": 600.0
+            }
+        },
+        {
+            "type": "EndGame",
+            "value": {
+                "game_over_font_size": 80,
+                "next_level": "level_1",
+                "reason_font_size": 50,
+                "ui_transparency": 0.8500000238418579,
+                "win_font_size": 80
+            }
+        },
+        {
+            "type": "GameManager",
+            "value": {}
+        },
+        {
+            "type": "Background",
+            "value": {
+                "bg_color": {
+                    "r": 10,
+                    "g": 10,
+                    "b": 20,
+                    "a": 255
+                },
+                "star_count": 100,
+                "star_speed_max": 50.0,
+                "star_speed_min": 10.0
+            }
+        },
+        {
+            "type": "TimeStoppedIndicator",
+            "value": {
+                "activate_threshhold": 0.07000000029802322,
+                "enabled": true,
+                "font_size": 60,
+                "padding": 20.0
+            }
+        },
+        {
+            "type": "RewindEffect",
+            "value": {
+                "arrow_bg_color": {
+                    "r": 0,
+                    "g": 0,
+                    "b": 0,
+                    "a": 100
+                },
+                "arrow_color": {
+                    "r": 255,
+                    "g": 255,
+                    "b": 255,
+                    "a": 200
+                },
+                "arrow_count": 5,
+                "arrow_size": 40.0,
+                "arrow_spacing": 80.0,
+                "enabled": true,
+                "pulse_intensity": 0.20000000298023224,
+                "pulse_speed": 2.0
+            }
+        },
+        {
+            "type": "TimeController",
+            "value": {
+                "max_history_frames": 600
+            }
+        },
+        {
+            "type": "CRTEffect",
+            "value": {
+                "chromatic_aberration": 0.32499998807907104,
+                "curvature": 5.0,
+                "enabled": true,
+                "noise_intensity": 0.10000000149011612,
+                "scanline_intensity": 0.30000001192092896,
+                "vignette_intensity": 0.15000000596046448
+            }
+        },
+        {
+            "type": "ObjectiveArrow",
+            "value": {
+                "arrow_height": 200.0,
+                "arrow_size": 100.0,
+                "bounce_amount": 30.0,
+                "bounce_speed": 1.0
+            }
+        },
+        {
+            "type": "Retry",
+            "value": {
+                "button_font_size": 26,
+                "button_height": 60.0,
+                "button_width": 200.0,
+                "button_x": 960.0,
+                "button_y": 30.0,
+                "text_color": {
+                    "r": 255,
+                    "g": 255,
+                    "b": 255,
+                    "a": 255
+                }
+            }
+        }
+    ]
+}
