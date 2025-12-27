@@ -46,6 +46,11 @@ void Bomb::check_player_in_range() {
 
 void Bomb::update_defuse() {
     if (m_player_in_range) {
+        auto player_opt = Query::try_find_first<Player>();
+        if (!player_opt || !player_opt->get().has_diffuser()) {
+            return;
+        }
+        
         m_defuse_progress += get_frame_time() / defuse_time;
         
         if (m_defuse_progress >= 1.0f) {

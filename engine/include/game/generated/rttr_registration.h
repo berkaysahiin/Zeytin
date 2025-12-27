@@ -1,12 +1,15 @@
 #pragma once
+#include "game/background.h"
 #include "game/bomb.h"
 #include "game/bullet.h"
 #include "game/bullet_config.h"
 #include "game/collider.h"
 #include "game/countdown.h"
+#include "game/diffuser.h"
 #include "game/end_game.h"
 #include "game/enemy.h"
 #include "game/enemy_config.h"
+#include "game/game_manager.h"
 #include "game/obstacle.h"
 #include "game/player.h"
 #include "game/position.h"
@@ -43,6 +46,12 @@ RTTR_REGISTRATION
         .property("y", &Rectangle::y)
         .property("width", &Rectangle::width)
         .property("height", &Rectangle::height);
+
+    rttr::registration::class_<Background>("Background")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
+        .property("bg_color", &Background::bg_color)
+        .property("star_count", &Background::star_count);
 
     rttr::registration::class_<Bomb>("Bomb")
         .constructor<>()(rttr::policy::ctor::as_object)
@@ -84,6 +93,15 @@ RTTR_REGISTRATION
         .property("offset_y", &Countdown::offset_y)
         .property("pause_when_zero", &Countdown::pause_when_zero)
         .property("warning_threshold", &Countdown::warning_threshold);
+
+    rttr::registration::class_<Diffuser>("Diffuser")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
+        .property("bob_amount", &Diffuser::bob_amount)
+        .property("bob_speed", &Diffuser::bob_speed)
+        .property("icon_offset_y", &Diffuser::icon_offset_y)
+        .property("icon_size", &Diffuser::icon_size)
+        .property("pickup_radius", &Diffuser::pickup_radius);
 
     rttr::registration::class_<EndGame>("EndGame")
         .constructor<>()(rttr::policy::ctor::as_object)
@@ -134,6 +152,10 @@ RTTR_REGISTRATION
         .property("shoot_interval", &EnemyConfig::shoot_interval)
         .property("shoot_range", &EnemyConfig::shoot_range);
 
+    rttr::registration::class_<GameManager>("GameManager")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object);
+
     rttr::registration::class_<Obstacle>("Obstacle")
         .constructor<>()(rttr::policy::ctor::as_object)
         .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
@@ -166,6 +188,14 @@ RTTR_REGISTRATION
         .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
         .property("x", &Scale::x)
         .property("y", &Scale::y);
+
+    rttr::registration::class_<Star>("Star")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .property("brightness", &Star::brightness)
+        .property("size", &Star::size)
+        .property("x", &Star::x)
+        .property("y", &Star::y)
+        (rttr::metadata("NO_VARIANT", true));
 
     rttr::registration::class_<TimeController>("TimeController")
         .constructor<>()(rttr::policy::ctor::as_object)

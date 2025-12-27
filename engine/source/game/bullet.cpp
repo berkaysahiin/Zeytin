@@ -1,6 +1,7 @@
 #include "game/bullet.h"
 #include "core/query.h"
 #include "core/raylib_wrapper.h"
+#include "game/game_manager.h"
 #include "game/position.h"
 #include "game/scale.h"
 #include "game/collider.h"
@@ -31,6 +32,11 @@ void Bullet::on_update() {
 }
 
 void Bullet::on_play_update() {
+	auto game_mgr_opt = Query::try_find_first<GameManager>();
+    if (!game_mgr_opt || !game_mgr_opt->get().should_game_run()) {
+        return;
+    }
+
     move();
     check_lifetime();
 }

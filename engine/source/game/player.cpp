@@ -9,13 +9,13 @@
 #include "game/enemy.h"
 #include "game/bullet.h"
 #include "game/end_game.h"
-#include "game/countdown.h"
 
 void Player::on_init() {
     m_velocity = {0.0f, 0.0f};
     m_is_grounded = false;
     m_facing_direction = 1;
     m_jumps_remaining = max_jumps;
+    m_has_diffuser = false;
     
     body_color = {88, 83, 86, 255};
     eye_color = WHITE;
@@ -23,14 +23,17 @@ void Player::on_init() {
 
 void Player::on_update() {
     draw_character();
+    
+    if (m_has_diffuser) {
+        draw_diffuser_icon();
+    }
 }
 
 void Player::on_play_update() {
-    check_game_over();
-    
+    // Only process player input and physics if game is not over
     auto end_game_opt = Query::try_find_first<EndGame>();
     if (end_game_opt && end_game_opt->get().is_game_over()) {
-        return; 
+        return; // Stop processing if game is over
     }
     
     handle_input();
@@ -152,6 +155,7 @@ void Player::check_enemy_collision() {
                 continue;
             }
             
+            // Hit from side - game over
             auto end_game_opt = Query::try_find_first<EndGame>();
             if (end_game_opt) {
                 end_game_opt->get().trigger_game_over("Hit by enemy!");
@@ -177,21 +181,9 @@ void Player::check_bullet_collision() {
                 end_game_opt->get().trigger_game_over("Hit by enemy bullet!");
             }
             
+            // Remove the bullet
             Query::remove_entity(bullet_id);
             break;
-        }
-    }
-}
-
-void Player::check_game_over() {
-    auto countdown_opt = Query::try_find_first<Countdown>();
-    if (countdown_opt) {
-        auto& countdown = countdown_opt->get();
-        if (countdown.is_finished()) {
-            auto end_game_opt = Query::try_find_first<EndGame>();
-            if (end_game_opt && !end_game_opt->get().is_game_over()) {
-                end_game_opt->get().trigger_game_over("Time's up!");
-            }
         }
     }
 }
@@ -203,6 +195,7 @@ void Player::draw_character() {
     float scaled_size = body_size * scale.x;
     float scaled_eye_size = eye_size * scale.x;
     
+    // Draw body
     draw_rectangle(
         position.x - scaled_size / 2,
         position.y - scaled_size / 2,
@@ -211,19 +204,58 @@ void Player::draw_character() {
         body_color
     );
     
+    // Draw eyes
     float eye_y = position.y + eye_offset_y * scale.y;
     
     if (m_facing_direction > 0) {
+        // Looking right
         float left_eye_x = position.x + (eye_offset_x - eye_spacing / 2) * scale.x;
         float right_eye_x = position.x + (eye_offset_x + eye_spacing / 2) * scale.x;
         
         draw_circle(left_eye_x, eye_y, scaled_eye_size, eye_color);
         draw_circle(right_eye_x, eye_y, scaled_eye_size, eye_color);
     } else {
+        // Looking left
         float left_eye_x = position.x - (eye_offset_x + eye_spacing / 2) * scale.x;
         float right_eye_x = position.x - (eye_offset_x - eye_spacing / 2) * scale.x;
         
         draw_circle(left_eye_x, eye_y, scaled_eye_size, eye_color);
         draw_circle(right_eye_x, eye_y, scaled_eye_size, eye_color);
     }
+}
+
+void Player::draw_diffuser_icon() {
+    auto& position = Query::get<Position>(this);
+    auto& scale = Query::get<Scale>(this);
+    
+    float icon_size = 15.0f;
+    float offset_y = -body_size * 0.7f;
+    
+    float icon_x = position.x;
+    float icon_y = position.y + offset_y;
+    
+    // Draw tool icon (cyan wrench)
+    Color icon_color = {0, 255, 255, 255};
+    
+    // Main body
+    draw_rectangle(
+        icon_x - icon_size / 4,
+        icon_y - icon_size / 2,
+        icon_size / 2,
+        icon_size,
+        icon_color
+    );
+    
+    // Handle
+    draw_rectangle(
+        icon_x - icon_size / 6,
+        icon_y + icon_size / 4,
+        icon_size / 3,
+        icon_size / 2,
+        icon_color
+    );
+    
+    // Glow
+    draw_circle(icon_x, icon_y, icon_size * 0.6f, 
+               ColorAlpha(icon_color, 0.3f));
 }

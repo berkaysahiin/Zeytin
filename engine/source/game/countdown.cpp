@@ -4,6 +4,7 @@
 #include "core/query.h"
 #include "game/bomb.h"
 #include "game/end_game.h"
+#include "game/game_manager.h"
 #include <sstream>
 #include <iomanip>
 
@@ -22,6 +23,11 @@ void Countdown::on_play_start() {
 
 void Countdown::on_play_update() {
     if (!countdown_active || m_has_finished) {
+        return;
+    }
+
+	auto game_mgr_opt = Query::try_find_first<GameManager>();
+    if (!game_mgr_opt || !game_mgr_opt->get().should_game_run()) {
         return;
     }
     

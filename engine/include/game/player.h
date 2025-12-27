@@ -25,6 +25,10 @@ public:
     virtual void on_init() override;
     virtual void on_update() override;
     virtual void on_play_update() override;
+    
+    bool is_grounded() const { return m_is_grounded; }
+    bool has_diffuser() const { return m_has_diffuser; }
+    void set_has_diffuser(bool has) { m_has_diffuser = has; }
 
 private:
     Color body_color; 
@@ -33,14 +37,15 @@ private:
     void handle_input();
     void apply_physics();
     void draw_character();
+    void draw_diffuser_icon();
     void check_ground();
     void check_enemy_collision();
     void check_bullet_collision();
-    void check_game_over();
     
     Vector2 m_velocity = {0.0f, 0.0f};
     bool m_is_grounded = false;
     bool m_jump_pressed_last_frame = false;
     int m_facing_direction = 1; // 1 = right, -1 = left
     int m_jumps_remaining = 0;
+    bool m_has_diffuser = false;
 };

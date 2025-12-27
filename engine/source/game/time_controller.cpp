@@ -1,6 +1,7 @@
 #include "game/time_controller.h"
 #include "core/query.h"
 #include "core/raylib_wrapper.h"
+#include "game/game_manager.h"
 #include "game/player.h"
 #include "game/enemy.h"
 #include "game/bullet.h"
@@ -14,6 +15,11 @@ void TimeController::on_init() {
 }
 
 void TimeController::on_play_update() {
+	auto game_mgr_opt = Query::try_find_first<GameManager>();
+    if (!game_mgr_opt || !game_mgr_opt->get().should_game_run()) {
+        return;
+	}
+
     m_is_rewinding = should_rewind();
     
     if (m_is_rewinding) {

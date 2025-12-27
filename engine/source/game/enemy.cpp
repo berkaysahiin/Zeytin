@@ -2,6 +2,7 @@
 #include "core/query.h"
 #include "core/raylib_wrapper.h"
 #include "game/enemy_config.h"
+#include "game/game_manager.h"
 #include "game/position.h"
 #include "game/scale.h"
 #include "game/collider.h"
@@ -10,7 +11,6 @@
 #include "game/bullet.h"
 
 void Enemy::on_play_start() {
-
 	if (use_global_config) {
         auto config_opt = Query::try_find_first<EnemyConfig>();
         if (config_opt) {
@@ -45,10 +45,38 @@ void Enemy::on_play_start() {
 }
 
 void Enemy::on_update() {
+	if (use_global_config) {
+        auto config_opt = Query::try_find_first<EnemyConfig>();
+        if (config_opt) {
+            auto& config = config_opt->get();
+            patrol_speed = config.patrol_speed;
+            patrol_distance = config.patrol_distance;
+            gravity = config.gravity;
+            max_fall_speed = config.max_fall_speed;
+            shoot_interval = config.shoot_interval;
+            shoot_range = config.shoot_range;
+            body_size = config.body_size;
+            eye_size = config.eye_size;
+            eye_offset_x = config.eye_offset_x;
+            eye_offset_y = config.eye_offset_y;
+            eye_spacing = config.eye_spacing;
+            gun_length = config.gun_length;
+            gun_width = config.gun_width;
+            gun_offset_x = config.gun_offset_x;
+            gun_offset_y = config.gun_offset_y;
+            death_fade_duration = config.death_fade_duration;
+        }
+    }
+
     draw_enemy();
 }
 
 void Enemy::on_play_update() {
+	auto game_mgr_opt = Query::try_find_first<GameManager>();
+    if (!game_mgr_opt || !game_mgr_opt->get().should_game_run()) {
+        return;
+    }
+
     if (m_is_dead) {
         update_death_animation();
         return;
