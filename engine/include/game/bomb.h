@@ -30,6 +30,7 @@ private:
     bool m_is_defused = false;
     float m_defuse_progress = 0.0f;
     bool m_player_in_range = false;
+    bool m_player_missing_diffuser = false;
     
     void check_player_in_range();
     void update_defuse();

@@ -87,7 +87,7 @@ void Diffuser::draw_diffuser() {
     
     // Label
     const char* label = "DIFFUSER";
-    int font_size = 12;
+    int font_size = 20;
     int text_width = MeasureText(label, font_size);
     draw_text(label,
             position.x - text_width / 2,

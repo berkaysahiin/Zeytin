@@ -8,6 +8,7 @@ void Background::on_init() {
 }
 
 void Background::on_update() {
+    update_stars();
     draw_background();
 }
 
@@ -16,12 +17,25 @@ void Background::generate_stars() {
     
     for (int i = 0; i < star_count; i++) {
         Star star;
-        star.x = (float)(rand() % (int)VIRTUAL_WIDTH);
+        star.x = (float)(rand() % (int)VIRTUAL_WIDTH * 1.5f);
         star.y = (float)(rand() % (int)VIRTUAL_HEIGHT);
         star.size = 1.0f + (rand() % 3);
-        star.brightness = 0.3f + (rand() % 70) / 100.0f;
+        star.brightness = 0.4f + (rand() % 60) / 100.0f;
+        star.speed = star_speed_min + (rand() % (int)(star_speed_max - star_speed_min));
         
         m_stars.push_back(star);
+    }
+}
+
+void Background::update_stars() {
+    for (auto& star : m_stars) {
+        star.x -= star.speed * get_frame_time();
+        
+        // Wrap around when star goes off screen
+        if (star.x < 0) {
+            star.x = VIRTUAL_WIDTH;
+            star.y = (float)(rand() % (int)VIRTUAL_HEIGHT);
+        }
     }
 }
 

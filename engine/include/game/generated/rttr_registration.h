@@ -51,7 +51,9 @@ RTTR_REGISTRATION
         .constructor<>()(rttr::policy::ctor::as_object)
         .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
         .property("bg_color", &Background::bg_color)
-        .property("star_count", &Background::star_count);
+        .property("star_count", &Background::star_count)
+        .property("star_speed_max", &Background::star_speed_max)
+        .property("star_speed_min", &Background::star_speed_min);
 
     rttr::registration::class_<Bomb>("Bomb")
         .constructor<>()(rttr::policy::ctor::as_object)
@@ -193,6 +195,7 @@ RTTR_REGISTRATION
         .constructor<>()(rttr::policy::ctor::as_object)
         .property("brightness", &Star::brightness)
         .property("size", &Star::size)
+        .property("speed", &Star::speed)
         .property("x", &Star::x)
         .property("y", &Star::y)
         (rttr::metadata("NO_VARIANT", true));

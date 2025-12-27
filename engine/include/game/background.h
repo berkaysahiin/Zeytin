@@ -8,14 +8,17 @@ struct Star {
     float y;
     float size;
     float brightness;
+    float speed;  
 };
 
 class Background : public VariantBase {
     VARIANT(Background);
 
 public:
-    Color bg_color = {10, 10, 20, 255}; PROPERTY();
-    int star_count = 100; PROPERTY();
+    Color bg_color = {15, 20, 40, 255}; PROPERTY();  
+    int star_count = 150; PROPERTY();
+    float star_speed_min = 10.0f; PROPERTY();
+    float star_speed_max = 50.0f; PROPERTY();
     
     virtual void on_init() override;
     virtual void on_update() override;
@@ -25,4 +28,5 @@ private:
     
     void generate_stars();
     void draw_background();
+    void update_stars();
 };

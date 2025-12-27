@@ -11,6 +11,7 @@ void Bomb::on_init() {
     m_is_defused = false;
     m_defuse_progress = 0.0f;
     m_player_in_range = false;
+    m_player_missing_diffuser = false;
 }
 
 void Bomb::on_update() {
@@ -48,9 +49,11 @@ void Bomb::update_defuse() {
     if (m_player_in_range) {
         auto player_opt = Query::try_find_first<Player>();
         if (!player_opt || !player_opt->get().has_diffuser()) {
+            m_player_missing_diffuser = true;
             return;
         }
         
+        m_player_missing_diffuser = false;
         m_defuse_progress += get_frame_time() / defuse_time;
         
         if (m_defuse_progress >= 1.0f) {
@@ -69,6 +72,7 @@ void Bomb::update_defuse() {
             }
         }
     } else {
+        m_player_missing_diffuser = false;
         m_defuse_progress -= get_frame_time() / (defuse_time * 2.0f);
         if (m_defuse_progress < 0.0f) {
             m_defuse_progress = 0.0f;
@@ -98,6 +102,18 @@ void Bomb::draw_bomb() {
         scaled_size,
         {200, 200, 200, 255}
     );
+    
+    // Draw warning if player is in range but missing diffuser
+    if (m_player_missing_diffuser) {
+        const char* warning = "FIND DIFFUSER!";
+        int font_size = 32;
+        int text_width = MeasureText(warning, font_size);
+        draw_text(warning,
+                position.x - text_width / 2,
+                position.y - 60,
+                font_size,
+                {255, 255, 0, 255});
+    }
     
     if (!m_is_defused) {
         const char* warning = "!";
