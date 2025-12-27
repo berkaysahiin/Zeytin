@@ -95,6 +95,16 @@ void Player::apply_physics() {
     
     float old_x = position.x;
     position.x += m_velocity.x * delta;
+
+	float left_bound = body_size / 2;
+    float right_bound = VIRTUAL_WIDTH - body_size / 2;
+    if (position.x < left_bound) {
+        position.x = left_bound;
+        m_velocity.x = 0;
+    } else if (position.x > right_bound) {
+        position.x = right_bound;
+        m_velocity.x = 0;
+    }
     
     auto obstacle_entities = Query::find_all_with<Collider, Obstacle>();
     for (::entity_id obstacle_id : obstacle_entities) {
