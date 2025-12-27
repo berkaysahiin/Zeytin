@@ -146,6 +146,10 @@ class ClassParser:
             print(f"Error reading file {file_path}: {e}")
             return []
         
+        if 'PP_SKIP' in content:
+            print(f"Skipping file (PP_SKIP found): {file_path}")
+            return []
+        
         content = self.clean_content(content)
         
         class_matches = list(self.class_pattern.finditer(content))
@@ -237,61 +241,36 @@ class CodeGenerator:
     @staticmethod
     def generate_base_classes_registration() -> str:
         return """    rttr::registration::class_<VariantCreateInfo>("VariantCreateInfo")
-        .constructor<>()(rttr::policy::ctor::as_object)
-        .property("entity_id", &VariantCreateInfo::entity_id);
-    
+        .constructor<>()(rttr::policy::ctor::as_object);
+
     rttr::registration::class_<VariantBase>("VariantBase")
         .constructor<>()(rttr::policy::ctor::as_object)
-        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
-        .property("entity_id", &VariantBase::entity_id)(rttr::metadata("NO_SERIALIZE", true));\n\n"""
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object);
+
+"""
 
     @staticmethod
     def generate_raylib_registration() -> str:
         return """    rttr::registration::class_<Vector2>("Vector2")
         .constructor<>()(rttr::policy::ctor::as_object)
         .property("x", &Vector2::x)
-        .property("y", &Vector2::y)
-        (rttr::metadata("NO_VARIANT", true));
-
-    rttr::registration::class_<Vector3>("Vector3")
-        .constructor<>()(rttr::policy::ctor::as_object)
-        .property("x", &Vector3::x)
-        .property("y", &Vector3::y)
-        .property("z", &Vector3::z)
-        (rttr::metadata("NO_VARIANT", true));
-
-    rttr::registration::class_<Rectangle>("Rectangle")
-        .constructor<>()(rttr::policy::ctor::as_object)
-        .property("x", &Rectangle::x)
-        .property("y", &Rectangle::y)
-        .property("width", &Rectangle::width)
-        .property("height", &Rectangle::height)
-        (rttr::metadata("NO_VARIANT", true));
+        .property("y", &Vector2::y);
 
     rttr::registration::class_<Color>("Color")
         .constructor<>()(rttr::policy::ctor::as_object)
         .property("r", &Color::r)
         .property("g", &Color::g)
         .property("b", &Color::b)
-        .property("a", &Color::a)
-        (rttr::metadata("NO_VARIANT", true));
+        .property("a", &Color::a);
 
-    rttr::registration::class_<Camera2D>("Camera2D")
+    rttr::registration::class_<Rectangle>("Rectangle")
         .constructor<>()(rttr::policy::ctor::as_object)
-        .property("offset", &Camera2D::offset)
-        .property("target", &Camera2D::target)
-        .property("rotation", &Camera2D::rotation)
-        .property("zoom", &Camera2D::zoom)
-        (rttr::metadata("NO_VARIANT", true));
+        .property("x", &Rectangle::x)
+        .property("y", &Rectangle::y)
+        .property("width", &Rectangle::width)
+        .property("height", &Rectangle::height);
 
-    rttr::registration::class_<Texture2D>("Texture2D")
-        .constructor<>()(rttr::policy::ctor::as_object)
-        .property("id", &Texture2D::id)
-        .property("width", &Texture2D::width)
-        .property("height", &Texture2D::height)
-        .property("mipmaps", &Texture2D::mipmaps)
-        .property("format", &Texture2D::format)
-        (rttr::metadata("NO_VARIANT", true));\n\n"""
+"""
 
     @staticmethod
     def generate_variant_class_registration(class_info: Dict[str, Any]) -> str:

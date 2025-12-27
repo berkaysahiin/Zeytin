@@ -6,7 +6,7 @@
             "value": {
                 "countdown_active": true,
                 "danger_threshold": 10.0,
-                "duration": 60.0,
+                "duration": 20.0,
                 "font_size": 48,
                 "offset_x": 50.0,
                 "offset_y": 50.0,

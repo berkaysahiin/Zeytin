@@ -20,6 +20,9 @@ public:
     Color normal_color = {255, 255, 255, 255}; 
     Color warning_color = {255, 255, 0, 255}; 
     Color danger_color = {255, 0, 0, 255}; 
+
+	float get_time_remaining() const { return m_time_remaining; }
+	void set_time_remaining(float time) { m_time_remaining = time; }
     
     virtual void on_init() override;
     virtual void on_update() override;

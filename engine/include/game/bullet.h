@@ -12,6 +12,12 @@ public:
     virtual void on_update() override;
     virtual void on_play_update() override;
 
+	float get_time_alive() const { return m_time_alive; }
+	void set_time_alive(float time) { m_time_alive = time; }
+    
+    int get_direction() const { return m_direction; }
+    void set_direction(int dir) { m_direction = dir; }
+
 public:
     int m_direction = 1; 
 

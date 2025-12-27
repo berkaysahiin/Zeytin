@@ -34,8 +34,21 @@ public:
     virtual void on_update() override;
     virtual void on_play_update() override;
 
+	Vector2 get_velocity() const { return m_velocity; }
+	void set_velocity(Vector2 v) { m_velocity = v; }
+
+	bool get_is_grounded() const { return m_is_grounded; }
+	void set_is_grounded(bool grounded) { m_is_grounded = grounded; }
+
+	int get_patrol_direction() const { return m_patrol_direction; }
+	void set_patrol_direction(int dir) { m_patrol_direction = dir; }
+
+	float get_shoot_timer() const { return m_shoot_timer; }
+	void set_shoot_timer(float timer) { m_shoot_timer = timer; }
+
     void kill();
     bool is_dead() const { return m_is_dead; }
+	void set_is_dead(bool dead) { m_is_dead = dead; }
 
 private:
     Color body_color = {150, 50, 50, 255};
