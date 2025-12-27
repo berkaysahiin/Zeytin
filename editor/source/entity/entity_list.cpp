@@ -18,7 +18,13 @@ namespace {
 }
 
 EntityList::EntityList() {
-    load_entities(ResourceManager::get().get_entities_path());
+    auto levels = get_available_levels();
+    if (!levels.empty()) {
+        load_level(levels[0]);
+    } else {
+        load_entities(ResourceManager::get().get_entities_path());
+    }
+    
     register_event_handlers();
 }
 
@@ -280,4 +286,32 @@ void EntityList::load_entity_from_file(const std::filesystem::path& path) {
     auto& entity = m_entities.emplace_back(EntityDocument(std::move(file_name)));
 
     entity.load_from_file(path);
+}
+
+void EntityList::load_level(const Level& level) {
+    if (!level.is_valid()) {
+        log_error() << "Invalid level" << std::endl;
+        return;
+    }
+    
+    m_current_level = level;
+    load_entities(level.path); // reuse existing function
+    
+    // Sync with engine if running
+    if (m_is_play_mode || m_is_synced_once) {
+        std::string scene = as_string();
+        EngineEventBus::get().publish<const std::string&>(EngineEvent::EngineSendScene, scene);
+    }
+}
+
+std::vector<Level> EntityList::get_available_levels() const {
+    std::vector<Level> levels;
+    auto levels_path = ResourceManager::get().get_resource_subdir("levels");
+    
+    for (const auto& entry : std::filesystem::directory_iterator(levels_path)) {
+        if (entry.is_directory()) {
+            levels.emplace_back(entry.path().filename().string(), entry.path());
+        }
+    }
+    return levels;
 }

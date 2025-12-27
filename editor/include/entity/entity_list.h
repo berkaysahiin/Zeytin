@@ -1,6 +1,7 @@
 #pragma once
 
 #include "entity_document.h"
+#include "level/level.h"
 
 #include <vector>
 #include <filesystem>
@@ -12,6 +13,10 @@ public:
     ~EntityList() {
         clean_backup_entities();
     }
+
+	void load_level(const Level& level);
+    std::vector<Level> get_available_levels() const;
+    const Level& get_current_level() const { return m_current_level; }
 
     inline std::vector<EntityDocument>& get_entities() { return m_entities; }
     std::string as_string() const;
@@ -32,6 +37,7 @@ private:
 
     bool m_is_play_mode = false;
     bool m_is_synced_once = false;
+	Level m_current_level;
 
     std::vector<EntityDocument> m_entities;
 };

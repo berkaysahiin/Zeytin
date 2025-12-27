@@ -1,0 +1,18 @@
+#pragma once
+
+#include "entity/entity_list.h"
+#include "utility/singleton.h"
+
+class LevelWindow {
+    MAKE_SINGLETON(LevelWindow);
+
+public:
+    void render();
+    void set_entity_list(EntityList* entity_list) { m_entity_list = entity_list; }
+
+private:
+    LevelWindow() = default;
+    
+    EntityList* m_entity_list = nullptr;
+    char m_new_level_name[64] = "";
+};

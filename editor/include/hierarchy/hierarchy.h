@@ -4,7 +4,6 @@
 #include "variant/variant_document.h"
 #include <vector>
 #include <map>
-#include <mutex>
 
 class Hierarchy final {
 public: 

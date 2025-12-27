@@ -13,9 +13,10 @@
 #include "console/console.h"
 #include "asset_browser/asset_browser.h"
 #include "test_viewer/test_viewer.h"
-#include "test_manager/test_manager.h"
 #include "window/window_manager.h"
 #include "export/export_window.h"
+
+#include "level/level_window.h"
 
 int main(int argc, char* argv[])
 {
@@ -41,6 +42,7 @@ int main(int argc, char* argv[])
     TestViewer test_viewer;
 
     ExportWindow::get().set_entity_list(&entity_list);
+	LevelWindow::get().set_entity_list(&entity_list);  
 
     WindowManager window_manager;
     window_manager.init();
@@ -87,6 +89,14 @@ int main(int argc, char* argv[])
     window_manager.add_main_menu_component([&engine_controls]{
             engine_controls.render();
     });
+
+	window_manager.add_window("Levels",
+        []() {
+            LevelWindow::get().render();
+        },
+        true,  // visible by default
+        "Levels",
+        true);
 
     while (!WindowShouldClose())
     {
