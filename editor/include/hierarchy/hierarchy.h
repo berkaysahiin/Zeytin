@@ -5,9 +5,11 @@
 #include <vector>
 #include <map>
 
+class EntityList;
+
 class Hierarchy final {
 public: 
-    Hierarchy(std::vector<EntityDocument>& entities, std::vector<VariantDocument>& variants);
+    Hierarchy(std::vector<VariantDocument>& variants, EntityList* entity_list);
     void update();
 
 private:
@@ -57,6 +59,6 @@ private:
     void save_all_entities();
     void subscribe_events();
 
-    std::vector<EntityDocument>& m_entities;
     std::vector<VariantDocument>& m_variants;
+    EntityList* m_entity_list;
 };

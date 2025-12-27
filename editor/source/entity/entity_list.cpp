@@ -22,7 +22,10 @@ EntityList::EntityList() {
     if (!levels.empty()) {
         load_level(levels[0]);
     } else {
-        load_entities(ResourceManager::get().get_entities_path());
+        log_warning() << "No levels found. Creating default level." << std::endl;
+        auto default_level_path = ResourceManager::get().get_resource_subdir("levels") / "default";
+        std::filesystem::create_directories(default_level_path);
+        load_level(Level("default", default_level_path));
     }
     
     register_event_handlers();
@@ -314,4 +317,21 @@ std::vector<Level> EntityList::get_available_levels() const {
         }
     }
     return levels;
+}
+
+void EntityList::save_all_entities() {
+    if (!m_current_level.is_valid()) {
+        log_error() << "Cannot save entities: current level is invalid" << std::endl;
+        return;
+    }
+
+    for (auto& entity : m_entities) {
+        if (!entity.is_dead()) {
+            std::filesystem::path entity_path = m_current_level.path / (entity.get_name() + ".entity");
+            entity.save_to_file(entity_path);
+        } else {
+            std::filesystem::path entity_path = m_current_level.path / (entity.get_name() + ".entity");
+            std::filesystem::remove(entity_path);
+        }
+    }
 }

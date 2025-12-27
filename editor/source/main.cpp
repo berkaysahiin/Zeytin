@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
     EntityList entity_list;
     VariantList variant_list;
 
-    Hierarchy hierarchy(entity_list.get_entities(), variant_list.get_variants());
+	Hierarchy hierarchy(variant_list.get_variants(), &entity_list);
     TestViewer test_viewer;
 
     ExportWindow::get().set_entity_list(&entity_list);

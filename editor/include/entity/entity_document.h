@@ -20,10 +20,6 @@ public:
     inline void mark_as_dead() { m_dead = true; }
     inline bool is_dead() const { return m_dead; }
 
-    void delete_entity_file(); 
-    void load_from_file(); 
-    void save_to_file() const; 
-
     void save_to_file(const std::filesystem::path& path) const;
     void load_from_file(const std::filesystem::path& path); 
 

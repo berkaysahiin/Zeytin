@@ -5,6 +5,7 @@
 #include <map>
 #include <fstream>
 
+#include "entity/entity_list.h"
 #include "imgui.h"
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
@@ -28,8 +29,8 @@ namespace {
     void notify_entity_removed(uint64_t entity_id);
 }
 
-Hierarchy::Hierarchy(std::vector<EntityDocument>& entities, std::vector<VariantDocument>& variants)
-    : m_entities(entities), m_variants(variants)
+Hierarchy::Hierarchy(std::vector<VariantDocument>& variants, EntityList* entity_list)
+    : m_variants(variants), m_entity_list(entity_list)
 {
     subscribe_events();
 }
@@ -39,15 +40,20 @@ void Hierarchy::update() {
     render_save_controls();
     ImGui::Separator();
 
+    if (!m_entity_list) {
+        ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "Entity list not initialized");
+        return;
+    }
+
     {
         std::lock_guard<std::mutex> lock(g_entities_mutex); 
-        for (auto& entity : m_entities) {
+        auto& entities = m_entity_list->get_entities();
+        for (auto& entity : entities) {
             if (!entity.is_dead()) {
                 render_entity(entity);
             }
         }
     }
-
 }
 
 void Hierarchy::render_save_controls() {
@@ -76,12 +82,10 @@ void Hierarchy::render_save_controls() {
 }
 
 void Hierarchy::save_all_entities() {
-    for (auto& entity : m_entities) {
-        if (!entity.is_dead()) {
-            entity.save_to_file();
-        } else {
-            entity.delete_entity_file();
-        }
+    if (m_entity_list) {
+        m_entity_list->save_all_entities();
+    } else {
+        log_error() << "EntityList not available for saving" << std::endl;
     }
 }
 
@@ -156,6 +160,10 @@ void Hierarchy::create_new_entity(const char* name) {
         return;
     }
 
+    if (!m_entity_list) {
+        log_error() << "Error: EntityList not available" << std::endl;
+        return;
+    }
 
     std::string safe_name = name;
     safe_name.erase(std::remove_if(safe_name.begin(), safe_name.end(), 
@@ -163,7 +171,8 @@ void Hierarchy::create_new_entity(const char* name) {
                            c == '?' || c == '"' || c == '<' || c == '>' || c == '|'; }), 
         safe_name.end());
 
-    for (auto& entity : m_entities) {
+    auto& entities = m_entity_list->get_entities();
+    for (auto& entity : entities) {
         if (!entity.is_dead() && entity.get_name() == safe_name) {
             log_error() << "Error Entity with name " << safe_name << " already exists" << std::endl;
             return;
@@ -184,7 +193,7 @@ void Hierarchy::create_new_entity(const char* name) {
     new_doc.AddMember("variants", variantsArray, allocator);
 
     EntityDocument entity(std::move(new_doc), safe_name);
-    m_entities.push_back(std::move(entity));
+    entities.push_back(std::move(entity));
 }
 
 void Hierarchy::render_entity(EntityDocument& entity_document) {

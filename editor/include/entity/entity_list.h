@@ -21,6 +21,9 @@ public:
     inline std::vector<EntityDocument>& get_entities() { return m_entities; }
     std::string as_string() const;
     
+    // For Hierarchy to save entities
+    void save_all_entities();
+
 private:
 
     void register_event_handlers();
@@ -28,7 +31,6 @@ private:
 
     void load_entity_from_file(const std::filesystem::path& path);
     void load_entities(const std::filesystem::path& path);
-    void save_entities();
 
     void backup_entities();
     void clean_backup_entities();

@@ -1,6 +1,7 @@
 #include "game/help_text.h"
 #include "core/query.h"
 #include "core/raylib_wrapper.h"
+#include "game/end_game.h"
 #include "game/position.h"
 
 void HelpText::on_init() {
@@ -15,6 +16,13 @@ void HelpText::on_init() {
 }
 
 void HelpText::on_update() {
+	auto game_mgr_opt = Query::try_find_first<EndGame>();
+	if(game_mgr_opt)
+	{
+		if(game_mgr_opt->get().is_game_over())
+			return; // Skip
+	}
+
     update_fade();
     
     if (m_alpha > 0.0f) {
