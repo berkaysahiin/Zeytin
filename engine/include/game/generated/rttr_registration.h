@@ -11,6 +11,7 @@
 #include "game/enemy.h"
 #include "game/enemy_config.h"
 #include "game/game_manager.h"
+#include "game/objective_arrow.h"
 #include "game/obstacle.h"
 #include "game/player.h"
 #include "game/position.h"
@@ -66,7 +67,14 @@ RTTR_REGISTRATION
         .property("bar_width", &Bomb::bar_width)
         .property("bomb_size", &Bomb::bomb_size)
         .property("defuse_radius", &Bomb::defuse_radius)
-        .property("defuse_time", &Bomb::defuse_time);
+        .property("defuse_time", &Bomb::defuse_time)
+        .property("glow_size", &Bomb::glow_size)
+        .property("label_size", &Bomb::label_size)
+        .property("pulse_intensity", &Bomb::pulse_intensity)
+        .property("pulse_speed", &Bomb::pulse_speed)
+        .property("ring_speed", &Bomb::ring_speed)
+        .property("shake_intensity", &Bomb::shake_intensity)
+        .property("show_danger_rings", &Bomb::show_danger_rings);
 
     rttr::registration::class_<Bullet>("Bullet")
         .constructor<>()(rttr::policy::ctor::as_object)
@@ -170,6 +178,14 @@ RTTR_REGISTRATION
     rttr::registration::class_<GameManager>("GameManager")
         .constructor<>()(rttr::policy::ctor::as_object)
         .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object);
+
+    rttr::registration::class_<ObjectiveArrow>("ObjectiveArrow")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
+        .property("arrow_height", &ObjectiveArrow::arrow_height)
+        .property("arrow_size", &ObjectiveArrow::arrow_size)
+        .property("bounce_amount", &ObjectiveArrow::bounce_amount)
+        .property("bounce_speed", &ObjectiveArrow::bounce_speed);
 
     rttr::registration::class_<Obstacle>("Obstacle")
         .constructor<>()(rttr::policy::ctor::as_object)

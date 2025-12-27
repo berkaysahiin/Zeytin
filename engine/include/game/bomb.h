@@ -4,7 +4,7 @@
 
 class Bomb : public VariantBase {
     VARIANT(Bomb);
-    REQUIRES(Position, Scale);
+    REQUIRES(Position, Scale, Countdown);
 
 public:
     float defuse_time = 5.0f; PROPERTY();
@@ -14,6 +14,15 @@ public:
     float bar_width = 60.0f; PROPERTY();
     float bar_height = 8.0f; PROPERTY();
     float bar_offset_y = -30.0f; PROPERTY();
+    
+    // Scary effect parameters
+    float pulse_speed = 3.0f; PROPERTY();           // How fast bomb pulses
+    float pulse_intensity = 0.2f; PROPERTY();       // How much to pulse
+    float shake_intensity = 2.0f; PROPERTY();       // Screen shake when timer low
+    float glow_size = 60.0f; PROPERTY();            // Red glow radius
+    bool show_danger_rings = true; PROPERTY();      // Show expanding danger rings
+    float ring_speed = 100.0f; PROPERTY();          // Speed of danger rings
+    int label_size = 20; PROPERTY();
     
     virtual void on_init() override;
     virtual void on_update() override;
@@ -31,11 +40,17 @@ private:
     float m_defuse_progress = 0.0f;
     bool m_player_in_range = false;
     bool m_player_missing_diffuser = false;
+    float m_timer = 0.0f;
+    float m_ring_timer = 0.0f;
     
     void check_player_in_range();
     void update_defuse();
     void draw_bomb();
     void draw_defuse_circle();
     void draw_defuse_bar();
+    void draw_danger_effects();
+    void draw_red_glow();
+    void draw_danger_rings();
     Color get_bar_color() const;
+    float get_danger_level() const;  // 0-1 based on countdown
 };

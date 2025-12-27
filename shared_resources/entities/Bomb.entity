@@ -9,7 +9,14 @@
                 "bar_width": 82.5999984741211,
                 "bomb_size": 42.599998474121094,
                 "defuse_radius": 150.0,
-                "defuse_time": 5.0
+                "defuse_time": 5.0,
+                "glow_size": 60.0,
+                "label_size": 35,
+                "pulse_intensity": 0.20000000298023224,
+                "pulse_speed": 3.0,
+                "ring_speed": 100.0,
+                "shake_intensity": 2.0,
+                "show_danger_rings": true
             }
         },
         {

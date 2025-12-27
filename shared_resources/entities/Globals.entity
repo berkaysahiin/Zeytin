@@ -35,7 +35,7 @@
             "type": "EndGame",
             "value": {
                 "game_over_font_size": 80,
-                "reason_font_size": 30,
+                "reason_font_size": 50,
                 "ui_transparency": 0.8500000238418579,
                 "win_font_size": 80
             }
@@ -99,12 +99,21 @@
         {
             "type": "CRTEffect",
             "value": {
-                "chromatic_aberration": 0.5,
-                "curvature": 20.0,
+                "chromatic_aberration": 0.32499998807907104,
+                "curvature": 5.0,
                 "enabled": true,
-                "noise_intensity": 0.05000000074505806,
+                "noise_intensity": 0.10000000149011612,
                 "scanline_intensity": 0.30000001192092896,
-                "vignette_intensity": 0.30000001192092896
+                "vignette_intensity": 0.15000000596046448
+            }
+        },
+        {
+            "type": "ObjectiveArrow",
+            "value": {
+                "arrow_height": 200.0,
+                "arrow_size": 100.0,
+                "bounce_amount": 30.0,
+                "bounce_speed": 1.0
             }
         }
     ]
