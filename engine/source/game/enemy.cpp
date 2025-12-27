@@ -15,6 +15,8 @@ void Enemy::on_play_start() {
     m_velocity = {0.0f, 0.0f};
     m_is_grounded = false;
     m_shoot_timer = 0.0f;
+    m_is_dead = false;
+    m_death_timer = 0.0f;
 }
 
 void Enemy::on_update() {
@@ -22,10 +24,28 @@ void Enemy::on_update() {
 }
 
 void Enemy::on_play_update() {
+    if (m_is_dead) {
+        update_death_animation();
+        return;
+    }
+    
     patrol();
     apply_physics();
     check_ground();
     handle_shooting();
+}
+
+void Enemy::kill() {
+    if (m_is_dead) return;
+    
+    m_is_dead = true;
+    m_death_timer = 0.0f;
+    m_velocity = {0.0f, 0.0f};
+}
+
+void Enemy::update_death_animation() {
+    float delta = get_frame_time();
+    m_death_timer += delta;
 }
 
 void Enemy::patrol() {
@@ -106,17 +126,14 @@ void Enemy::handle_shooting() {
     m_shoot_timer += delta;
     
     if (m_shoot_timer >= shoot_interval) {
-        // Find player using try_find_first
         auto player_opt = Query::try_find_first<Player>();
         if (player_opt) {
             auto& player = player_opt->get();
             auto& enemy_pos = Query::get<Position>(this);
             auto& player_pos = Query::get<Position>(&player);
             
-            // Check if player is in range
             float distance = abs(player_pos.x - enemy_pos.x);
             if (distance <= shoot_range) {
-                // Aim at player
                 if (player_pos.x < enemy_pos.x) {
                     m_patrol_direction = -1;
                 } else {
@@ -134,7 +151,6 @@ void Enemy::shoot() {
     auto& enemy_pos = Query::get<Position>(this);
     auto& enemy_scale = Query::get<Scale>(this);
     
-    // Calculate bullet spawn position (at gun tip)
     float scaled_gun_offset_x = gun_offset_x * enemy_scale.x * m_patrol_direction;
     float scaled_gun_length = gun_length * enemy_scale.x;
     float scaled_gun_offset_y = gun_offset_y * enemy_scale.y;
@@ -142,10 +158,8 @@ void Enemy::shoot() {
     float bullet_x = enemy_pos.x + scaled_gun_offset_x + (m_patrol_direction * scaled_gun_length);
     float bullet_y = enemy_pos.y + scaled_gun_offset_y;
     
-    // Create bullet entity
     ::entity_id bullet_id = Query::create_entity();
     
-    // Add Position
     auto pos_opt = Query::add<Position>(bullet_id);
     if (pos_opt) {
         auto& bullet_pos = pos_opt->get();
@@ -153,7 +167,6 @@ void Enemy::shoot() {
         bullet_pos.y = bullet_y;
     }
     
-    // Add Scale
     auto scale_opt = Query::add<Scale>(bullet_id);
     if (scale_opt) {
         auto& bullet_scale = scale_opt->get();
@@ -161,10 +174,8 @@ void Enemy::shoot() {
         bullet_scale.y = 1.0f;
     }
     
-    // Add Collider (will be sized by Bullet component)
     Query::add<Collider>(bullet_id);
     
-    // Add Bullet component with direction
     auto bullet_opt = Query::add<Bullet>(bullet_id);
     if (bullet_opt) {
         auto& bullet = bullet_opt->get();
@@ -173,58 +184,53 @@ void Enemy::shoot() {
 }
 
 void Enemy::draw_enemy() {
-    auto [position, scale] = Query::read<Position, Scale>(this);
+    auto& position = Query::get<Position>(this);
+    auto& scale = Query::get<Scale>(this);
     
-    float scaled_size = body_size * scale.x;
-    
-    Rectangle body_rect = {
-        position.x - scaled_size / 2,
-        position.y - scaled_size / 2,
-        scaled_size,
-        scaled_size
-    };
-    draw_rectangle_rec(body_rect, body_color);
-    
+    float scaled_body_size = body_size * scale.x;
     float scaled_eye_size = eye_size * scale.x;
-    float scaled_eye_offset_x = eye_offset_x * scale.x * m_patrol_direction;
+    float scaled_eye_offset_x = eye_offset_x * scale.x;
     float scaled_eye_offset_y = eye_offset_y * scale.y;
     float scaled_eye_spacing = eye_spacing * scale.x;
-    
-    draw_circle(
-        position.x + scaled_eye_offset_x - scaled_eye_spacing,
-        position.y + scaled_eye_offset_y,
-        scaled_eye_size,
-        eye_color
-    );
-    
-    draw_circle(
-        position.x + scaled_eye_offset_x + scaled_eye_spacing,
-        position.y + scaled_eye_offset_y,
-        scaled_eye_size,
-        eye_color
-    );
-    
     float scaled_gun_length = gun_length * scale.x;
     float scaled_gun_width = gun_width * scale.y;
-    float scaled_gun_offset_x = gun_offset_x * scale.x * m_patrol_direction;
+    float scaled_gun_offset_x = gun_offset_x * scale.x;
     float scaled_gun_offset_y = gun_offset_y * scale.y;
     
-    Rectangle gun_rect;
-    if (m_patrol_direction == 1) {
-        gun_rect = {
-            position.x + scaled_gun_offset_x,
-            position.y + scaled_gun_offset_y - scaled_gun_width / 2,
-            scaled_gun_length,
-            scaled_gun_width
-        };
-    } else {
-        gun_rect = {
-            position.x + scaled_gun_offset_x - scaled_gun_length,
-            position.y + scaled_gun_offset_y - scaled_gun_width / 2,
-            scaled_gun_length,
-            scaled_gun_width
-        };
+    unsigned char alpha = 255;
+    if (m_is_dead) {
+        float fade_progress = m_death_timer / death_fade_duration;
+        if (fade_progress > 1.0f) fade_progress = 1.0f;
+        alpha = (unsigned char)(255 * (1.0f - fade_progress));
     }
     
-    draw_rectangle_rec(gun_rect, gun_color);
+    Color faded_body_color = {body_color.r, body_color.g, body_color.b, alpha};
+    Color faded_eye_color = {eye_color.r, eye_color.g, eye_color.b, alpha};
+    Color faded_gun_color = {gun_color.r, gun_color.g, gun_color.b, alpha};
+    
+    draw_rectangle(
+        position.x - scaled_body_size / 2,
+        position.y - scaled_body_size / 2,
+        scaled_body_size,
+        scaled_body_size,
+        faded_body_color
+    );
+    
+    float gun_x = position.x + (scaled_gun_offset_x * m_patrol_direction);
+    float gun_y = position.y + scaled_gun_offset_y;
+    
+    draw_rectangle(
+        gun_x,
+        gun_y - scaled_gun_width / 2,
+        scaled_gun_length * m_patrol_direction,
+        scaled_gun_width,
+        faded_gun_color
+    );
+    
+    float left_eye_x = position.x + (scaled_eye_offset_x - scaled_eye_spacing / 2) * m_patrol_direction;
+    float right_eye_x = position.x + (scaled_eye_offset_x + scaled_eye_spacing / 2) * m_patrol_direction;
+    float eyes_y = position.y + scaled_eye_offset_y;
+    
+    draw_circle(left_eye_x, eyes_y, scaled_eye_size, faded_eye_color);
+    draw_circle(right_eye_x, eyes_y, scaled_eye_size, faded_eye_color);
 }

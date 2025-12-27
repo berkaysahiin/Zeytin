@@ -5,10 +5,11 @@
             "type": "Enemy",
             "value": {
                 "body_size": 50.0,
+                "death_fade_duration": 1.0,
                 "eye_offset_x": 10.0,
                 "eye_offset_y": -8.0,
                 "eye_size": 6.0,
-                "eye_spacing": 8.0,
+                "eye_spacing": 15.0,
                 "gravity": 1500.0,
                 "gun_length": 25.0,
                 "gun_offset_x": 15.0,

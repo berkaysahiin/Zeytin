@@ -28,9 +28,14 @@ public:
     float gun_offset_x = 15.0f; PROPERTY();
     float gun_offset_y = 5.0f; PROPERTY();
 
+    float death_fade_duration = 1.0f; PROPERTY();
+
     virtual void on_play_start() override;
     virtual void on_update() override;
     virtual void on_play_update() override;
+
+    void kill();
+    bool is_dead() const { return m_is_dead; }
 
 private:
     Color body_color = {150, 50, 50, 255};
@@ -43,6 +48,7 @@ private:
     void handle_shooting();
     void shoot();
     void draw_enemy();
+    void update_death_animation();
     
     float m_start_x = 0.0f;
     int m_patrol_direction = 1;
@@ -50,4 +56,7 @@ private:
     bool m_is_grounded = false;
     
     float m_shoot_timer = 0.0f;
+    
+    bool m_is_dead = false;
+    float m_death_timer = 0.0f;
 };

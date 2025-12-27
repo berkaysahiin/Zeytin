@@ -15,7 +15,6 @@ public:
     bool enable_double_jump = true; PROPERTY();
     int max_jumps = 2; PROPERTY();
     
-	// Kept sync with collider
     float body_size = 50.0f; PROPERTY();
 
     float eye_size = 8.0f; PROPERTY();
@@ -35,6 +34,7 @@ private:
     void apply_physics();
     void draw_character();
     void check_ground();
+    void check_enemy_collision();
     
     Vector2 m_velocity = {0.0f, 0.0f};
     bool m_is_grounded = false;

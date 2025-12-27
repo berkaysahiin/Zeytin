@@ -9,7 +9,7 @@
                 "eye_offset_x": 12.0,
                 "eye_offset_y": -8.0,
                 "eye_size": 8.0,
-                "eye_spacing": 10.0,
+                "eye_spacing": 17.0,
                 "gravity": 1500.0,
                 "jump_force": 600.0,
                 "max_fall_speed": 800.0,

@@ -104,6 +104,7 @@ RTTR_REGISTRATION
         .constructor<>()(rttr::policy::ctor::as_object)
         .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
         .property("body_size", &Enemy::body_size)
+        .property("death_fade_duration", &Enemy::death_fade_duration)
         .property("eye_offset_x", &Enemy::eye_offset_x)
         .property("eye_offset_y", &Enemy::eye_offset_y)
         .property("eye_size", &Enemy::eye_size)
