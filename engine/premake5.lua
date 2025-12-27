@@ -59,9 +59,13 @@ workspace "Zeytin"
         }
         buildoptions {
             "-std=c++17",
-            "-w",
+            "-w"
+        }
+        linkoptions {
+            "-static",
             "-static-libgcc",
-            "-static-libstdc++"
+            "-static-libstdc++",
+            "-Wl,-Bstatic,--whole-archive -lwinpthread -Wl,--no-whole-archive"
         }
 
     filter { "system:windows", "configurations:STANDALONE" }
