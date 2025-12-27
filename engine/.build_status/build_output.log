@@ -18,31 +18,8 @@ Requirements file unchanged, skipping: /home/redgrain/Dev/Zeytin/shared_resource
 Requirements files written to /home/redgrain/Dev/Zeytin/shared_resources/variants/requires
 Building configurations...
 Running action 'gmake'...
-Done (31ms).
+Done (33ms).
 ==== Building Zeytin (editor_mode) ====
-application.cpp
-from_json.cpp
-zeytin.cpp
-background.cpp
-bomb.cpp
-bullet.cpp
-collider.cpp
-countdown.cpp
-crt_effect.cpp
-diffuser.cpp
-end_game.cpp
-enemy.cpp
-game_manager.cpp
-help_text.cpp
-objective_arrow.cpp
-obstacle.cpp
-player.cpp
-retry.cpp
-rewind_effect.cpp
-start_menu.cpp
-time_controller.cpp
-time_stopped_indicator.cpp
-Linking Zeytin
 Changed directory to: /home/redgrain/Dev/Zeytin/engine/scripts
 Running parser...
 Parser command: python3 parser2.py

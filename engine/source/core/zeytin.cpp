@@ -86,7 +86,7 @@ void Zeytin::initialize_editor_communication() {
 #else
 
 void Zeytin::initialize_standalone() {
-    std::string default_level = "level1"; 
+    std::string default_level = "level_1"; 
     std::string scene_json = LevelManager::load_level(default_level);
     
     if (scene_json.empty() || !deserialize_scene(scene_json)) {
@@ -95,6 +95,7 @@ void Zeytin::initialize_standalone() {
         return;
     }
     
+    m_current_level_name = default_level;  
     m_state.play_mode = true;
 }
 
@@ -154,15 +155,23 @@ void Zeytin::run_frame() {
     }
 
 	if(m_state.reload_next_frame) {
-    	// If we have a current level, reload it; otherwise use backup
-    	if (!m_current_level_name.empty()) {
-    	    request_level_load(m_current_level_name);  // Reuse existing API
-    	} else {
-    	    exit_play_mode();
-    	    enter_play_mode();
-    	}
-    	m_state.reload_next_frame = false;
-	}
+#ifdef EDITOR_MODE
+    if (!m_current_level_name.empty()) {
+        request_level_load(m_current_level_name);
+    } else {
+        exit_play_mode();
+        enter_play_mode(false);
+    }
+#else
+    // Standalone: reload current level
+    if (!m_current_level_name.empty()) {
+        request_level_load(m_current_level_name);
+    } else {
+        log_error() << "No level to reload" << std::endl;
+    }
+#endif
+    m_state.reload_next_frame = false;
+}
 
     begin_texture_mode(m_render_texture);
     clear_background(BLACK);
@@ -590,6 +599,12 @@ void Zeytin::render() {
     }
 }
 
+void Zeytin::request_level_load(const std::string& level_name) {
+    m_pending_level_name = level_name;
+    m_state.load_level_next_frame = true;
+    log_info() << "Level load requested: " << level_name << " (will load next frame)" << std::endl;
+}
+
 #ifdef EDITOR_MODE
 
 void Zeytin::subscribe_editor_events() {
@@ -877,11 +892,7 @@ void Zeytin::sync_editor() {
     }
 }
 
-void Zeytin::request_level_load(const std::string& level_name) {
-    m_pending_level_name = level_name;
-    m_state.load_level_next_frame = true;
-    log_info() << "Level load requested: " << level_name << " (will load next frame)" << std::endl;
-}
+
 
 void Zeytin::generate_variants() {
     ZPROFILE_FUNCTION();
