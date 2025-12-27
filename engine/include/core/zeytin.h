@@ -53,6 +53,7 @@ public:
     bool load_scene(const std::filesystem::path&);
     std::string serialize_scene();
     bool deserialize_scene(const std::string& scene); 
+	bool switch_to_level(const std::string& level_name);
 
     void post_init_variants();
     void update_variants();

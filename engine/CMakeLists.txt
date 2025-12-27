@@ -56,6 +56,5 @@ elseif(ENGINE_CONFIG STREQUAL "standalone")
     target_compile_options(ZeytinEngine_${ENGINE_CONFIG} PRIVATE -O3)
     target_compile_definitions(ZeytinEngine_${ENGINE_CONFIG} PRIVATE
         STANDALONE=1
-        EMBED_SCENE=1
     )
 endif()

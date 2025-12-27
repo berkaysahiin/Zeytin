@@ -1,16 +1,12 @@
 #include "entity/entity_list.h"
 
 #include <filesystem>
-#include <mutex>
-
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 
 #include "logger.h"
 #include "engine/engine_event.h"
 #include "resource_manager/resource_manager.h"
-
-#include "common/global_mutexes.h"
 
 namespace {
     constexpr const char* BACKUP_DIR = "temp_backup";

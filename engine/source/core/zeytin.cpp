@@ -16,17 +16,17 @@
 #include "core/json/from_json.h"
 #include "core/json/to_json.h"
 #include "core/raylib_wrapper.h"
-#include "core/utils.h"
 #include "core/profiling.h"
-
-#include "editor/editor_communication.h"
 
 #include "raylib.h"
 #include "variant/variant_base.h"
+#include "level/level_manager.h"
 #include "resource_manager/resource_manager.h"
+#include "core/utils.h"
 
 #ifdef EDITOR_MODE
     #include "editor/editor_event.h"
+	#include "editor/editor_communication.h"
 #endif
 
 #ifdef EMBED_SCENE
@@ -86,18 +86,14 @@ void Zeytin::initialize_editor_communication() {
 #else
 
 void Zeytin::initialize_standalone() {
-#ifdef EMBED_SCENE
-    deserialize_scene(g_embeded_scene);
-#else
-    std::string startup_scene = "main.scene";
-    std::filesystem::path scene_path = ResourceManager::get().get_resource_subdir("scenes") / startup_scene;
+    std::string default_level = "level1"; 
+    std::string scene_json = LevelManager::load_level(default_level);
     
-    if (!load_scene(scene_path)) {
-        log_error() << "Failed to load startup scene: " << scene_path << std::endl;
+    if (scene_json.empty() || !deserialize_scene(scene_json)) {
+        log_error() << "Failed to load startup level: " << default_level << std::endl;
         m_state.should_die = true;
         return;
     }
-#endif
     
     m_state.play_mode = true;
 }
@@ -356,6 +352,31 @@ bool Zeytin::deserialize_scene(const std::string& scene) {
     }
 
     log_info() << "Scene loaded with " << successful_entities << " entities" << std::endl;
+    return true;
+}
+
+bool Zeytin::switch_to_level(const std::string& level_name) {
+    std::string scene_json = LevelManager::load_level(level_name);
+    
+    if (scene_json.empty()) {
+        log_error() << "Failed to load level: " << level_name << std::endl;
+        return false;
+    }
+    
+    // Clear current scene
+    m_storage.clear();
+    
+    // Load new scene
+    if (!deserialize_scene(scene_json)) {
+        log_error() << "Failed to deserialize level: " << level_name << std::endl;
+        return false;
+    }
+    
+    // Reset state
+    m_state.started = false;
+    m_state.late_started = false;
+    
+    log_info() << "Switched to level: " << level_name << std::endl;
     return true;
 }
 
