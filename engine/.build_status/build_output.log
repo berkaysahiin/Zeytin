@@ -16,8 +16,9 @@ Requirements file unchanged, skipping: /home/redgrain/Dev/Zeytin/shared_resource
 Requirements files written to /home/redgrain/Dev/Zeytin/shared_resources/variants/requires
 Building configurations...
 Running action 'gmake'...
-Done (33ms).
+Done (26ms).
 ==== Building Zeytin (editor_mode) ====
+game_manager.cpp
 player.cpp
 Linking Zeytin
 Changed directory to: /home/redgrain/Dev/Zeytin/engine/scripts

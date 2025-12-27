@@ -36,7 +36,26 @@
             "value": {
                 "game_over_font_size": 80,
                 "reason_font_size": 30,
-                "ui_transparency": 0.8500000238418579
+                "ui_transparency": 0.8500000238418579,
+                "win_font_size": 80
+            }
+        },
+        {
+            "type": "GameManager",
+            "value": {}
+        },
+        {
+            "type": "Background",
+            "value": {
+                "bg_color": {
+                    "r": 10,
+                    "g": 10,
+                    "b": 20,
+                    "a": 255
+                },
+                "star_count": 100,
+                "star_speed_max": 50.0,
+                "star_speed_min": 10.0
             }
         }
     ]

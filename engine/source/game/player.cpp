@@ -9,6 +9,7 @@
 #include "game/enemy.h"
 #include "game/bullet.h"
 #include "game/end_game.h"
+#include "remote_logger/remote_logger.h"
 #include <algorithm>
 
 void Player::on_init() {
@@ -86,7 +87,6 @@ void Player::apply_physics() {
         }
     }
     
-    // Move horizontally and check collision
     float old_x = position.x;
     position.x += m_velocity.x * delta;
     
@@ -103,7 +103,6 @@ void Player::apply_physics() {
         }
     }
     
-    // Move vertically and check collision
     float old_y = position.y;
     position.y += m_velocity.y * delta;
     
@@ -115,6 +114,7 @@ void Player::apply_physics() {
         if (CheckCollisionRecs(player_bounds, obstacle_bounds)) {
             position.y = old_y;
             m_velocity.y = 0;
+			m_jumps_remaining = max_jumps;
             break;
         }
     }
@@ -158,10 +158,6 @@ void Player::check_ground() {
     }
     
     m_is_grounded = landed;
-
-	if(m_is_grounded) {
-		m_jumps_remaining = max_jumps;
-	}
 }
 
 void Player::check_enemy_collision() {

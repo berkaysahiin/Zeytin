@@ -1,5 +1,6 @@
 #pragma once
 
+#include "raylib.h"
 #include "variant/variant_base.h"
 
 class Player : public VariantBase {
@@ -23,12 +24,14 @@ public:
     float eye_spacing = 10.0f; PROPERTY();
 
     virtual void on_init() override;
-    virtual void on_update() override;
     virtual void on_play_update() override;
+    virtual void on_update() override;
     
     bool is_grounded() const { return m_is_grounded; }
     bool has_diffuser() const { return m_has_diffuser; }
     void set_has_diffuser(bool has) { m_has_diffuser = has; }
+
+	Vector2 get_velocity() { return m_velocity; }
 
 private:
     Color body_color; 

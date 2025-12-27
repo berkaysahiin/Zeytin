@@ -4,10 +4,10 @@
         {
             "type": "Bomb",
             "value": {
-                "bar_height": 8.0,
+                "bar_height": 7.699999809265137,
                 "bar_offset_y": -30.0,
-                "bar_width": 60.0,
-                "bomb_size": 40.0,
+                "bar_width": 82.5999984741211,
+                "bomb_size": 42.599998474121094,
                 "defuse_radius": 150.0,
                 "defuse_time": 5.0
             }
