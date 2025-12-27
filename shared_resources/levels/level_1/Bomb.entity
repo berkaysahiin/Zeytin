@@ -14,7 +14,7 @@
                 "bar_width": 131.3000030517578,
                 "bomb_size": 36.099998474121094,
                 "defuse_radius": 148.3000030517578,
-                "defuse_time": 5.0,
+                "defuse_time": 2.5,
                 "glow_size": 60.0,
                 "label_size": 35,
                 "pulse_intensity": 0.20000000298023224,

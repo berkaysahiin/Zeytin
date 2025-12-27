@@ -67,7 +67,7 @@ void Player::handle_input() {
     
     m_velocity.x = horizontal * move_speed;
     
-    bool jump_pressed = is_key_down(KEY_SPACE) || is_key_down(KEY_UP);
+    bool jump_pressed = is_key_down(KEY_SPACE) || is_key_down(KEY_UP) || is_key_down(KEY_W);
     
     if (jump_pressed && !m_jump_pressed_last_frame) {
         if (m_is_grounded || (enable_double_jump && m_jumps_remaining > 0)) {

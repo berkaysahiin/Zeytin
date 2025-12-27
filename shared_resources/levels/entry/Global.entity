@@ -1,0 +1,39 @@
+{
+    "entity_id": 10503059096001709959,
+    "variants": [
+        {
+            "type": "CRTEffect",
+            "value": {
+                "chromatic_aberration": 0.10000000149011612,
+                "curvature": 4.0,
+                "enabled": true,
+                "noise_intensity": 0.05000000074505806,
+                "scanline_intensity": 0.30000001192092896,
+                "vignette_intensity": 0.30000001192092896
+            }
+        },
+        {
+            "type": "Background",
+            "value": {
+                "bg_color": {
+                    "r": 15,
+                    "g": 20,
+                    "b": 40,
+                    "a": 255
+                },
+                "star_count": 400,
+                "star_speed_max": 57.599998474121094,
+                "star_speed_min": 30.899999618530273
+            }
+        },
+        {
+            "type": "StartMenu",
+            "value": {
+                "background_opacity": 0.5,
+                "instruction_font_size": 24,
+                "next_level": "level_1",
+                "title_font_size": 48
+            }
+        }
+    ]
+}

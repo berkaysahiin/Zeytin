@@ -1,7 +1,7 @@
-// engine/include/game/start_game.h
 #pragma once
+
 #include "variant/variant_base.h"
-#include "core/raylib_wrapper.h"
+#include <string>  
 
 class StartMenu : public VariantBase {
     VARIANT(StartMenu);
@@ -11,15 +11,16 @@ public:
     float fade_in_duration = 1.0f; 
     
     int title_font_size = 48; PROPERTY();
-    int instruction_font_size = 24; 
+    int instruction_font_size = 24; PROPERTY()
+    float background_opacity = 0.85f; PROPERTY()
     
     std::string game_title = "BOMB DEFUSAL"; 
+    std::string next_level = ""; PROPERTY();  
     
     Color title_color = WHITE; 
     Color instruction_color = RAYWHITE; 
     Color highlight_color = {255, 100, 0, 255}; 
     Color background_color = BLACK; 
-    float background_opacity = 0.85f; 
     
     virtual void on_init() override;
     virtual void on_update() override;

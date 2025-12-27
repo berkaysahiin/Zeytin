@@ -9,7 +9,6 @@ void StartMenu::on_init() {
 void StartMenu::on_update() {
     if (!show_instructions || m_game_started) return;
     
-    // Draw overlay
     float alpha = m_timer < fade_in_duration ? m_timer / fade_in_duration : 1.0f;
     
     DrawRectangle(0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT, 
@@ -17,7 +16,6 @@ void StartMenu::on_update() {
     
     draw_instructions();
     
-    // Show "press any key" after fade in
     if (m_timer > fade_in_duration) {
         const char* start_text = "Press any key to start";
         int text_width = MeasureText(start_text, instruction_font_size);
@@ -37,17 +35,19 @@ void StartMenu::on_play_update() {
     
     m_timer += get_frame_time();
     
-    // Check for any key press to start
     if (m_timer > fade_in_duration && GetKeyPressed() != 0) {
         m_game_started = true;
         show_instructions = false;
+        
+        if (!next_level.empty()) {
+            Zeytin::get().request_level_load(next_level);
+        }
     }
 }
 
 void StartMenu::draw_instructions() {
     float alpha = m_timer < fade_in_duration ? m_timer / fade_in_duration : 1.0f;
     
-    // Title
     int title_width = MeasureText(game_title.c_str(), title_font_size);
     draw_text(game_title.c_str(),
             (VIRTUAL_WIDTH - title_width) / 2,
@@ -55,7 +55,6 @@ void StartMenu::draw_instructions() {
             title_font_size,
             ColorAlpha(title_color, alpha));
     
-    // Instructions
     const char* line1 = "1. Collect the DIFFUSER";
     const char* line2 = "2. Reach the BOMB before time runs out";
     const char* line3 = "3. Stand in the circle to DEFUSE";
@@ -74,7 +73,6 @@ void StartMenu::draw_instructions() {
     draw_text(line3, (VIRTUAL_WIDTH - w3) / 2, y + line_spacing * 2, 
              instruction_font_size, ColorAlpha(instruction_color, alpha));
     
-    // Controls
     const char* controls = "MOVE: A/D or Arrow Keys  |  REWIND: Hold A/Left";
     int ctrl_width = MeasureText(controls, instruction_font_size - 4);
     draw_text(controls,
