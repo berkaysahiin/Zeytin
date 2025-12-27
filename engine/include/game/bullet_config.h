@@ -11,6 +11,7 @@ class BulletConfig : public VariantBase {
     float lifetime = 3.0f; PROPERTY();
     float width = 8.0f; PROPERTY();
     float height = 4.0f; PROPERTY();
+    float airtime_threshold = 0.1f; PROPERTY();
     
-    Color bullet_color = {255, 200, 0, 255}; // Yellow/orange
+    Color bullet_color = {255, 200, 0, 255};
 };

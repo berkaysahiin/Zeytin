@@ -272,10 +272,12 @@ void Enemy::draw_enemy() {
     float gun_x = position.x + (scaled_gun_offset_x * m_patrol_direction);
     float gun_y = position.y + scaled_gun_offset_y;
     
+    float gun_draw_x = (m_patrol_direction == 1) ? gun_x : gun_x - scaled_gun_length;
+    
     draw_rectangle(
-        gun_x,
+        gun_draw_x,
         gun_y - scaled_gun_width / 2,
-        scaled_gun_length * m_patrol_direction,
+        scaled_gun_length,
         scaled_gun_width,
         faded_gun_color
     );

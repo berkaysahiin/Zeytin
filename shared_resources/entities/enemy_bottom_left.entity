@@ -1,5 +1,5 @@
 {
-    "entity_id": 17663144810195489871,
+    "entity_id": 8255689768343501107,
     "variants": [
         {
             "type": "Enemy",
@@ -27,15 +27,15 @@
             "type": "Collider",
             "value": {
                 "height": 50.0,
-                "show_debug": false,
+                "show_debug": true,
                 "width": 50.0
             }
         },
         {
             "type": "Position",
             "value": {
-                "x": 226.10000610351565,
-                "y": 799.7000122070313
+                "x": 550.5,
+                "y": 1045.5999755859375
             }
         },
         {

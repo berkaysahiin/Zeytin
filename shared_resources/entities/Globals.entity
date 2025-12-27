@@ -4,10 +4,10 @@
         {
             "type": "BulletConfig",
             "value": {
-                "height": 4.0,
+                "height": 9.0,
                 "lifetime": 3.0,
                 "speed": 800.0,
-                "width": 8.0
+                "width": 12.0
             }
         },
         {
@@ -15,20 +15,20 @@
             "value": {
                 "body_size": 50.0,
                 "death_fade_duration": 1.0,
-                "eye_offset_x": 10.0,
-                "eye_offset_y": -8.0,
-                "eye_size": 6.0,
-                "eye_spacing": 8.0,
+                "eye_offset_x": 10.899999618530273,
+                "eye_offset_y": -9.0,
+                "eye_size": 5.599999904632568,
+                "eye_spacing": 14.699999809265137,
                 "gravity": 1500.0,
                 "gun_length": 25.0,
                 "gun_offset_x": 15.0,
-                "gun_offset_y": 5.0,
+                "gun_offset_y": 8.199999809265137,
                 "gun_width": 8.0,
                 "max_fall_speed": 800.0,
                 "patrol_distance": 200.0,
                 "patrol_speed": 150.0,
-                "shoot_interval": 2.0,
-                "shoot_range": 500.0
+                "shoot_interval": 1.5,
+                "shoot_range": 600.0
             }
         },
         {

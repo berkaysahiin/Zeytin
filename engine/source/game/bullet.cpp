@@ -19,6 +19,7 @@ void Bullet::on_init() {
         m_width = config.width;
         m_height = config.height;
         m_bullet_color = config.bullet_color;
+        m_airtime_threshold = config.airtime_threshold;
         m_config_loaded = true;
     }
     

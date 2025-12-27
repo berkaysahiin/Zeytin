@@ -17,9 +17,11 @@ public:
     
     int get_direction() const { return m_direction; }
     void set_direction(int dir) { m_direction = dir; }
+    
+    bool can_damage() const { return m_time_alive >= m_airtime_threshold; }
 
 public:
-    int m_direction = 1; 
+    int m_direction = 1;
 
 private:
     void move();
@@ -31,6 +33,7 @@ private:
     float m_lifetime = 3.0f;
     float m_width = 8.0f;
     float m_height = 4.0f;
+    float m_airtime_threshold = 0.1f;
 
     Color m_bullet_color = {255, 200, 0, 255};
     

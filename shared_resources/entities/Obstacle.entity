@@ -12,21 +12,21 @@
             "type": "Collider",
             "value": {
                 "height": 100.0,
-                "show_debug": false,
+                "show_debug": true,
                 "width": 109.1999969482422
             }
         },
         {
             "type": "Position",
             "value": {
-                "x": 855.5999755859375,
-                "y": 972.0999755859376
+                "x": 1036.5,
+                "y": 858.7999877929688
             }
         },
         {
             "type": "Scale",
             "value": {
-                "x": 2.0,
+                "x": 6.0,
                 "y": 0.5
             }
         }
