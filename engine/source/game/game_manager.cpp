@@ -5,8 +5,11 @@
 #include "game/bomb.h"
 #include "game/player.h"
 
+int GameManager::s_total_deaths = 0;
+
 void GameManager::on_play_update() {
     m_game_running = is_player_moving();
+	draw_death_counter();
 }
 
 bool GameManager::is_player_moving() {
@@ -23,4 +26,10 @@ bool GameManager::is_player_moving() {
 	const float length = vector2_length(velocity);
 
 	return length > 0.01f;
+}
+
+void GameManager::draw_death_counter() {
+    char death_text[32];
+    snprintf(death_text, sizeof(death_text), "Deaths: %d", s_total_deaths);
+    draw_text(death_text, 10, 10, 50, WHITE);
 }

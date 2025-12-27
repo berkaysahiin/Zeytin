@@ -28,7 +28,7 @@
                 "max_fall_speed": 800.0,
                 "patrol_distance": 200.0,
                 "patrol_speed": 150.0,
-                "shoot_interval": 1.5,
+                "shoot_interval": 1.0,
                 "shoot_range": 600.0
             }
         },
@@ -44,7 +44,11 @@
         },
         {
             "type": "GameManager",
-            "value": {}
+            "value": {
+                "pos_x": 10.0,
+                "pos_y": 10.0,
+                "size": 50.0
+            }
         },
         {
             "type": "Background",

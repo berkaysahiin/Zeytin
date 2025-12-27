@@ -51,7 +51,10 @@ public:
 
     void kill();
     bool is_dead() const { return m_is_dead; }
-	void set_is_dead(bool dead) { m_is_dead = dead; }
+	void set_is_dead(bool dead);  
+    
+    Vector2 get_death_position() const { return m_death_position; }
+    void set_death_position(Vector2 pos) { m_death_position = pos; }
 
 private:
     Color body_color = {150, 50, 50, 255};
@@ -65,6 +68,7 @@ private:
     void shoot();
     void draw_enemy();
     void update_death_animation();
+    void draw_skull_marker();  
     
     float m_start_x = 0.0f;
     int m_patrol_direction = 1;
@@ -75,4 +79,8 @@ private:
     
     bool m_is_dead = false;
     float m_death_timer = 0.0f;
+    Vector2 m_death_position = {0.0f, 0.0f};  
+    float m_skull_float_offset = 0.0f;  
+    float m_death_rotation = 0.0f;  
+    float m_death_fall_offset = 0.0f;  
 };

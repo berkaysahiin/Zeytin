@@ -44,7 +44,11 @@
         },
         {
             "type": "GameManager",
-            "value": {}
+            "value": {
+                "pos_x": 10.0,
+                "pos_y": 10.0,
+                "size": 50.0
+            }
         },
         {
             "type": "Background",

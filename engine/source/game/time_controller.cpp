@@ -106,22 +106,24 @@ void TimeController::apply_rewind() {
         auto pos_opt = Query::try_get<Position>(enemy_state.id);
         
         if (enemy_opt && pos_opt) {
+            auto& enemy = enemy_opt->get();
             auto& pos = pos_opt->get();
+            
             pos.x = enemy_state.position.x;
             pos.y = enemy_state.position.y;
             
-            auto& enemy = enemy_opt->get();
             enemy.set_velocity(enemy_state.velocity);
             enemy.set_is_grounded(enemy_state.is_grounded);
             enemy.set_patrol_direction(enemy_state.patrol_direction);
             enemy.set_shoot_timer(enemy_state.shoot_timer);
-            enemy.set_is_dead(enemy_state.is_dead);
+            enemy.set_is_dead(enemy_state.is_dead);  // Use setter to properly clear death marker
         }
     }
     
-    auto current_bullets = Query::find_all_with<Bullet>();
-    for (::entity_id bullet_id : current_bullets) {
-        Query::remove_entity(bullet_id);
+    auto all_bullets = Query::find_all_with<Bullet, Position>();
+    for (::entity_id id : all_bullets) {
+        auto& bullet = Query::get<Bullet>(id);
+        bullet.is_dead = true;
     }
     
     for (const auto& bullet_state : snapshot.bullets) {
@@ -140,15 +142,14 @@ void TimeController::apply_rewind() {
         auto bullet_opt = Query::add<Bullet>(bullet_id);
         if (bullet_opt) {
             auto& bullet = bullet_opt->get();
-            bullet.set_direction(bullet_state.direction);
             bullet.set_time_alive(bullet_state.time_alive);
+            bullet.set_direction(bullet_state.direction);
         }
     }
     
     auto countdown_opt = Query::try_find_first<Countdown>();
     if (countdown_opt) {
-        auto& countdown = countdown_opt->get();
-        countdown.set_time_remaining(snapshot.countdown_time);
+        countdown_opt->get().set_time_remaining(snapshot.countdown_time);
     }
 
 	auto bomb_opt = Query::try_find_first<Bomb>();

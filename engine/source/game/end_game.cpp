@@ -1,6 +1,7 @@
 #include "game/end_game.h"
 #include "core/raylib_wrapper.h"
 #include "core/zeytin.h"
+#include "game/game_manager.h"
 
 void EndGame::on_init() {
     m_game_over = false;
@@ -40,6 +41,9 @@ void EndGame::trigger_game_over(const std::string& reason) {
     m_post_game_timer = 0.0f;
     m_fade_timer = 0.0f;
     m_lose_reason = reason;
+    
+    // Increment death counter
+    GameManager::increment_death_count();
 }
 
 void EndGame::trigger_win() {
