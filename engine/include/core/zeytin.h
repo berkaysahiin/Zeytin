@@ -29,6 +29,7 @@ struct State {
     bool pause_play_mode : 1; 
     bool synced_once : 1;       
     bool reload_next_frame : 1; 
+	bool load_level_next_frame : 1;
 };
 
 class Zeytin {
@@ -74,6 +75,7 @@ public:
     inline bool is_synced_once() const { return m_state.synced_once; }
 
     inline void reload_scene() { m_state.reload_next_frame = true; } // processed in main loop
+	void request_level_load(const std::string& level_name);
 
 #ifdef EDITOR_MODE
     void generate_variants();
@@ -112,6 +114,7 @@ private:
     
     RenderTexture2D m_render_texture;
     Camera2D m_camera;
+	std::string m_pending_level_name;  
 
 #ifdef EDITOR_MODE
     std::unique_ptr<EditorCommunication> m_editor_communication;

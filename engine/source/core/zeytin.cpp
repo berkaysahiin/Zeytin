@@ -129,6 +129,29 @@ void Zeytin::run_frame() {
     }
 #endif
 
+	if(m_state.load_level_next_frame) {
+        if (!m_pending_level_name.empty()) {
+            std::string scene_json = LevelManager::load_level(m_pending_level_name);
+            
+            if (!scene_json.empty()) {
+                m_storage.clear();
+                
+                if (deserialize_scene(scene_json)) {
+                    m_state.started = false;
+                    m_state.late_started = false;
+                    log_info() << "Successfully loaded level: " << m_pending_level_name << std::endl;
+                } else {
+                    log_error() << "Failed to deserialize level: " << m_pending_level_name << std::endl;
+                }
+            } else {
+                log_error() << "Failed to load level: " << m_pending_level_name << std::endl;
+            }
+            
+            m_pending_level_name.clear();
+        }
+        m_state.load_level_next_frame = false;
+    }
+
     if(m_state.reload_next_frame) { // if setted true last frame
 #ifdef EDITOR_MODE
         exit_play_mode();
@@ -849,6 +872,12 @@ void Zeytin::sync_editor() {
             EditorEventBus::get().publish<std::string>(EditorEvent::SyncEditor, scene);
         }
     }
+}
+
+void Zeytin::request_level_load(const std::string& level_name) {
+    m_pending_level_name = level_name;
+    m_state.load_level_next_frame = true;
+    log_info() << "Level load requested: " << level_name << " (will load next frame)" << std::endl;
 }
 
 void Zeytin::generate_variants() {

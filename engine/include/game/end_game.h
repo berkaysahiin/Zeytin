@@ -15,11 +15,12 @@ public:
     void restart_game();
     bool is_game_over() const { return m_game_over; }
     
-    // UI properties
     int game_over_font_size = 80; PROPERTY();
     int win_font_size = 80; PROPERTY();
     int reason_font_size = 30; PROPERTY();
     float ui_transparency = 0.85f; PROPERTY();
+    
+    std::string next_level = "FILL THIS FOR EVERY LEVEL"; PROPERTY();  
     
 private:
     bool m_game_over = false;

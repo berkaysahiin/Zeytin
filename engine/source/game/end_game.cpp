@@ -21,7 +21,13 @@ void EndGame::on_play_update() {
         }
         
         if (get_keycode_pressed() != 0 && m_post_game_timer > 2.5f) {
-            restart_game();
+            // On win: load next level if specified, otherwise restart
+            // On lose: always restart
+            if (m_is_win && !next_level.empty()) {
+                Zeytin::get().request_level_load(next_level);
+            } else {
+                restart_game();
+            }
         }
     }
 }
@@ -142,7 +148,12 @@ void EndGame::draw_win_screen() {
         
         if (m_fade_timer >= 2.0f) {
             float prompt_alpha = std::min((m_fade_timer - 2.0f) / 0.5f, 1.0f);
-            const char* continue_text = "Press any key to continue";
+            
+            // Different text based on whether we have a next level
+            const char* continue_text = next_level.empty() 
+                ? "Press any key to restart"
+                : "Press any key to continue";
+            
             int continue_width = MeasureText(continue_text, reason_font_size * 0.8f);
             
             float blink = (sinf(m_fade_timer * 5.0f) * 0.5f + 0.5f) * prompt_alpha;

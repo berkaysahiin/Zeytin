@@ -23,6 +23,10 @@ public:
     static Level get_level(const std::string& name);
     static std::string load_level(const Level& level);
     static std::string load_level(const std::string& level_name);
+    
+    static std::string load_scene_file(const std::string& scene_name);
+    
 private:
     static std::filesystem::path get_levels_directory();
+    static std::filesystem::path get_scenes_directory();  // NEW
 };
