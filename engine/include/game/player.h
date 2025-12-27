@@ -36,6 +36,7 @@ private:
 
     void handle_input();
     void apply_physics();
+	void check_horizontal_collision();
     void draw_character();
     void draw_diffuser_icon();
     void check_ground();

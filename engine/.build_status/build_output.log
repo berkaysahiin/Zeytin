@@ -16,8 +16,10 @@ Requirements file unchanged, skipping: /home/redgrain/Dev/Zeytin/shared_resource
 Requirements files written to /home/redgrain/Dev/Zeytin/shared_resources/variants/requires
 Building configurations...
 Running action 'gmake'...
-Done (26ms).
+Done (33ms).
 ==== Building Zeytin (editor_mode) ====
+player.cpp
+Linking Zeytin
 Changed directory to: /home/redgrain/Dev/Zeytin/engine/scripts
 Running parser...
 Parser command: python3 parser2.py
