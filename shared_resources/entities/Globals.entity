@@ -4,6 +4,7 @@
         {
             "type": "BulletConfig",
             "value": {
+                "airtime_threshold": 0.10000000149011612,
                 "height": 9.0,
                 "lifetime": 3.0,
                 "speed": 800.0,
@@ -15,7 +16,7 @@
             "value": {
                 "body_size": 50.0,
                 "death_fade_duration": 1.0,
-                "eye_offset_x": 10.899999618530273,
+                "eye_offset_x": 10.899999618530272,
                 "eye_offset_y": -9.0,
                 "eye_size": 5.599999904632568,
                 "eye_spacing": 14.699999809265137,

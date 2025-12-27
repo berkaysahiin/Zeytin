@@ -1,6 +1,7 @@
 #include "game/time_stopped_indicator.h"
 #include "core/query.h"
 #include "core/raylib_wrapper.h"
+#include "game/end_game.h"
 #include "game/game_manager.h"
 
 void TimeStoppedIndicator::on_update() {
@@ -17,7 +18,10 @@ void TimeStoppedIndicator::on_update() {
 
 	m_stoppedDuration += get_frame_time();
 
-	if(m_stoppedDuration > activate_threshhold) 
+    auto end_game_opt = Query::try_find_first<EndGame>();
+    if (!end_game_opt) return;
+
+	if(m_stoppedDuration > activate_threshhold && !end_game_opt->get().is_game_over()) 
 	{
     	draw_indicator();
 	}

@@ -1,6 +1,7 @@
 #include "game/game_manager.h"
 #include "core/query.h"
 #include "core/raylib_wrapper.h"
+#include "game/bomb.h"
 #include "game/player.h"
 
 void GameManager::on_play_update() {
@@ -8,6 +9,12 @@ void GameManager::on_play_update() {
 }
 
 bool GameManager::is_player_moving() {
+    auto bomb_opt = Query::try_find_first<Bomb>();
+	if (bomb_opt) {
+		const bool is_defusing = bomb_opt->get().is_being_defused();
+		if (is_defusing) return true;
+	}
+
     auto player_opt = Query::try_find_first<Player>();
     if (!player_opt) return false;
 
