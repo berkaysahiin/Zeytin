@@ -40,7 +40,7 @@ void Application::init_window() {
     }
 
 #else
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+    SetConfigFlags(FLAG_FULLSCREEN_MODE);
     const int window_width = GetScreenWidth();
     const int window_height = GetScreenHeight();
 
