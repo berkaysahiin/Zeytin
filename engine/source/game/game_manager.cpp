@@ -1,6 +1,7 @@
-#include "game/game_manager.h"
 #include "core/query.h"
 #include "core/raylib_wrapper.h"
+
+#include "game/game_manager.h"
 #include "game/bomb.h"
 #include "game/player.h"
 

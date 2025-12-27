@@ -12,7 +12,7 @@
 #include "game/collider.h"
 
 void TimeController::on_init() {
-	m_history.resize(max_history_frames);
+	m_history.clear();
 }
 
 void TimeController::on_play_update() {

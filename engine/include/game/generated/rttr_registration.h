@@ -15,6 +15,7 @@
 #include "game/obstacle.h"
 #include "game/player.h"
 #include "game/position.h"
+#include "game/retry.h"
 #include "game/rewind_effect.h"
 #include "game/scale.h"
 #include "game/start_menu.h"
@@ -224,6 +225,16 @@ RTTR_REGISTRATION
         .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
         .property("x", &Position::x)
         .property("y", &Position::y);
+
+    rttr::registration::class_<Retry>("Retry")
+        .constructor<>()(rttr::policy::ctor::as_object)
+        .constructor<VariantCreateInfo>()(rttr::policy::ctor::as_object)
+        .property("button_font_size", &Retry::button_font_size)
+        .property("button_height", &Retry::button_height)
+        .property("button_width", &Retry::button_width)
+        .property("button_x", &Retry::button_x)
+        .property("button_y", &Retry::button_y)
+        .property("text_color", &Retry::text_color);
 
     rttr::registration::class_<RewindEffect>("RewindEffect")
         .constructor<>()(rttr::policy::ctor::as_object)

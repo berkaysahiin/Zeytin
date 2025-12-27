@@ -116,6 +116,22 @@
                 "bounce_amount": 30.0,
                 "bounce_speed": 1.0
             }
+        },
+        {
+            "type": "Retry",
+            "value": {
+                "button_font_size": 26,
+                "button_height": 60.0,
+                "button_width": 200.0,
+                "button_x": 960.0,
+                "button_y": 30.0,
+                "text_color": {
+                    "r": 255,
+                    "g": 255,
+                    "b": 255,
+                    "a": 255
+                }
+            }
         }
     ]
 }
