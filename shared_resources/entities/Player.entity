@@ -11,6 +11,29 @@
                 "eye_size": 8.0,
                 "eye_spacing": 17.0,
                 "gravity": 1500.0,
+                "hat_base_width": 40.0,
+                "hat_color": {
+                    "r": 200,
+                    "g": 0,
+                    "b": 0,
+                    "a": 255
+                },
+                "hat_height": 42.599998474121094,
+                "hat_offset_y": -29.899999618530273,
+                "hat_pom_color": {
+                    "r": 255,
+                    "g": 255,
+                    "b": 255,
+                    "a": 255
+                },
+                "hat_pom_radius": 7.199999809265137,
+                "hat_trim_color": {
+                    "r": 255,
+                    "g": 255,
+                    "b": 255,
+                    "a": 255
+                },
+                "hat_trim_height": 7.300000190734863,
                 "jump_force": 600.0,
                 "max_fall_speed": 800.0,
                 "max_jumps": 2,

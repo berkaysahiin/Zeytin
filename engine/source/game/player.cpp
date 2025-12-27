@@ -261,11 +261,9 @@ void Player::draw_character() {
     auto& position = Query::get<Position>(this);
     auto& scale = Query::get<Scale>(this);
     
-    // Apply scale to body size
     float scaled_width = body_size * scale.x;
     float scaled_height = body_size * scale.y;
     
-    // Draw body (rectangle with scale)
     draw_rectangle(
         position.x - scaled_width / 2,
         position.y - scaled_height / 2,
@@ -274,7 +272,6 @@ void Player::draw_character() {
         body_color
     );
     
-    // Draw eyes (also scale them)
     float scaled_eye_size = eye_size * std::min(scale.x, scale.y);
     float scaled_eye_offset_x = eye_offset_x * scale.x;
     float scaled_eye_offset_y = eye_offset_y * scale.y;
@@ -286,6 +283,43 @@ void Player::draw_character() {
     
     draw_circle(left_eye_x, eye_y, scaled_eye_size, eye_color);
     draw_circle(right_eye_x, eye_y, scaled_eye_size, eye_color);
+    
+    draw_christmas_hat();
+}
+
+void Player::draw_christmas_hat() {
+    auto& position = Query::get<Position>(this);
+    auto& scale = Query::get<Scale>(this);
+    
+    float scaled_hat_width = hat_base_width * scale.x;
+    float scaled_hat_height = hat_height * scale.y;
+    float scaled_trim_height = hat_trim_height * scale.y;
+    float scaled_pom_radius = hat_pom_radius * std::min(scale.x, scale.y);
+    
+    float hat_x = position.x;
+    float hat_base_y = position.y + (hat_offset_y * scale.y);
+    float hat_tip_y = hat_base_y - scaled_hat_height;
+    
+    float hat_left_x = hat_x - scaled_hat_width / 2;
+    float hat_right_x = hat_x + scaled_hat_width / 2;
+    float hat_tip_x = hat_x + (scaled_hat_width * 0.15f);
+    
+    draw_triangle(
+        {hat_left_x, hat_base_y},
+        {hat_right_x, hat_base_y},
+        {hat_tip_x, hat_tip_y},
+        hat_color
+    );
+    
+    draw_rectangle(
+        hat_left_x,
+        hat_base_y,
+        scaled_hat_width,
+        scaled_trim_height,
+        hat_trim_color
+    );
+    
+    draw_circle(hat_tip_x, hat_tip_y, scaled_pom_radius, hat_pom_color);
 }
 
 void Player::draw_diffuser_icon() {

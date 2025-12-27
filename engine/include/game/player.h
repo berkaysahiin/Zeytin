@@ -23,10 +23,18 @@ public:
     float eye_offset_y = -8.0f; PROPERTY();
     float eye_spacing = 10.0f; PROPERTY();
 
-    // Squash/Stretch parameters - tweak these for different feels!
-    float squash_amount = 0.3f; PROPERTY();      // How much to squash (0.3 = squash to 70% height)
-    float stretch_amount = 0.3f; PROPERTY();     // How much to stretch (0.3 = stretch to 130% height)
-    float squash_speed = 8.0f; PROPERTY();       // How fast to squash/stretch back to normal
+    float squash_amount = 0.3f; PROPERTY();
+    float stretch_amount = 0.3f; PROPERTY();
+    float squash_speed = 8.0f; PROPERTY();
+    
+    float hat_offset_y = -35.0f; PROPERTY();
+    float hat_base_width = 40.0f; PROPERTY();
+    float hat_height = 30.0f; PROPERTY();
+    Color hat_color = {200, 0, 0, 255}; PROPERTY();
+    Color hat_trim_color = {255, 255, 255, 255}; PROPERTY();
+    Color hat_pom_color = {255, 255, 255, 255}; PROPERTY();
+    float hat_trim_height = 5.0f; PROPERTY();
+    float hat_pom_radius = 6.0f; PROPERTY();
     
     virtual void on_init() override;
     virtual void on_play_update() override;
@@ -47,6 +55,7 @@ private:
     void check_horizontal_collision();
     void draw_character();
     void draw_diffuser_icon();
+    void draw_christmas_hat();
     void check_ground();
     void check_enemy_collision();
     void check_bullet_collision();
@@ -55,7 +64,7 @@ private:
     Vector2 m_velocity = {0.0f, 0.0f};
     bool m_is_grounded = false;
     bool m_jump_pressed_last_frame = false;
-    int m_facing_direction = 1; // 1 = right, -1 = left
+    int m_facing_direction = 1;
     int m_jumps_remaining = 0;
     bool m_has_diffuser = false;
     

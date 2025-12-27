@@ -11,7 +11,6 @@ public:
     bool use_global_config = true; PROPERTY(); 
 
 	// if use global config is set to false, use below
-
     float patrol_speed = -1; PROPERTY();
     float patrol_distance = -1; PROPERTY();
     

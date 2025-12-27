@@ -115,3 +115,8 @@ inline Color get_random_color() {
     };
 }
 
+inline void draw_triangle(Vector2 v1, Vector2 v2, Vector2 v3, Color color)
+{
+	DrawTriangle(v1, v2, v3, color);
+}
+
