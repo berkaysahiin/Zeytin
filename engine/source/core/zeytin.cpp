@@ -86,7 +86,7 @@ void Zeytin::initialize_editor_communication() {
 #else
 
 void Zeytin::initialize_standalone() {
-    std::string default_level = "level_1"; 
+    std::string default_level = "entry"; 
     std::string scene_json = LevelManager::load_level(default_level);
     
     if (scene_json.empty() || !deserialize_scene(scene_json)) {
