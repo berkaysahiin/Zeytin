@@ -8,7 +8,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(ENGINE_CONFIG "weditor" CACHE STRING "Build configuration: weditor or standalone")
 set_property(CACHE ENGINE_CONFIG PROPERTY STRINGS weditor standalone)
 
-file(GLOB_RECURSE SOURCES source/*.cpp source/*.c)
+file(GLOB_RECURSE SOURCES source/*.cpp)
+file(GLOB_RECURSE MODULE_SOURCES source/*.cppm)
 
 if(ENGINE_CONFIG STREQUAL "weditor")
     list(APPEND SOURCES 3rdparty/tracy/TracyClient.cpp)
