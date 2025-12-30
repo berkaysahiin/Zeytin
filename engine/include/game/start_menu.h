@@ -14,7 +14,7 @@ public:
     int instruction_font_size = 24; PROPERTY()
     float background_opacity = 0.85f; PROPERTY()
     
-    std::string game_title = "BOMB DEFUSAL"; 
+    std::string game_title = "DEFUSE"; 
     std::string next_level = ""; PROPERTY();  
     
     Color title_color = WHITE; 

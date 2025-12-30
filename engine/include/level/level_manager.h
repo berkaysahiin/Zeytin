@@ -28,5 +28,5 @@ public:
     
 private:
     static std::filesystem::path get_levels_directory();
-    static std::filesystem::path get_scenes_directory();  // NEW
+    static std::filesystem::path get_scenes_directory();  
 };

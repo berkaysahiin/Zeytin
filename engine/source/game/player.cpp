@@ -44,7 +44,7 @@ void Player::on_play_update() {
     handle_input();
     apply_physics();
     check_ground();
-    update_squash_stretch();  // NEW: Update squash/stretch after physics
+    update_squash_stretch();  
     check_enemy_collision();
     check_bullet_collision();
 }
@@ -74,7 +74,7 @@ void Player::handle_input() {
             m_velocity.y = -jump_force;
             m_jumps_remaining--;
             m_is_grounded = false;
-            m_just_jumped = true;  // NEW: Mark that we just jumped
+            m_just_jumped = true; 
         }
     }
     
