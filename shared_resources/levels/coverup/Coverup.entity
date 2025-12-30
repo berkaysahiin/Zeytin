@@ -1,0 +1,128 @@
+{
+    "entity_id": 12236680871187646665,
+    "variants": [
+        {
+            "type": "Coverup",
+            "value": {
+                "enemy1_face_right": false,
+                "enemy1_x": 1234.5999755859375,
+                "enemy1_y": 823.0999755859375,
+                "enemy2_face_right": true,
+                "enemy2_x": 482.2999877929687,
+                "enemy2_y": 480.0,
+                "enemy3_face_right": false,
+                "enemy3_x": 1607.800048828125,
+                "enemy3_y": 420.0,
+                "enemy_count": 3,
+                "enemy_scale": 2.5,
+                "eye_spacing": 0.30000001192092896,
+                "hat_base_width": 48.29999923706055,
+                "hat_color": {
+                    "r": 200,
+                    "g": 0,
+                    "b": 0,
+                    "a": 255
+                },
+                "hat_height": 37.099998474121094,
+                "hat_offset_y": -4.699999809265137,
+                "hat_pom_color": {
+                    "r": 255,
+                    "g": 255,
+                    "b": 255,
+                    "a": 255
+                },
+                "hat_pom_radius": 6.0,
+                "hat_tilt": -0.15000000596046448,
+                "hat_trim_color": {
+                    "r": 255,
+                    "g": 255,
+                    "b": 255,
+                    "a": 255
+                },
+                "hat_trim_height": 5.0,
+                "light_count": 4,
+                "light_pulse_speed": 5.099999904632568,
+                "lights_wave_amplitude": 20.0,
+                "lights_y_position": 113.6999969482422,
+                "player_face_right": true,
+                "player_scale": 4.0,
+                "player_x_position": 386.6000061035156,
+                "player_y_position": 1000.0,
+                "screen_center_x": 960.0,
+                "screen_center_y": 540.0,
+                "show_christmas_lights": true,
+                "show_enemies": true,
+                "show_zeytin_box": true,
+                "snow_particle_count": 150,
+                "snow_size_max": 6.0,
+                "snow_size_min": 2.0,
+                "snow_speed_max": 60.0,
+                "snow_speed_min": 20.0,
+                "title_color": {
+                    "r": 255,
+                    "g": 50,
+                    "b": 50,
+                    "a": 255
+                },
+                "title_font_size": 140,
+                "title_glow_color": {
+                    "r": 255,
+                    "g": 100,
+                    "b": 100,
+                    "a": 150
+                },
+                "title_glow_intensity": 0.699999988079071,
+                "title_x_offset": 62.20000076293945,
+                "title_y_position": 352.0,
+                "zeytin_color": {
+                    "r": 200,
+                    "g": 200,
+                    "b": 200,
+                    "a": 255
+                },
+                "zeytin_font_size": 40,
+                "zeytin_x_offset": 62.20000076293945,
+                "zeytin_y_offset": 460.1000061035156
+            }
+        },
+        {
+            "type": "Background",
+            "value": {
+                "bg_color": {
+                    "r": 15,
+                    "g": 20,
+                    "b": 40,
+                    "a": 255
+                },
+                "star_count": 150,
+                "star_speed_max": 50.0,
+                "star_speed_min": 10.0
+            }
+        },
+        {
+            "type": "CRTEffect",
+            "value": {
+                "chromatic_aberration": 0.30000001192092896,
+                "curvature": 4.0,
+                "enabled": true,
+                "noise_intensity": 0.05000000074505806,
+                "scanline_intensity": 0.30000001192092896,
+                "vignette_intensity": 0.30000001192092896
+            }
+        },
+        {
+            "type": "Position",
+            "value": {
+                "x": 0.0,
+                "y": 0.0
+            }
+        },
+        {
+            "type": "Scale",
+            "value": {
+                "x": 1.0,
+                "y": 1.0
+            }
+        }
+    ]
+}

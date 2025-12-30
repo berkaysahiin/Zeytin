@@ -30,6 +30,8 @@ int main(int argc, char* argv[])
     SetExitKey(0);
     
     rlImGuiSetup(true);
+
+	LoadEditorFonts();
     SetEditorTheme();
 
     EngineControls engine_controls;
