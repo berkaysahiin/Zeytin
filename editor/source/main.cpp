@@ -80,6 +80,7 @@ int main(int argc, char* argv[])
         false, 
         "Test Viewer", 
         true);
+
     window_manager.add_window("Export",
         []() {
             ExportWindow::get().render();
