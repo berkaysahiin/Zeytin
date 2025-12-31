@@ -1,38 +1,35 @@
-# Prerequisites
 *.d
 
-# Compiled Object files
 *.slo
 *.lo
 *.o
 *.obj
 
-# Precompiled Headers
 *.gch
 *.pch
 
-# Fortran module files
 *.mod
 *.smod
-
 
 *.out
 *.app
 
-
 *.swp
+
 .clangd
 
 bin/
 build/
-build_status/
 temp_backup/
 
 todo.md
 imgui.ini
 nohup.out
 
-shared_resources/variants/
+./shared_resources/variants/
+./shared_resources/config/
+./shared_resources/config/config.json
+
 compile_commands.json
 
 .clang-format
@@ -40,12 +37,12 @@ compile_commands.json
 
 config.json
 
-shared_resources/config/config.json
-
 todo.md
 
 engine/build
 engine/bin
+engine/.build_status
 
 editor/build
 editor/bin
+shared_resources/config

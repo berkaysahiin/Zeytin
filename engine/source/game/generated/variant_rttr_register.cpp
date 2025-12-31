@@ -1,6 +1,5 @@
+#include "variant/variant_base.h"
 #include "rttr/registration.h"
-
-import zeytin.variant;
 
 RTTR_REGISTRATION
 {
