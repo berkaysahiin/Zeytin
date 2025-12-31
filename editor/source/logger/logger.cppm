@@ -3,7 +3,7 @@ module;
 #include <string>
 #include <vector>
 #include <mutex>
-#include <functional>
+#include <format>
 
 export module zeytin.logger;
 import zeytin.singleton;
@@ -22,11 +22,6 @@ public:
     
     const std::vector<std::pair<LogLevel, std::string>>& get_log_messages() const {
         return m_logs;
-    }
-    
-    void register_callback(std::function<void(LogLevel, const std::string&)> callback) {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        m_callbacks.push_back(callback);
     }
     
     void clear() {
@@ -56,7 +51,32 @@ private:
     Logger() = default;
 
     std::vector<std::pair<LogLevel, std::string>> m_logs;
-    std::vector<std::function<void(LogLevel, const std::string&)>> m_callbacks;
     std::mutex m_mutex;
     LogLevel m_min_log_level = LogLevel::TRACE;
 };
+
+
+export template<typename... Args>
+void log_trace(std::format_string<Args...> fmt, Args&&... args) {
+    Logger::get().log(LogLevel::TRACE, 
+        std::format(fmt, std::forward<Args>(args)...));
+}
+
+export template<typename... Args>
+void log_info(std::format_string<Args...> fmt, Args&&... args) {
+    Logger::get().log(LogLevel::INFO, 
+        std::format(fmt, std::forward<Args>(args)...));
+}
+
+export template<typename... Args>
+void log_warning(std::format_string<Args...> fmt, Args&&... args) {
+    Logger::get().log(LogLevel::WARNING, 
+        std::format(fmt, std::forward<Args>(args)...));
+}
+
+export template<typename... Args>
+void log_error(std::format_string<Args...> fmt, Args&&... args) {
+    Logger::get().log(LogLevel::ERROR, 
+        std::format(fmt, std::forward<Args>(args)...));
+}
+

@@ -49,11 +49,11 @@ void VariantList::load_variant(const std::filesystem::path& path) {
 }
 
 void VariantList::start_watching() {
-    m_variant_watcher.add_callback({ ".variant"}, [this](const fs::path& path, const std::string& status) {
-        if(status == "modified" || status == "created") {
+    m_variant_watcher.add_callback({ ".variant"}, [this](const std::filesystem::path& path, const FileEvent event) {
+        if(event == FileEvent::Modified || event == FileEvent::Created) {
             load_variant(path);
         }
-        else if(status == "deleted") {
+        else if(event == FileEvent::Deleted) {
             std::string name = path.stem().string();
             for(auto& variant : m_variants) {
                 if(variant.get_name() == name) {

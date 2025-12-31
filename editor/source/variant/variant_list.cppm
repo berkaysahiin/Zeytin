@@ -18,7 +18,6 @@ private:
     void start_watching();
     void load_variant(const std::filesystem::path& path);
 
-
     std::vector<VariantDocument> m_variants;
-    FileW m_variant_watcher;
+    FileWatcher m_variant_watcher;
 };

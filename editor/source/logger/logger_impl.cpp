@@ -25,9 +25,5 @@ void Logger::log(LogLevel level, const std::string& message) {
         if (m_logs.size() > MAX_LOGS) {
             m_logs.erase(m_logs.begin(), m_logs.begin() + (m_logs.size() - MAX_LOGS));
         }
-        
-        for (const auto& callback : m_callbacks) {
-            callback(level, formattedMessage);
-        }
     }
 }
