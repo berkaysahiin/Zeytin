@@ -1,28 +1,24 @@
 #include "raylib.h"
 #include "rlImGui.h"
 
-#include "entity/entity_list.h"
-#include "variant/variant_list.h"
-
-#include "hierarchy/hierarchy.h"
-#include "hierarchy/theme.h"
-
-#include "engine/engine_controls.h"
-#include "engine/engine_communication.h"
-
-#include "console/console.h"
-#include "asset_browser/asset_browser.h"
-#include "test_viewer/test_viewer.h"
-#include "window/window_manager.h"
-#include "export/export_window.h"
-
-#include "level/level_window.h"
+import zeytin.asset;
+import zeytin.level;
+import zeytin.level;
+import zeytin.console;
+import zeytin.window;
+import zeytin.theme;
+import zeytin.hierarchy;
+import zeytin.engine.controls;
+import zeytin.engine.communication;
+import zeytin.testviewer;
+import zeytin.variant.list;
+import zeytin.entity.list;
+import zeytin.windows.level;
 
 int main(int argc, char* argv[])
 {
     SetTraceLogLevel(LOG_WARNING);
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_MSAA_4X_HINT | FLAG_WINDOW_ALWAYS_RUN);
-
     
     InitWindow(1280, 720, "ZeytinEditor");
     
@@ -43,7 +39,6 @@ int main(int argc, char* argv[])
 	Hierarchy hierarchy(variant_list.get_variants(), &entity_list);
     TestViewer test_viewer;
 
-    ExportWindow::get().set_entity_list(&entity_list);
 	LevelWindow::get().set_entity_list(&entity_list);  
 
     WindowManager window_manager;
@@ -80,15 +75,8 @@ int main(int argc, char* argv[])
         false, 
         "Test Viewer", 
         true);
-    window_manager.add_window("Export",
-        []() {
-            ExportWindow::get().render();
-        },
-        false,  
-        "Export", 
-        true);
 
-    window_manager.add_main_menu_component([&engine_controls]{
+   	window_manager.add_main_menu_component([&engine_controls]{
             engine_controls.render();
     });
 

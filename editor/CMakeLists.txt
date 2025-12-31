@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 4.2)
 project(ZeytinEditor CXX)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -12,10 +12,17 @@ file(GLOB_RECURSE SOURCES
     3rdparty/imgui_test_engine/*.cpp
     3rdparty/rlimgui/*.cpp
 )
-
 list(APPEND SOURCES 3rdparty/backward-cpp/backward.cpp)
 
+file(GLOB_RECURSE MODULE_SOURCES source/*.cppm)
+
 add_executable(ZeytinEditor ${SOURCES})
+
+target_sources(ZeytinEditor
+  	PUBLIC
+	FILE_SET all_my_modules TYPE CXX_MODULES FILES
+    ${MODULE_SOURCES}
+)
 
 target_include_directories(ZeytinEditor PRIVATE
     include
