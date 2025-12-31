@@ -1,3 +1,5 @@
+module;
+
 #include <functional>
 #include <map>
 #include <vector>
@@ -6,9 +8,11 @@
 #include <shared_mutex>
 #include <algorithm>
 
+export module zeytin.editor.event;
+
 #ifdef EDITOR_MODE
 
-enum class EditorEvent {
+export enum class EditorEvent {
     EngineStartConfirmed,
     Scene,
     EntityRemoved,
@@ -25,7 +29,7 @@ enum class EditorEvent {
     WindowStateChanged,
 };
 
-class EditorEventBus {
+export class EditorEventBus {
 public:
     static EditorEventBus& get() {
         static EditorEventBus instance;

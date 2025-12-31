@@ -1,5 +1,4 @@
-#include "core/zeytin.h"
-#include "remote_logger/remote_logger.h"
+#pragma once
 
 #define PROPERTY() 
 #define IGNORE_QUERIES()

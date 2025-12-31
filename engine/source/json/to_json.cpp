@@ -1,4 +1,4 @@
-#include "core/json/to_json.h"
+module;
 
 #include <cstdio>
 #include <string>
@@ -11,8 +11,8 @@
 #include <rapidjson/document.h>     
 #include <rttr/type.h>
 
-#include "entity/entity.h"
-#include "resource_manager/resource_manager.h"
+module zeytin.json;
+import zeytin.resource;
 
 using namespace rapidjson;
 using namespace rttr;
@@ -361,7 +361,7 @@ std::string to(rttr::instance obj, const std::string& path) {
 
 namespace rttr_json  {
 
-std::string serialize_entity(const entity_id entity_id, const std::vector<rttr::variant>& variants) {
+std::string serialize_entity(const EntityID EntityID, const std::vector<rttr::variant>& variants) {
     if (variants.empty()) {
         std::cerr << "Serializing entity with no variants" << std::endl;
     }
@@ -371,7 +371,7 @@ std::string serialize_entity(const entity_id entity_id, const std::vector<rttr::
         document.SetObject();
         rapidjson::Document::AllocatorType& allocator = document.GetAllocator();
 
-        document.AddMember("entity_id", entity_id, allocator);
+        document.AddMember("entity_id", EntityID, allocator);
 
         rapidjson::Value variants_array(rapidjson::kArrayType);
 
@@ -422,9 +422,9 @@ std::string serialize_entity(const entity_id entity_id, const std::vector<rttr::
     }
 }
 
-std::string serialize_entity(const entity_id entity_id, const std::vector<rttr::variant>& variants, const std::filesystem::path& path) {
+std::string serialize_entity(const EntityID EntityID, const std::vector<rttr::variant>& variants, const std::filesystem::path& path) {
     try {
-        std::string json_string = serialize_entity(entity_id, variants);
+        std::string json_string = serialize_entity(EntityID, variants);
         if (json_string.empty()) {
             std::cerr << "Failed to serialize entity" << std::endl;
             return std::string();

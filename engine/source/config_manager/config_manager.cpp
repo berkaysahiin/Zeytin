@@ -1,17 +1,20 @@
-#include "config_manager/config_manager.h"
-#include "rapidjson/document.h"
+module; 
+
 #include "raylib.h"
-
-#include "remote_logger/remote_logger.h"
-
-#include <fstream>
-#include <sstream>
-
+#include "rapidjson/document.h"
 #include "rapidjson/prettywriter.h"
-#include "resource_manager/resource_manager.h"
 
 #include <string>
 #include <unordered_map>
+#include <variant>
+#include <fstream>
+#include <sstream>
+#include <filesystem>
+#include <iostream>
+
+module zeytin.config;
+import zeytin.resource;
+import zeytin.logger;
 
 static rapidjson::Value variant_to_json_value(const ConfigManager::ConfigValue& value, rapidjson::Document::AllocatorType& allocator);
 static ConfigManager::ConfigValue json_value_to_variant(const rapidjson::Value& value);
@@ -31,8 +34,6 @@ ConfigManager::ConfigManager() : pImpl(new Impl()) {
 ConfigManager::~ConfigManager() {
 
 #ifdef EDITOR_MODE
-	std::cout << "I am doing" << std::endl;
-
     // we want to save window position in editor mode everytime
     const int screen_width = GetScreenWidth();
     const int screen_height = GetScreenHeight();
@@ -62,7 +63,7 @@ bool ConfigManager::load_config() {
 
     std::ifstream file(path);
     if (!file.is_open()) {
-        log_error() << "Failed to open config file: " << path << std::endl;
+        //log_error() << "Failed to open config file: " << path << std::endl;
         return false;
     }
 
@@ -75,12 +76,12 @@ bool ConfigManager::load_config() {
     rapidjson::ParseResult result = doc.Parse(json_str.c_str());
 
     if (result.IsError()) {
-        log_error() << "JSON parse error in config file" << std::endl;
+        //log_error() << "JSON parse error in config file" << std::endl;
         return false;
     }
 
     if (!doc.IsObject()) {
-        log_error() << "Config file must be a JSON object" << std::endl;
+        //log_error() << "Config file must be a JSON object" << std::endl;
         return false;
     }
 
@@ -118,7 +119,7 @@ bool ConfigManager::save_config() {
 
     std::ofstream file(path);
     if (!file.is_open()) {
-        log_error() << "Failed to open config file for writing: " << path << std::endl;
+        //log_error() << "Failed to open config file for writing: " << path << std::endl;
         return false;
     }
 

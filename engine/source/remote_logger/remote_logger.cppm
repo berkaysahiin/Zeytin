@@ -1,23 +1,21 @@
-#pragma once
-
-
-#ifdef EDITOR_MODE
+module;
 
 #include <iostream>
 #include <sstream>
 #include <string>
 
+export module zeytin.logger;
 
-enum class LogLevel {
+export enum class LogLevel {
     TRACE,  
     INFO,
     WARNING,
     ERROR
 };
 
-class RemoteLogger;
+export class RemoteLogger;
 
-class RemoteLogStream {
+export class RemoteLogStream {
 public:
     RemoteLogStream(RemoteLogger& logger, LogLevel level);
     ~RemoteLogStream();
@@ -40,7 +38,7 @@ private:
     LogLevel m_level;
 };
 
-class RemoteLogger {
+export class RemoteLogger {
 public:
     static RemoteLogger& get() {
         static RemoteLogger instance;
@@ -82,6 +80,7 @@ private:
     LogLevel m_min_log_level;
 };
 
+#ifdef EDITOR_MODE
 
 #define log_trace() RemoteLogger::get().trace()  
 #define log_info() RemoteLogger::get().info()
@@ -90,17 +89,11 @@ private:
 
 #else
 
-#include <iostream>
-
-#define log_trace() std::cout 
-#define log_info() std::cout 
-#define log_warning() std::cout
-#define log_error() std::cerr
+#define log_trace() 
+#define log_info() 
+#define log_warning() 
+#define log_error() 
 
 #endif
-
-
-
-
 
 

@@ -1,11 +1,12 @@
-#ifdef EDITOR_MODE
+module;
 
-#include "remote_logger/remote_logger.h"
 #include "rapidjson/document.h"
-#include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
+#include "rapidjson/writer.h"
 
-#include "editor/editor_event.h"
+module zeytin.logger;
+import zeytin.editor.communication;
+import zeytin.editor.event;
 
 RemoteLogStream::RemoteLogStream(RemoteLogger& logger, LogLevel level) 
     : m_logger(logger), m_level(level) {
@@ -42,4 +43,3 @@ void RemoteLogger::log(LogLevel level, const std::string& message) {
     EditorEventBus::get().publish<const std::string&>(EditorEvent::LogToEditor, buffer.GetString());
 }
 
-#endif

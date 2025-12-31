@@ -1,11 +1,16 @@
-#include "level/level_manager.h"
-#include "resource_manager/resource_manager.h"
+module;
+
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
-#include "remote_logger/remote_logger.h"
 
 #include <fstream>
 #include <sstream>
+#include <vector>
+#include <filesystem>
+
+module zeytin.level;
+import zeytin.resource;
+import zeytin.logger;
 
 std::filesystem::path LevelManager::get_levels_directory() {
     return ResourceManager::get().get_resource_subdir("levels");
@@ -20,7 +25,7 @@ std::vector<Level> LevelManager::get_all_levels() {
     auto levels_path = get_levels_directory();
     
     if (!std::filesystem::exists(levels_path)) {
-        log_warning() << "Levels directory does not exist: " << levels_path << std::endl;
+        //log_warning() << "Levels directory does not exist: " << levels_path << std::endl;
         return levels;
     }
     
@@ -41,7 +46,7 @@ Level LevelManager::get_level(const std::string& name) {
         return Level(name, level_path);
     }
     
-    log_error() << "Level not found: " << name << std::endl;
+    //log_error() << "Level not found: " << name << std::endl;
     return Level();
 }
 
@@ -56,13 +61,13 @@ std::string LevelManager::load_scene_file(const std::string& scene_name) {
     std::filesystem::path scene_file = scenes_path / filename;
     
     if (!std::filesystem::exists(scene_file)) {
-        log_warning() << "Scene file not found: " << scene_file << std::endl;
+        //log_warning() << "Scene file not found: " << scene_file << std::endl;
         return "";
     }
     
     std::ifstream file(scene_file);
     if (!file.is_open()) {
-        log_error() << "Failed to open scene file: " << scene_file << std::endl;
+        //log_error() << "Failed to open scene file: " << scene_file << std::endl;
         return "";
     }
     
@@ -73,11 +78,11 @@ std::string LevelManager::load_scene_file(const std::string& scene_name) {
     std::string content = buffer.str();
     
     if (content.empty()) {
-        log_error() << "Scene file is empty: " << scene_file << std::endl;
+        //log_error() << "Scene file is empty: " << scene_file << std::endl;
         return "";
     }
     
-    log_info() << "Loaded scene file: " << scene_file << std::endl;
+    //log_info() << "Loaded scene file: " << scene_file << std::endl;
     return content;
 }
 
@@ -95,7 +100,7 @@ std::string LevelManager::load_level(const std::string& level_name) {
 
 std::string LevelManager::load_level(const Level& level) {
     if (!level.is_valid()) {
-        log_error() << "Cannot load invalid level" << std::endl;
+        //log_error() << "Cannot load invalid level" << std::endl;
         return "";
     }
     
@@ -114,7 +119,7 @@ std::string LevelManager::load_level(const Level& level) {
         
         std::ifstream file(entry.path());
         if (!file.is_open()) {
-            log_error() << "Failed to open entity file: " << entry.path() << std::endl;
+            //log_error() << "Failed to open entity file: " << entry.path() << std::endl;
             continue;
         }
         
@@ -123,7 +128,7 @@ std::string LevelManager::load_level(const Level& level) {
         std::string entity_json = buffer.str();
         
         if (entity_json.empty()) {
-            log_warning() << "Empty entity file: " << entry.path() << std::endl;
+            //log_warning() << "Empty entity file: " << entry.path() << std::endl;
             continue;
         }
        
@@ -131,8 +136,8 @@ std::string LevelManager::load_level(const Level& level) {
         rapidjson::ParseResult parse_result = entity_doc.Parse(entity_json.c_str());
         
         if (parse_result.IsError()) {
-            log_error() << "Failed to parse entity file: " << entry.path() 
-                       << " Error: " << parse_result.Code() << std::endl;
+            //log_error() << "Failed to parse entity file: " << entry.path() 
+            //           << " Error: " << parse_result.Code() << std::endl;
             continue;
         }
         
@@ -147,12 +152,12 @@ std::string LevelManager::load_level(const Level& level) {
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     
     if (!document.Accept(writer)) {
-        log_error() << "Failed to serialize level: " << level.name << std::endl;
+        //log_error() << "Failed to serialize level: " << level.name << std::endl;
         return "";
     }
     
-    log_info() << "Loaded level: " << level.name 
-               << " with " << entities_array.Size() << " entities" << std::endl;
+    //log_info() << "Loaded level: " << level.name 
+    //           << " with " << entities_array.Size() << " entities" << std::endl;
     
     return std::string(buffer.GetString(), buffer.GetSize());
 }

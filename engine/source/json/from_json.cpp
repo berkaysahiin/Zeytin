@@ -1,4 +1,4 @@
-#include "core/json/from_json.h"
+module;
 
 #include <cstdio>
 #include <string>
@@ -11,8 +11,9 @@
 #include <rapidjson/document.h>     
 #include <rttr/type>
 
-#include "entity/entity.h"
-#include "variant/variant_base.h"
+module zeytin.json;
+import zeytin.entity;
+import zeytin.variant;
 
 using namespace rapidjson;
 using namespace rttr;
@@ -226,7 +227,7 @@ bool from_internal(const std::string& json, rttr::instance obj)
 }
 
 
-rttr::variant from(entity_id entity_id, const std::string& json)
+rttr::variant from(EntityID entity_id, const std::string& json)
 {
     Document document;
     document.Parse(json.c_str());
@@ -252,7 +253,7 @@ rttr::variant from(entity_id entity_id, const std::string& json)
     return obj;
 }
 
-rttr::variant from(entity_id entity_id, const std::filesystem::path& json_path)
+rttr::variant from(EntityID entity_id, const std::filesystem::path& json_path)
 {
     std::ifstream file(json_path);
     assert(file.is_open());
@@ -268,7 +269,7 @@ rttr::variant from(entity_id entity_id, const std::filesystem::path& json_path)
 
 namespace rttr_json {
 
-entity_id deserialize_entity(const std::string& entity_json, entity_id& entity, std::vector<rttr::variant>& variants) {
+EntityID deserialize_entity(const std::string& entity_json, EntityID& entity, std::vector<rttr::variant>& variants) {
     Document document;
     document.Parse(entity_json.c_str());
     assert(!document.HasParseError());

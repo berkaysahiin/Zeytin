@@ -1,18 +1,16 @@
-#pragma once
+module;
 
-#include "variant/variant_macros.h"
 #include "rttr_enable.h"
 
-struct VariantCreateInfo {
-    entity_id entity_id;
+export module zeytin.variant;
+import zeytin.entity;
 
+export struct VariantCreateInfo {
+    EntityID entity_id;
     RTTR_ENABLE();
 };
 
-
-#define DATA_CLASS() public:
-
-struct VariantBase {
+export struct VariantBase {
     VariantBase() = default;
     VariantBase(VariantCreateInfo info) : entity_id(info.entity_id) {}
 
@@ -27,7 +25,7 @@ struct VariantBase {
     uint64_t get_id() { return entity_id; }
     const uint64_t get_id() const { return entity_id; }
 
-    entity_id entity_id;
+    EntityID entity_id;
     bool is_dead = false;
     bool post_inited = false;
 

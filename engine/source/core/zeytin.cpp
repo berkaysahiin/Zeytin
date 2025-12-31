@@ -1,4 +1,4 @@
-#include "core/zeytin.h"
+module;
 
 #include <cassert>
 #include <cstdio>
@@ -8,30 +8,23 @@
 #include <fstream>
 #include <algorithm>
 
-#include "core/query.h"
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 
-#include "core/json/from_json.h"
-#include "core/json/to_json.h"
-#include "core/raylib_wrapper.h"
 #include "core/profiling.h"
-
 #include "raylib.h"
-#include "variant/variant_base.h"
-#include "level/level_manager.h"
-#include "resource_manager/resource_manager.h"
-#include "core/utils.h"
+#include "rttr/variant.h"
 
-#ifdef EDITOR_MODE
-    #include "editor/editor_event.h"
-	#include "editor/editor_communication.h"
-#endif
-
-#ifdef EMBED_SCENE
-    #include "core/embeded_scene.h"
-#endif
-
+module zeytin.zeytin;
+import zeytin.level;
+import zeytin.resource;
+import zeytin.logger;
+import zeytin.json;
+import zeytin.variant;
+import zeytin.guid;
+import zeytin.property;
+import zeytin.raylib;
+import zeytin.editor.communication;
 
 Zeytin::Zeytin() {
     initialize();
@@ -120,6 +113,10 @@ void Zeytin::shutdown() {
     m_storage.clear();
 }
 
+EntityID Zeytin::new_entity() {
+	return generate_unique_id(); 
+}
+
 void Zeytin::run_frame() {
     ZPROFILE_FUNCTION();
     
@@ -140,12 +137,12 @@ void Zeytin::run_frame() {
                     m_state.started = false;
                     m_state.late_started = false;
 					m_current_level_name = m_pending_level_name;  
-                    log_info() << "Successfully loaded level: " << m_pending_level_name << std::endl;
+                    //log_info() << "Successfully loaded level: " << m_pending_level_name << std::endl;
                 } else {
-                    log_error() << "Failed to deserialize level: " << m_pending_level_name << std::endl;
+                    //log_error() << "Failed to deserialize level: " << m_pending_level_name << std::endl;
                 }
             } else {
-                log_error() << "Failed to load level: " << m_pending_level_name << std::endl;
+                //log_error() << "Failed to load level: " << m_pending_level_name << std::endl;
             }
             
             m_pending_level_name.clear();
@@ -197,11 +194,11 @@ void Zeytin::run_frame() {
     end_drawing();
 }
 
-VariantList& Zeytin::get_variants(const entity_id& entity) {
+VariantList& Zeytin::get_variants(const EntityID& entity) {
     return m_storage[entity];
 }
 
-void Zeytin::remove_entity(entity_id id) {
+void Zeytin::remove_entity(EntityID id) {
     for(rttr::variant& var : get_variants(id)) {
         var.get_value<VariantBase&>().is_dead = true;
     }
@@ -211,7 +208,7 @@ void Zeytin::remove_entity(entity_id id) {
 void Zeytin::clean_dead_variants() {
     ZPROFILE_FUNCTION();
     
-    for (auto& [entity_id, variants] : m_storage) {
+    for (auto& [EntityID, variants] : m_storage) {
         variants.erase(
             std::remove_if(variants.begin(), variants.end(),
                 [](rttr::variant& variant) {
@@ -224,25 +221,25 @@ void Zeytin::clean_dead_variants() {
     }
 }
 
-std::string Zeytin::serialize_entity(const entity_id id) {
+std::string Zeytin::serialize_entity(const EntityID id) {
     return rttr_json::serialize_entity(id, get_variants(id));
 }
 
-std::string Zeytin::serialize_entity(const entity_id id, const std::filesystem::path& path) {
+std::string Zeytin::serialize_entity(const EntityID id, const std::filesystem::path& path) {
     return rttr_json::serialize_entity(id, get_variants(id), path);
 }
 
-entity_id Zeytin::deserialize_entity(const std::string& entity_json) {
+EntityID Zeytin::deserialize_entity(const std::string& entity_json) {
     if (entity_json.empty()) {
-        log_error() << "Cannot deserialize empty entity JSON" << std::endl;
+        //log_error() << "Cannot deserialize empty entity JSON" << std::endl;
         return 0;
     }
     
-    entity_id id;
+    EntityID id;
     std::vector<rttr::variant> variants;
 
     if (!rttr_json::deserialize_entity(entity_json, id, variants)) {
-        log_error() << "Failed to deserialize entity" << std::endl;
+        //log_error() << "Failed to deserialize entity" << std::endl;
         return 0;
     }
 
@@ -258,7 +255,7 @@ entity_id Zeytin::deserialize_entity(const std::string& entity_json) {
     return id;
 }
 
-void Zeytin::remove_variant(entity_id id, const rttr::type& type) {
+void Zeytin::remove_variant(EntityID id, const rttr::type& type) {
     auto& variants = get_variants(id);
     for (auto& variant : variants) {
         if (variant.get_type() == type) {
@@ -277,8 +274,8 @@ std::string Zeytin::serialize_scene() {
     rapidjson::Document::AllocatorType& allocator = document.GetAllocator();
     rapidjson::Value entities_array(rapidjson::kArrayType);
 
-    for (const auto& [entity_id, variants] : m_storage) {
-        std::string entity_json = serialize_entity(entity_id);
+    for (const auto& [EntityID, variants] : m_storage) {
+        std::string entity_json = serialize_entity(EntityID);
         if (entity_json.empty()) {
             continue;
         }
@@ -287,7 +284,7 @@ std::string Zeytin::serialize_scene() {
         rapidjson::ParseResult parse_result = entity_doc.Parse(entity_json.c_str());
         
         if (parse_result.IsError()) {
-            log_error() << "Failed to parse entity JSON for entity: " << entity_id << std::endl;
+            //log_error() << "Failed to parse entity JSON for entity: " << EntityID << std::endl;
             continue;
         }
 
@@ -308,13 +305,13 @@ std::string Zeytin::serialize_scene() {
 
 bool Zeytin::load_scene(const std::filesystem::path& path) {
     if (!std::filesystem::exists(path)) {
-        log_error() << "Scene file does not exist: " << path << std::endl;
+        //log_error() << "Scene file does not exist: " << path << std::endl;
         return false;
     }
 
     std::ifstream scene_file(path);
     if (!scene_file.is_open()) {
-        log_error() << "Failed to open scene file: " << path << std::endl;
+        //log_error() << "Failed to open scene file: " << path << std::endl;
         return false;
     }
 
@@ -324,7 +321,7 @@ bool Zeytin::load_scene(const std::filesystem::path& path) {
     
     std::string scene_content = buffer.str();
     if (scene_content.empty()) {
-        log_error() << "Scene file is empty: " << path << std::endl;
+        //log_error() << "Scene file is empty: " << path << std::endl;
         return false;
     }
     
@@ -335,7 +332,7 @@ bool Zeytin::deserialize_scene(const std::string& scene) {
     ZPROFILE_FUNCTION();
     
     if (scene.empty()) {
-        log_error() << "Cannot deserialize empty scene" << std::endl;
+        //log_error() << "Cannot deserialize empty scene" << std::endl;
         return false;
     }
     
@@ -348,7 +345,7 @@ bool Zeytin::deserialize_scene(const std::string& scene) {
     rapidjson::ParseResult parse_result = scene_data.Parse(scene.c_str());
 
     if (parse_result.IsError()) {
-        log_error() << "Error parsing scene at offset " << parse_result.Offset() << std::endl;
+        //log_error() << "Error parsing scene at offset " << parse_result.Offset() << std::endl;
         return false;
     }
 
@@ -359,7 +356,7 @@ bool Zeytin::deserialize_scene(const std::string& scene) {
         !scene_data.HasMember("entities") || 
         !scene_data["entities"].IsArray()) {
         
-        log_error() << "Invalid scene format" << std::endl;
+        //log_error() << "Invalid scene format" << std::endl;
         return false;
     }
 
@@ -372,19 +369,19 @@ bool Zeytin::deserialize_scene(const std::string& scene) {
         entities[i].Accept(writer);
         
         std::string entity_str = buffer.GetString();
-        entity_id entity_id = deserialize_entity(entity_str);
+        EntityID EntityID = deserialize_entity(entity_str);
         
-        if (entity_id != 0) {
+        if (EntityID != 0) {
             successful_entities++;
         }
     }
 
     if (successful_entities == 0 && entities.Size() > 0) {
-        log_error() << "Failed to deserialize any entities from scene" << std::endl;
+        //log_error() << "Failed to deserialize any entities from scene" << std::endl;
         return false;
     }
 
-    log_info() << "Scene loaded with " << successful_entities << " entities" << std::endl;
+    //log_info() << "Scene loaded with " << successful_entities << " entities" << std::endl;
     return true;
 }
 
@@ -392,7 +389,7 @@ bool Zeytin::switch_to_level(const std::string& level_name) {
     std::string scene_json = LevelManager::load_level(level_name);
     
     if (scene_json.empty()) {
-        log_error() << "Failed to load level: " << level_name << std::endl;
+        //log_error() << "Failed to load level: " << level_name << std::endl;
         return false;
     }
     
@@ -401,7 +398,7 @@ bool Zeytin::switch_to_level(const std::string& level_name) {
     
     // Load new scene
     if (!deserialize_scene(scene_json)) {
-        log_error() << "Failed to deserialize level: " << level_name << std::endl;
+        //log_error() << "Failed to deserialize level: " << level_name << std::endl;
         return false;
     }
     
@@ -409,7 +406,7 @@ bool Zeytin::switch_to_level(const std::string& level_name) {
     m_state.started = false;
     m_state.late_started = false;
     
-    log_info() << "Switched to level: " << level_name << std::endl;
+    //log_info() << "Switched to level: " << level_name << std::endl;
     return true;
 }
 
@@ -592,7 +589,7 @@ void Zeytin::render() {
 void Zeytin::request_level_load(const std::string& level_name) {
     m_pending_level_name = level_name;
     m_state.load_level_next_frame = true;
-    log_info() << "Level load requested: " << level_name << " (will load next frame)" << std::endl;
+    //log_info() << "Level load requested: " << level_name << " (will load next frame)" << std::endl;
 }
 
 #ifdef EDITOR_MODE
@@ -674,29 +671,29 @@ void Zeytin::subscribe_editor_events() {
 
 void Zeytin::handle_entity_property_changed(const rapidjson::Document& doc) {
     if (doc.HasParseError() || 
-        !doc.HasMember("entity_id") || 
+        !doc.HasMember("EntityID") || 
         !doc.HasMember("variant_type") || 
         !doc.HasMember("key_type") || 
         !doc.HasMember("key_path") || 
         !doc.HasMember("value")) {
         
-        log_error() << "Invalid property change document format" << std::endl;
+        //log_error() << "Invalid property change document format" << std::endl;
         return;
     }
 
-    uint64_t entity_id = doc["entity_id"].GetUint64();
+    uint64_t EntityID = doc["EntityID"].GetUint64();
     const std::string& variant_type = doc["variant_type"].GetString();
     const std::string& key_type = doc["key_type"].GetString();
     const std::string& key_path = doc["key_path"].GetString();
     const std::string& value_str = doc["value"].GetString();
 
-    auto& variants = get_variants(entity_id);
+    auto& variants = get_variants(EntityID);
     for (auto& variant : variants) {
         if (variant.get_type().get_name() == variant_type) {
 
             std::vector<std::string> path_parts = split_path(key_path);
             if (path_parts.empty()) {
-                log_error() << "Invalid key path: " << key_path << std::endl;
+                //log_error() << "Invalid key path: " << key_path << std::endl;
                 return;
             }
 
@@ -713,52 +710,52 @@ void Zeytin::handle_entity_property_changed(const rapidjson::Document& doc) {
                 update_property(variant, path_parts, 0, value_str);
             }
             else {
-                log_error() << "Unsupported property type: " << key_type << std::endl;
+                //log_error() << "Unsupported property type: " << key_type << std::endl;
             }
             
             return;
         }
     }
     
-    log_error() << "Variant " << variant_type << " not found on entity " << entity_id << std::endl;
+    //log_error() << "Variant " << variant_type << " not found on entity " << EntityID << std::endl;
 }
 
 void Zeytin::handle_entity_variant_added(const rapidjson::Document& msg) {
     if (msg.HasParseError() || 
-        !msg.HasMember("entity_id") || 
+        !msg.HasMember("EntityID") || 
         !msg.HasMember("variant_type")) {
         
-        log_error() << "Invalid variant add document format" << std::endl;
+        //log_error() << "Invalid variant add document format" << std::endl;
         return;
     }
 
-    entity_id entity_id = msg["entity_id"].GetUint64();
+    EntityID EntityID = msg["EntityID"].GetUint64();
     const char* variant_type_name = msg["variant_type"].GetString();
 
     VariantCreateInfo info;
-    info.entity_id = entity_id;
+    info.entity_id = EntityID;
     
     std::vector<rttr::argument> args;
     args.push_back(info);
 
     rttr::type rttr_type = rttr::type::get_by_name(variant_type_name);
     if (!rttr_type.is_valid()) {
-        log_error() << "Invalid variant type: " << variant_type_name << std::endl;
+        //log_error() << "Invalid variant type: " << variant_type_name << std::endl;
         return;
     }
 
     rttr::variant obj = rttr_type.create(args);
     if (!obj.is_valid()) {
-        log_error() << "Failed to create variant of type: " << variant_type_name << std::endl;
+        //log_error() << "Failed to create variant of type: " << variant_type_name << std::endl;
         return;
     }
 
-    auto& variants = get_variants(entity_id);
+    auto& variants = get_variants(EntityID);
     
     for (const auto& existing : variants) {
         if (existing.get_type() == rttr_type) {
-            log_warning() << "Entity " << entity_id << " already has a variant of type " 
-                        << variant_type_name << std::endl;
+            //log_warning() << "Entity " << EntityID << " already has a variant of type " 
+                        //<< variant_type_name << std::endl;
             return;
         }
     }
@@ -767,41 +764,41 @@ void Zeytin::handle_entity_variant_added(const rapidjson::Document& msg) {
     base.on_init();
     variants.push_back(std::move(obj));
     
-    log_info() << "Added variant " << variant_type_name << " to entity " << entity_id << std::endl;
+    //log_info() << "Added variant " << variant_type_name << " to entity " << EntityID << std::endl;
 }
 
 void Zeytin::handle_entity_variant_removed(const rapidjson::Document& msg) {
     if (msg.HasParseError() || 
-        !msg.HasMember("entity_id") || 
+        !msg.HasMember("EntityID") || 
         !msg.HasMember("variant_type")) {
         
-        log_error() << "Invalid variant remove document format" << std::endl;
+        //log_error() << "Invalid variant remove document format" << std::endl;
         return;
     }
 
-    entity_id entity_id = msg["entity_id"].GetUint64();
+    EntityID EntityID = msg["EntityID"].GetUint64();
     const char* variant_type_name = msg["variant_type"].GetString();
 
     rttr::type rttr_type = rttr::type::get_by_name(variant_type_name);
     if (!rttr_type.is_valid()) {
-        log_error() << "Invalid variant type: " << variant_type_name << std::endl;
+        //log_error() << "Invalid variant type: " << variant_type_name << std::endl;
         return;
     }
 
-    remove_variant(entity_id, rttr_type);
-    log_info() << "Removed variant " << variant_type_name << " from entity " << entity_id << std::endl;
+    remove_variant(EntityID, rttr_type);
+    //log_info() << "Removed variant " << variant_type_name << " from entity " << EntityID << std::endl;
 }
 
 void Zeytin::handle_entity_removed(const rapidjson::Document& msg) {
-    if (msg.HasParseError() || !msg.HasMember("entity_id")) {
-        log_error() << "Invalid entity remove document format" << std::endl;
+    if (msg.HasParseError() || !msg.HasMember("EntityID")) {
+        //log_error() << "Invalid entity remove document format" << std::endl;
         return;
     }
 
-    entity_id entity_id = msg["entity_id"].GetUint64();
+    EntityID EntityID = msg["EntityID"].GetUint64();
 
-    remove_entity(entity_id);
-    log_info() << "Removed entity " << entity_id << std::endl;
+    remove_entity(EntityID);
+    //log_info() << "Removed entity " << EntityID << std::endl;
 }
 
 void Zeytin::enter_play_mode(bool is_paused) {
@@ -811,14 +808,14 @@ void Zeytin::enter_play_mode(bool is_paused) {
 
     std::string scene = serialize_scene();
     if (scene.empty()) {
-        log_error() << "Failed to serialize scene for play mode" << std::endl;
+        //log_error() << "Failed to serialize scene for play mode" << std::endl;
         return;
     }
 
     std::filesystem::create_directory("temp");
     std::ofstream scene_file("temp/backup.scene");
     if (!scene_file.is_open()) {
-        log_error() << "Failed to create backup scene file" << std::endl;
+        //log_error() << "Failed to create backup scene file" << std::endl;
         return;
     }
     
@@ -828,7 +825,7 @@ void Zeytin::enter_play_mode(bool is_paused) {
     m_state.pause_play_mode = is_paused;
     m_state.play_mode = true;
     
-    log_info() << "Entered play mode" << (is_paused ? " (paused)" : "") << std::endl;
+    //log_info() << "Entered play mode" << (is_paused ? " (paused)" : "") << std::endl;
 }
 
 void Zeytin::exit_play_mode() {
@@ -840,29 +837,29 @@ void Zeytin::exit_play_mode() {
 
     std::filesystem::path backup_path = "temp/backup.scene";
     if (!std::filesystem::exists(backup_path)) {
-        log_error() << "Cannot exit play mode: scene backup not found" << std::endl;
+        //log_error() << "Cannot exit play mode: scene backup not found" << std::endl;
         return;
     }
 
     m_storage.clear();
 
     if (!load_scene(backup_path)) {
-        log_error() << "Failed to load scene from backup" << std::endl;
+        //log_error() << "Failed to load scene from backup" << std::endl;
         return;
     }
 
     std::filesystem::remove_all("temp");
     
-    log_info() << "Exited play mode" << std::endl;
+    //log_info() << "Exited play mode" << std::endl;
 }
 
 void Zeytin::initial_sync_editor() {
     std::string scene = serialize_scene();
     if (!scene.empty()) {
         EditorEventBus::get().publish<std::string>(EditorEvent::SyncEditor, scene);
-        log_info() << "Initial scene sync with editor" << std::endl;
+        //log_info() << "Initial scene sync with editor" << std::endl;
     } else {
-        log_error() << "Failed to serialize scene for initial sync" << std::endl;
+        //log_error() << "Failed to serialize scene for initial sync" << std::endl;
     }
 }
 

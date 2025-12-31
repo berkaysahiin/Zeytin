@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 4.2)
 project(ZeytinEngine CXX)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -16,6 +16,12 @@ if(ENGINE_CONFIG STREQUAL "weditor")
 endif()
 
 add_executable(ZeytinEngine_${ENGINE_CONFIG} ${SOURCES})
+
+target_sources(ZeytinEngine_${ENGINE_CONFIG}
+  	PUBLIC
+    FILE_SET all_my_modules TYPE CXX_MODULES FILES
+    ${MODULE_SOURCES}
+)
 
 target_include_directories(ZeytinEngine_${ENGINE_CONFIG} PRIVATE
     include

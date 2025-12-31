@@ -1,16 +1,15 @@
-#pragma once
-
-#ifdef EDITOR_MODE
+module;
 
 #include <thread>
 #include <mutex>
 #include <queue>
 #include <string>
 #include <atomic>
-
 #include "zmq/zmq.hpp"
 
-class EditorCommunication {
+export module zeytin.editor.communication;
+
+export class EditorCommunication {
 public:
     EditorCommunication();
     ~EditorCommunication();
@@ -40,4 +39,3 @@ private:
     std::mutex m_queue_mutex;
     std::queue<std::string> m_message_queue;
 };
-#endif

@@ -1,6 +1,6 @@
-#pragma once
+export module zeytin.application;
 
-class Application {
+export class Application {
 public:
     Application();
     ~Application();

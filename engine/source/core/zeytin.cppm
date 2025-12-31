@@ -1,26 +1,26 @@
-#pragma once
+module;
 
 #include <vector>
 #include <filesystem>
-#include <unordered_map>
 
-#include "raylib_wrapper.h"
-
-#include "core/guid/guid.h"
-#include "entity/entity.h"
 #include "core/macros.h"
+#include "raylib.h"
 #include "rapidjson/document.h"
 #include "rttr/variant.h"
+
+export module zeytin.zeytin;
+import zeytin.entity;
+import zeytin.raylib;
+import zeytin.editor.communication;
+import zeytin.editor.event;
 
 constexpr float VIRTUAL_WIDTH = 1920;
 constexpr float VIRTUAL_HEIGHT = 1080;
 
-using VariantList = std::vector<rttr::variant>;
-using Storage = std::unordered_map<entity_id, VariantList>;
+export using VariantList = std::vector<rttr::variant>;
+export using Storage = std::unordered_map<EntityID, VariantList>;
 
-class EditorCommunication;
-
-struct State {
+export struct State {
     bool started : 1;            
     bool late_started : 1;      
     bool should_die : 1;       
@@ -32,7 +32,7 @@ struct State {
 	bool load_level_next_frame : 1;
 };
 
-class Zeytin {
+export class Zeytin {
     MAKE_SINGLETON(Zeytin);
 public:
     void initialize();
@@ -40,16 +40,16 @@ public:
     void run_frame();
     inline bool should_die() const { return m_state.should_die || window_should_close(); }
 
-    inline entity_id new_entity() { return generate_unique_id(); }
-    void remove_variant(entity_id id, const rttr::type& type);
-    void remove_entity(entity_id id);
+    EntityID new_entity();
+    void remove_variant(EntityID id, const rttr::type& type);
+    void remove_entity(EntityID id);
     void clean_dead_variants();
 
-    VariantList& get_variants(const entity_id& entity);
+    VariantList& get_variants(const EntityID& entity);
 
-    std::string serialize_entity(const entity_id id);
-    std::string serialize_entity(const entity_id id, const std::filesystem::path& path);
-    entity_id deserialize_entity(const std::string& entity);
+    std::string serialize_entity(const EntityID id);
+    std::string serialize_entity(const EntityID id, const std::filesystem::path& path);
+    EntityID deserialize_entity(const std::string& entity);
 
     bool load_scene(const std::filesystem::path&);
     std::string serialize_scene();

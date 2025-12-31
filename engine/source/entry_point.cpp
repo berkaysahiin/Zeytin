@@ -1,4 +1,4 @@
-#include "application/application.h"
+import zeytin.application;
 
 int main() {
     Application app{};

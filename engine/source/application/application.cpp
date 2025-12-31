@@ -1,10 +1,12 @@
-#include "application/application.h"
-#include "core/raylib_wrapper.h"
-#include "core/zeytin.h"
+module;
+
 #include "core/macros.h"
 #include "raylib.h"
 
-#include "config_manager/config_manager.h"
+module zeytin.application;
+import zeytin.config;
+import zeytin.raylib;
+import zeytin.zeytin;
 
 struct Application::Impl 
 {

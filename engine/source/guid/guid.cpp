@@ -1,6 +1,8 @@
-#include "core/guid/guid.h"
+module;
 
 #include <random>
+
+module zeytin.guid;
 
 uint64_t generate_unique_id() {
     std::random_device rd;

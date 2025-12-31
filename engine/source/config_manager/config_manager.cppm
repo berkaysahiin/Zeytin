@@ -1,10 +1,12 @@
-#pragma once
+module;
 
 #include <string>
 #include <variant>
 #include <optional>
 
-class ConfigManager {
+export module zeytin.config;
+
+export class ConfigManager {
 public:
     using ConfigValue = 
 		std::variant<int, float, bool, std::string>;
@@ -36,5 +38,5 @@ private:
 	MaybeConfig get_impl(const std::string& key) const;
 
 	struct Impl;
-	Impl* pImpl; // TODO: change this to a unique ptr ?
+	Impl *pImpl; 
 };

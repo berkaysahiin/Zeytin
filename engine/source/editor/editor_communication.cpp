@@ -1,13 +1,16 @@
-#ifdef EDITOR_MODE
-#include "editor/editor_communication.h"
+module;
+
 #include <iostream>
 #include <chrono>
+#include <thread>
 
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
+#include "zmq/zmq.hpp"
 
-#include "editor/editor_event.h"
-#include "remote_logger/remote_logger.h"
+module zeytin.editor.communication;
+import zeytin.editor.event;
+import zeytin.logger;
 
 EditorCommunication::EditorCommunication()
     : m_running(false)
@@ -50,7 +53,7 @@ bool EditorCommunication::initialize() {
         return true;
     }
     catch (const zmq::error_t& e) {
-        log_error() << "ZeroMQ error: " << e.what() << std::endl;
+        //log_error() << "ZeroMQ error: " << e.what() << std::endl;
         return false;
     }
 }
@@ -72,9 +75,9 @@ void EditorCommunication::start_connection_attempts() {
         }
 
         if (m_connection_confirmed) {
-            log_info() << "Connection to editor confirmed!" << std::endl;
+            //log_info() << "Connection to editor confirmed!" << std::endl;
         } else if (attempts >= max_attempts) {
-            log_error() << "Failed to connect to editor after " << max_attempts << " attempts" << std::endl;
+            //log_error() << "Failed to connect to editor after " << max_attempts << " attempts" << std::endl;
         }
     }).detach();
 }
@@ -122,7 +125,7 @@ void EditorCommunication::shutdown() {
 
 bool EditorCommunication::send_message(const std::string& message) {
     if (!m_initialized) {
-        log_warning() << "EditorCommunication not initialized" << std::endl;
+        //log_warning() << "EditorCommunication not initialized" << std::endl;
         return false;
     }
     
@@ -134,7 +137,7 @@ bool EditorCommunication::send_message(const std::string& message) {
         return result.has_value();
     }
     catch (const std::exception& e) {
-        log_warning() << "Failed to send message: " << e.what() << std::endl;
+        //log_warning() << "Failed to send message: " << e.what() << std::endl;
         return false;
     }
 }
@@ -146,7 +149,7 @@ void EditorCommunication::raise_events() {
         doc.Parse(msg.c_str());
         
         if (doc.HasParseError() || !doc.HasMember("type")) {
-            log_warning() << "Invalid message format received" << std::endl;
+            //log_warning() << "Invalid message format received" << std::endl;
             m_message_queue.pop();
             continue;
         }
@@ -193,7 +196,7 @@ void EditorCommunication::raise_events() {
             EditorEventBus::get().publish<const rapidjson::Document&>(EditorEvent::WindowStateChanged, doc);
         }
         else {
-            log_warning() << "Unknown message type received from editor" << std::endl;
+            //log_warning() << "Unknown message type received from editor" << std::endl;
         }
         
         m_message_queue.pop();
@@ -224,9 +227,8 @@ void EditorCommunication::receive_messages() {
             }
         }
         catch (const zmq::error_t& e) {
-            log_error() << "Error receiving message: " << e.what() << std::endl;
+            //log_error() << "Error receiving message: " << e.what() << std::endl;
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
 }
-#endif
