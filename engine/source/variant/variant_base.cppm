@@ -1,18 +1,18 @@
 module;
 
-#include "rttr_enable.h"
+#include <cstdint>
 
 export module zeytin.variant;
 import zeytin.entity;
 
 export struct VariantCreateInfo {
     EntityID entity_id;
-    RTTR_ENABLE();
 };
 
 export struct VariantBase {
-    VariantBase() = default;
+   	VariantBase() = default;
     VariantBase(VariantCreateInfo info) : entity_id(info.entity_id) {}
+    using ___component___ = void; \
 
     virtual void on_init() {}
     virtual void on_post_init() {}
@@ -28,6 +28,4 @@ export struct VariantBase {
     EntityID entity_id;
     bool is_dead = false;
     bool post_inited = false;
-
-    RTTR_ENABLE();
 };

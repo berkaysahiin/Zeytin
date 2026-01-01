@@ -671,7 +671,7 @@ void Zeytin::subscribe_editor_events() {
 
 void Zeytin::handle_entity_property_changed(const rapidjson::Document& doc) {
     if (doc.HasParseError() || 
-        !doc.HasMember("EntityID") || 
+        !doc.HasMember("entity_id") || 
         !doc.HasMember("variant_type") || 
         !doc.HasMember("key_type") || 
         !doc.HasMember("key_path") || 
@@ -681,7 +681,7 @@ void Zeytin::handle_entity_property_changed(const rapidjson::Document& doc) {
         return;
     }
 
-    uint64_t EntityID = doc["EntityID"].GetUint64();
+    uint64_t EntityID = doc["entity_id"].GetUint64();
     const std::string& variant_type = doc["variant_type"].GetString();
     const std::string& key_type = doc["key_type"].GetString();
     const std::string& key_path = doc["key_path"].GetString();
@@ -722,14 +722,14 @@ void Zeytin::handle_entity_property_changed(const rapidjson::Document& doc) {
 
 void Zeytin::handle_entity_variant_added(const rapidjson::Document& msg) {
     if (msg.HasParseError() || 
-        !msg.HasMember("EntityID") || 
+        !msg.HasMember("entity_id") || 
         !msg.HasMember("variant_type")) {
         
         //log_error() << "Invalid variant add document format" << std::endl;
         return;
     }
 
-    EntityID EntityID = msg["EntityID"].GetUint64();
+    EntityID EntityID = msg["entity_id"].GetUint64();
     const char* variant_type_name = msg["variant_type"].GetString();
 
     VariantCreateInfo info;
@@ -769,14 +769,14 @@ void Zeytin::handle_entity_variant_added(const rapidjson::Document& msg) {
 
 void Zeytin::handle_entity_variant_removed(const rapidjson::Document& msg) {
     if (msg.HasParseError() || 
-        !msg.HasMember("EntityID") || 
+        !msg.HasMember("entity_id") || 
         !msg.HasMember("variant_type")) {
         
         //log_error() << "Invalid variant remove document format" << std::endl;
         return;
     }
 
-    EntityID EntityID = msg["EntityID"].GetUint64();
+    EntityID EntityID = msg["entity_id"].GetUint64();
     const char* variant_type_name = msg["variant_type"].GetString();
 
     rttr::type rttr_type = rttr::type::get_by_name(variant_type_name);
@@ -790,12 +790,12 @@ void Zeytin::handle_entity_variant_removed(const rapidjson::Document& msg) {
 }
 
 void Zeytin::handle_entity_removed(const rapidjson::Document& msg) {
-    if (msg.HasParseError() || !msg.HasMember("EntityID")) {
+    if (msg.HasParseError() || !msg.HasMember("entity_id")) {
         //log_error() << "Invalid entity remove document format" << std::endl;
         return;
     }
 
-    EntityID EntityID = msg["EntityID"].GetUint64();
+    EntityID EntityID = msg["entity_id"].GetUint64();
 
     remove_entity(EntityID);
     //log_info() << "Removed entity " << EntityID << std::endl;
@@ -895,11 +895,17 @@ void Zeytin::generate_variants() {
     int variant_count = 0;
 
     for (const auto& type : all_types) {
+		const bool is_component = [&type]() {
+			auto is_component = type.get_metadata("is_component");
+			if(!is_component.is_valid()) return false;
+			return is_component.get_value<bool>();
+		}();
+
         if (!type.is_valid() || 
-            !type.is_derived_from<VariantBase>() ||
-            type.get_name() == "VariantBase" ||
+			!is_component ||
             type.is_pointer() ||
             type.is_wrapper()) {
+			std::cout << "Skipping type " <<  type.get_name().data() << std::endl;
             continue;
         }
 
