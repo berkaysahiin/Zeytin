@@ -814,6 +814,7 @@ void Zeytin::enter_play_mode(bool is_paused) {
     m_state.pause_play_mode = is_paused;
     m_state.play_mode = true;
     
+	log_info("Entered play mode");
     //log_info() << "Entered play mode" << (is_paused ? " (paused)" : "") << std::endl;
 }
 
@@ -868,8 +869,6 @@ void Zeytin::sync_editor() {
     }
 }
 
-
-
 void Zeytin::generate_variants() {
     ZPROFILE_FUNCTION();
     
@@ -894,7 +893,6 @@ void Zeytin::generate_variants() {
 			!is_component ||
             type.is_pointer() ||
             type.is_wrapper()) {
-			std::cout << "Skipping type " <<  type.get_name().data() << std::endl;
             continue;
         }
 

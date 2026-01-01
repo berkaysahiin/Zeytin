@@ -20,5 +20,6 @@ RTTR_REGISTRATION
         .property("x", &Rectangle::x)
         .property("y", &Rectangle::y)
         .property("width", &Rectangle::width)
-        .property("height", &Rectangle::height);
+        .property("height", &Rectangle::height)
+		(rttr::metadata("COMPONENT", true));
 }
