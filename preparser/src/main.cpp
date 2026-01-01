@@ -16,6 +16,7 @@ using namespace clang::ast_matchers;
 import preparser.logger;
 import preparser.utility;
 import preparser.matchers.component;
+import preparser.jsonexport;
 
 int main(int argc, const char** argv) {
     if (argc < 2) {
@@ -59,13 +60,16 @@ int main(int argc, const char** argv) {
     	Finder.addMatcher(
 			cxxRecordDecl(
     isDefinition(),
-    isDerivedFrom(hasName("VariantBase"))
+    isDerivedFrom(hasName("Component"))
 	).bind("component"), &Callback);
 
     const bool rv = Tool.run(newFrontendActionFactory(&Finder).get());
 
 	for(const auto& component: Callback.components) 
 	{
+		log("---------------------------");
 		debug_print_component(component);
 	}
+
+	export_components(Callback.components);
 }

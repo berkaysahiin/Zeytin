@@ -58,7 +58,17 @@ std::vector<PropertyAttr> parse_attr_from_annotation(const std::string_view anno
 
 void debug_print_property(const PropertyInfo& property)
 {
-	log("{} : {}", property.name, property.type);
+	const std::string property_value = std::visit([]<typename T>(T&& v) -> std::string {
+    	if constexpr (std::is_same_v<std::decay_t<T>, bool>) {
+    	    return v ? "true" : "false";
+    	} else if constexpr (std::is_same_v<std::decay_t<T>, std::string>) {
+    	    return v;
+    	} else {
+    	    return std::to_string(v);
+    	}
+	}, property.value);
+	
+	log("{} : {} | {}", property.name, property_value, property.annotation);
 }
 
 void debug_print_component(const ComponentInfo& component) {

@@ -7,12 +7,14 @@ module;
 
 export module preparser.types;
 
-using PropertyAttr = std::variant<std::string, std::pair<std::string, std::string>>;
+export using PropertyAttr = std::variant<std::string, std::pair<std::string, std::string>>;
+export using PropertyValue = std::variant<std::string, float, int, bool>;
 
 export struct PropertyInfo {
     std::string name;
-    std::string type;
+	PropertyValue value; 
 	std::vector<PropertyAttr> attrs;
+	std::string annotation;
 };
 
 export struct ComponentInfo {
