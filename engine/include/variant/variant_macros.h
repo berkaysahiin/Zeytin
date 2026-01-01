@@ -11,7 +11,6 @@
 public: \
     ClassName() = default; \
     ClassName(VariantCreateInfo info) : VariantBase(info) {} \
-    RTTR_ENABLE(VariantBase); \
     static constexpr const char* get_variant_name() { return #ClassName; } \
 private:
 
