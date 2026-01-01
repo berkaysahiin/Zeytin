@@ -8,7 +8,7 @@ module;
 
 export module zeytin.query;
 import zeytin.entity;
-import zeytin.variant;
+import zeytin.component;
 import zeytin.zeytin;
 
 namespace Query {
@@ -19,7 +19,7 @@ inline EntityID create_entity() {
 
 export template<typename T>
 bool has(EntityID id) {
-    static_assert(std::is_base_of<VariantBase, T>::value, "T must derive from VariantBase");
+    static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
     auto& variants = Zeytin::get().get_variants(id);
     
     for (const auto& variant : variants) {
@@ -32,12 +32,12 @@ bool has(EntityID id) {
 }
 
 export template<typename T>
-bool has(const VariantBase* base) {
+bool has(const Component* base) {
     return has<T>(base->entity_id);
 }
 
 export template<typename T>
-bool has(VariantBase* base) {
+bool has(Component* base) {
     return has<T>(base->entity_id);
 }
 
@@ -47,14 +47,14 @@ bool has(EntityID id) {
 }
 
 export template<typename T1, typename T2, typename... Rest>
-bool has(const VariantBase* base) {
+bool has(const Component* base) {
     return has<T1, T2, Rest...>(base->entity_id);
 }
 
 
 export template<typename T>
 T& get(EntityID id) {
-    static_assert(std::is_base_of<VariantBase, T>::value, "T must derive from VariantBase");
+    static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
     auto& variants = Zeytin::get().get_variants(id);
 
     for (auto& variant : variants) {
@@ -69,7 +69,7 @@ T& get(EntityID id) {
 }
 
 export template<typename T>
-T& get(const VariantBase* base) {
+T& get(const Component* base) {
     return get<T>(base->entity_id);
 }
 
@@ -79,7 +79,7 @@ std::tuple<T1&, T2&, Rest&...> get(EntityID id) {
 }
 
 export template<typename T1, typename T2, typename... Rest>
-std::tuple<T1&, T2&, Rest&...> get(const VariantBase* base) {
+std::tuple<T1&, T2&, Rest&...> get(const Component* base) {
     return get<T1, T2, Rest...>(base->entity_id);
 }
 
@@ -92,18 +92,18 @@ std::optional<std::reference_wrapper<T>> try_get(EntityID id) {
 }
 
 export template<typename T>
-std::optional<std::reference_wrapper<T>> try_get(const VariantBase* base) {
+std::optional<std::reference_wrapper<T>> try_get(const Component* base) {
     return try_get<T>(base->entity_id);
 }
 
 export template<typename T>
 const T& read(EntityID id) {
-    static_assert(std::is_base_of<VariantBase, T>::value, "T must derive from VariantBase");
+    static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
     return get<T>(id);
 }
 
 export template<typename T>
-const T& read(const VariantBase* base) {
+const T& read(const Component* base) {
     return read<T>(base->entity_id);
 }
 
@@ -113,13 +113,13 @@ std::tuple<const T1&, const T2&, const Rest&...> read(EntityID id) {
 }
 
 export template<typename T1, typename T2, typename... Rest>
-std::tuple<const T1&, const T2&, const Rest&...> read(const VariantBase* base) {
+std::tuple<const T1&, const T2&, const Rest&...> read(const Component* base) {
     return read<T1, T2, Rest...>(base->entity_id);
 }
 
 export template<typename T>
 std::optional<std::reference_wrapper<T>> try_find_first() {
-    static_assert(std::is_base_of<VariantBase, T>::value, "T must derive from VariantBase");
+    static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
     const rttr::type& type = rttr::type::get<T>();
     
     for (auto& [EntityID, variants] : Zeytin::get().get_storage()) {
@@ -135,7 +135,7 @@ std::optional<std::reference_wrapper<T>> try_find_first() {
 
 export template<typename T>
 T& find_first() {
-    static_assert(std::is_base_of<VariantBase, T>::value, "T must derive from VariantBase");
+    static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
     const rttr::type& type = rttr::type::get<T>();
     
     for (auto& [EntityID, variants] : Zeytin::get().get_storage()) {
@@ -151,7 +151,7 @@ T& find_first() {
 
 export template<typename T>
 std::vector<std::reference_wrapper<T>> find_all() {
-    static_assert(std::is_base_of<VariantBase, T>::value, "T must derive from VariantBase");
+    static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
     std::vector<std::reference_wrapper<T>> results;
     const rttr::type& type = rttr::type::get<T>();
     
@@ -169,7 +169,7 @@ std::vector<std::reference_wrapper<T>> find_all() {
 
 export template<typename T, typename... Rest>
 std::vector<EntityID> find_all_with() {
-    static_assert(std::is_base_of<VariantBase, T>::value, "T must derive from VariantBase");
+    static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
     std::vector<EntityID> results;
     
     for (auto& [EntityID, variants] : Zeytin::get().get_storage()) {
@@ -183,7 +183,7 @@ std::vector<EntityID> find_all_with() {
 
 export template<typename T>
 std::vector<std::reference_wrapper<T>> find_where(std::function<bool(T&)> predicate) {
-    static_assert(std::is_base_of<VariantBase, T>::value, "T must derive from VariantBase");
+    static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
     std::vector<std::reference_wrapper<T>> results;
     const rttr::type& type = rttr::type::get<T>();
     
@@ -204,7 +204,7 @@ std::vector<std::reference_wrapper<T>> find_where(std::function<bool(T&)> predic
 
 export template<typename T, typename... Rest>
 bool has_types(const std::vector<rttr::variant>& variants) {
-    static_assert(std::is_base_of<VariantBase, T>::value, "T must derive from VariantBase");
+    static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
     bool has_t = false;
     for (const auto& variant : variants) {
         if (variant.get_type() == rttr::type::get<T>()) {
@@ -226,7 +226,7 @@ bool has_types(const std::vector<rttr::variant>& variants) {
 
 export template<typename T>
 size_t count() {
-    static_assert(std::is_base_of<VariantBase, T>::value, "T must derive from VariantBase");
+    static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
     size_t count = 0;
     const rttr::type& type = rttr::type::get<T>();
     
@@ -244,7 +244,7 @@ size_t count() {
 
 export template<typename T>
 void for_each(std::function<void(T&)> action) {
-    static_assert(std::is_base_of<VariantBase, T>::value, "T must derive from VariantBase");
+    static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
     const rttr::type& type = rttr::type::get<T>();
     
     for (auto& [EntityID, variants] : Zeytin::get().get_storage()) {
@@ -265,13 +265,13 @@ void remove_variant_from(EntityID id) {
 }
 
 export template<typename T>
-void remove_variant_from(const VariantBase* base) {
+void remove_variant_from(const Component* base) {
     Zeytin::get().remove_variant(base->entity_id, rttr::type::get<T>());
 }
 
 export template<typename T, typename... Args>
 std::optional<std::reference_wrapper<T>> add(EntityID id, Args&&... args) {
-    static_assert(std::is_base_of<VariantBase, T>::value, "T must derive from VariantBase");
+    static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
     if(has<T>(id)) {
         //log_warning() << "Trying to add duplicate variants to entity" << std::endl;
         return std::nullopt;
@@ -288,7 +288,7 @@ std::optional<std::reference_wrapper<T>> add(EntityID id, Args&&... args) {
 }
 
 export template<typename T, typename... Args>
-std::optional<std::reference_wrapper<T>> add(VariantBase* base, Args&&... args) {
+std::optional<std::reference_wrapper<T>> add(Component* base, Args&&... args) {
     return add<T>(base->entity_id, std::forward<Args>(args)...);
 }
 

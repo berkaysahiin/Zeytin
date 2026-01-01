@@ -20,7 +20,7 @@ import zeytin.level;
 import zeytin.resource;
 import zeytin.logger;
 import zeytin.json;
-import zeytin.variant;
+import zeytin.component;
 import zeytin.guid;
 import zeytin.property;
 import zeytin.raylib;
@@ -200,7 +200,7 @@ VariantList& Zeytin::get_variants(const EntityID& entity) {
 
 void Zeytin::remove_entity(EntityID id) {
     for(rttr::variant& var : get_variants(id)) {
-        var.get_value<VariantBase&>().is_dead = true;
+        var.get_value<Component&>().is_dead = true;
     }
 }
 
@@ -212,7 +212,7 @@ void Zeytin::clean_dead_variants() {
         variants.erase(
             std::remove_if(variants.begin(), variants.end(),
                 [](rttr::variant& variant) {
-                    VariantBase& var_base = variant.get_value<VariantBase&>();
+                    Component& var_base = variant.get_value<Component&>();
                     return var_base.is_dead;
                 }
             ),
@@ -247,7 +247,7 @@ EntityID Zeytin::deserialize_entity(const std::string& entity_json) {
     entity_variants.clear();
 
     for (auto& var : variants) {
-        VariantBase& base = var.get_value<VariantBase&>();
+        Component& base = var.get_value<Component&>();
         base.on_init();
         entity_variants.push_back(std::move(var));
     }
@@ -259,7 +259,7 @@ void Zeytin::remove_variant(EntityID id, const rttr::type& type) {
     auto& variants = get_variants(id);
     for (auto& variant : variants) {
         if (variant.get_type() == type) {
-            VariantBase& base = variant.get_value<VariantBase&>();
+            Component& base = variant.get_value<Component&>();
             base.is_dead = true;
         }
     }
@@ -415,7 +415,7 @@ void Zeytin::post_init_variants() {
 
     for (auto& pair : m_storage) {   
         for (auto& variant : pair.second) {
-            VariantBase& base = variant.get_value<VariantBase&>();
+            Component& base = variant.get_value<Component&>();
             
             if (base.is_dead || base.post_inited) {
                 continue;
@@ -424,7 +424,7 @@ void Zeytin::post_init_variants() {
             base.post_inited = true;
             
             {
-                ZPROFILE_ZONE_NAMED("VariantBase::on_post_init()");
+                ZPROFILE_ZONE_NAMED("Component::on_post_init()");
                 ZPROFILE_TEXT(base.get_type().get_name().to_string().c_str(),
                               base.get_type().get_name().to_string().size());
                 ZPROFILE_VALUE(pair.first);
@@ -440,14 +440,14 @@ void Zeytin::update_variants() {
 
     for (auto& pair : m_storage) {   
         for (auto& variant : pair.second) {
-            VariantBase& base = variant.get_value<VariantBase&>();
+            Component& base = variant.get_value<Component&>();
             
             if (base.is_dead) {
                 continue;
             }
             
             {
-                ZPROFILE_ZONE_NAMED("VariantBase::on_update()");
+                ZPROFILE_ZONE_NAMED("Component::on_update()");
                 ZPROFILE_TEXT(base.get_type().get_name().to_string().c_str(),
                               base.get_type().get_name().to_string().size());
                 ZPROFILE_VALUE(pair.first);
@@ -463,14 +463,14 @@ void Zeytin::play_update_variants() {
 
     for (auto& pair : m_storage) {   
         for (auto& variant : pair.second) {
-            VariantBase& base = variant.get_value<VariantBase&>();
+            Component& base = variant.get_value<Component&>();
             
             if (base.is_dead) {
                 continue;
             }
             
             {
-                ZPROFILE_ZONE_NAMED("VariantBase::on_play_update()");
+                ZPROFILE_ZONE_NAMED("Component::on_play_update()");
                 ZPROFILE_TEXT(base.get_type().get_name().to_string().c_str(),
                               base.get_type().get_name().to_string().size());
                 ZPROFILE_VALUE(pair.first);
@@ -485,14 +485,14 @@ void Zeytin::play_late_update_variants() {
 
     for (auto& pair : m_storage) {   
         for (auto& variant : pair.second) {
-            VariantBase& base = variant.get_value<VariantBase&>();
+            Component& base = variant.get_value<Component&>();
             
             if (base.is_dead) {
                 continue;
             }
             
             {
-                ZPROFILE_ZONE_NAMED("VariantBase::on_play_late_update()");
+                ZPROFILE_ZONE_NAMED("Component::on_play_late_update()");
                 ZPROFILE_TEXT(base.get_type().get_name().to_string().c_str(),
                               base.get_type().get_name().to_string().size());
                 ZPROFILE_VALUE(pair.first);
@@ -514,14 +514,14 @@ void Zeytin::play_start_variants() {
 
     for (auto& pair : m_storage) {   
         for (auto& variant : pair.second) {
-            VariantBase& base = variant.get_value<VariantBase&>();
+            Component& base = variant.get_value<Component&>();
             
             if (base.is_dead) {
                 continue;
             }
             
             {
-                ZPROFILE_ZONE_NAMED("VariantBase::on_play_start()");
+                ZPROFILE_ZONE_NAMED("Component::on_play_start()");
                 ZPROFILE_TEXT(base.get_type().get_name().to_string().c_str(),
                               base.get_type().get_name().to_string().size());
                 ZPROFILE_VALUE(pair.first);
@@ -543,14 +543,14 @@ void Zeytin::play_late_start_variants() {
 
     for (auto& pair : m_storage) {   
         for (auto& variant : pair.second) {
-            VariantBase& base = variant.get_value<VariantBase&>();
+            Component& base = variant.get_value<Component&>();
             
             if (base.is_dead) {
                 continue;
             }
             
             {
-                ZPROFILE_ZONE_NAMED("VariantBase::on_play_late_start()");
+                ZPROFILE_ZONE_NAMED("Component::on_play_late_start()");
                 ZPROFILE_TEXT(base.get_type().get_name().to_string().c_str(),
                               base.get_type().get_name().to_string().size());
                 ZPROFILE_VALUE(pair.first);
@@ -729,28 +729,17 @@ void Zeytin::handle_entity_variant_added(const rapidjson::Document& msg) {
         return;
     }
 
-    EntityID EntityID = msg["entity_id"].GetUint64();
+    EntityID entity_id = msg["entity_id"].GetUint64();
     const char* variant_type_name = msg["variant_type"].GetString();
 
-    VariantCreateInfo info;
-    info.entity_id = EntityID;
-    
-    std::vector<rttr::argument> args;
-    args.push_back(info);
-
     rttr::type rttr_type = rttr::type::get_by_name(variant_type_name);
-    if (!rttr_type.is_valid()) {
-        //log_error() << "Invalid variant type: " << variant_type_name << std::endl;
-        return;
-    }
+	assert(rttr_type.is_valid());
 
-    rttr::variant obj = rttr_type.create(args);
-    if (!obj.is_valid()) {
-        //log_error() << "Failed to create variant of type: " << variant_type_name << std::endl;
-        return;
-    }
+    rttr::variant obj = rttr_type.create();
+	assert(obj.is_valid());
+	rttr_type.set_property_value("entity_id", obj, entity_id);
 
-    auto& variants = get_variants(EntityID);
+    auto& variants = get_variants(entity_id);
     
     for (const auto& existing : variants) {
         if (existing.get_type() == rttr_type) {
@@ -760,7 +749,7 @@ void Zeytin::handle_entity_variant_added(const rapidjson::Document& msg) {
         }
     }
     
-    VariantBase& base = obj.get_value<VariantBase&>();
+    Component& base = obj.get_value<Component&>();
     base.on_init();
     variants.push_back(std::move(obj));
     

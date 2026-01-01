@@ -13,7 +13,7 @@ module;
 
 module zeytin.json;
 import zeytin.entity;
-import zeytin.variant;
+import zeytin.component;
 
 using namespace rapidjson;
 using namespace rttr;
@@ -239,14 +239,11 @@ rttr::variant from(EntityID entity_id, const std::string& json)
     Value& value = document["value"];
 
     rttr::type rttr_type = rttr::type::get_by_name(type.GetString());
+	assert(rttr_type.is_valid());
 
-    VariantCreateInfo info;
-    info.entity_id = entity_id;
-    std::vector<rttr::argument> args;
-    args.push_back(info);
-
-    rttr::variant obj = rttr_type.create(args);
-    assert(obj.is_valid());
+    rttr::variant obj = rttr_type.create();
+    assert(obj.is_valid()); // component type must have default constructor
+	rttr_type.set_property_value("entity_id", obj, entity_id);
 
     from_internal(value_as_string(value), obj);
 

@@ -2,23 +2,17 @@ module;
 
 #include <cstdint>
 
-export module zeytin.variant;
+export module zeytin.component;
 import zeytin.entity;
 
-export struct VariantCreateInfo {
-    EntityID entity_id;
-};
-
-export struct VariantBase {
-   	VariantBase() = default;
-    VariantBase(VariantCreateInfo info) : entity_id(info.entity_id) {}
-    using ___component___ = void; \
-
+/// Base class for components
+export struct Component 
+{
     virtual void on_init() {}
     virtual void on_post_init() {}
-    virtual void on_update() {}
     virtual void on_play_start() {}
     virtual void on_play_late_start() {}
+    virtual void on_update() {}
     virtual void on_play_update() {}
     virtual void on_play_late_update() {}
 
