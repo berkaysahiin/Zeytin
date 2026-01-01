@@ -8,19 +8,17 @@ module zeytin.logger;
 import zeytin.editor.communication;
 import zeytin.editor.event;
 
-RemoteLogStream::RemoteLogStream(RemoteLogger& logger, LogLevel level) 
-    : m_logger(logger), m_level(level) {
-}
-
-RemoteLogStream::~RemoteLogStream() {
-    m_logger.log(m_level, m_stream.str());
+static std::string level_to_string(LogLevel level) {
+	switch (level) {
+		case LogLevel::TRACE: return "TRACE";  
+		case LogLevel::INFO: return "INFO";
+		case LogLevel::WARNING: return "WARNING";
+		case LogLevel::ERROR: return "ERROR";
+		default: return "UNKNOWN";
+	}
 }
 
 void RemoteLogger::log(LogLevel level, const std::string& message) {
-    if (level < m_min_log_level) {
-        return;
-    }
-    
     rapidjson::Document doc;
     doc.SetObject();
     rapidjson::Document::AllocatorType& allocator = doc.GetAllocator();
