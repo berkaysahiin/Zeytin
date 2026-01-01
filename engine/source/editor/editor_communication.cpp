@@ -75,9 +75,9 @@ void EditorCommunication::start_connection_attempts() {
         }
 
         if (m_connection_confirmed) {
-            //log_info() << "Connection to editor confirmed!" << std::endl;
+            log_info("Connection to editor confirmed!");
         } else if (attempts >= max_attempts) {
-            //log_error() << "Failed to connect to editor after " << max_attempts << " attempts" << std::endl;
+            log_error("Failed to connect to editor after {} attempts", max_attempts);
         }
     }).detach();
 }
@@ -185,6 +185,7 @@ void EditorCommunication::raise_events() {
             EditorEventBus::get().publish<bool>(EditorEvent::EngineStartConfirmed, true);
         }
         else if (type == "scene") {
+			log_info("Scene has been received by the engine");
             std::cout << "Scene is received" << std::endl;
 			std::cout << msg << std::endl;
             EditorEventBus::get().publish<const std::string&>(EditorEvent::Scene, msg);

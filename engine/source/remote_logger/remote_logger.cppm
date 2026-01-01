@@ -1,5 +1,6 @@
 module;
 
+#include <format>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -80,20 +81,28 @@ private:
     LogLevel m_min_log_level;
 };
 
-#ifdef EDITOR_MODE
 
-#define log_trace() RemoteLogger::get().trace()  
-#define log_info() RemoteLogger::get().info()
-#define log_warning() RemoteLogger::get().warning()
-#define log_error() RemoteLogger::get().error()
+export template<typename... Args>
+void log_trace(std::format_string<Args...> fmt, Args&&... args) {
+    RemoteLogger::get().log(LogLevel::TRACE, 
+        std::format(fmt, std::forward<Args>(args)...));
+}
 
-#else
+export template<typename... Args>
+void log_info(std::format_string<Args...> fmt, Args&&... args) {
+	std::string message = std::format(fmt, std::forward<Args>(args)...);
+	std::cout << message << std::endl;
+    RemoteLogger::get().log(LogLevel::INFO, message);
+}
 
-#define log_trace() 
-#define log_info() 
-#define log_warning() 
-#define log_error() 
+export template<typename... Args>
+void log_warning(std::format_string<Args...> fmt, Args&&... args) {
+    RemoteLogger::get().log(LogLevel::WARNING, 
+        std::format(fmt, std::forward<Args>(args)...));
+}
 
-#endif
-
-
+export template<typename... Args>
+void log_error(std::format_string<Args...> fmt, Args&&... args) {
+    RemoteLogger::get().log(LogLevel::ERROR, 
+        std::format(fmt, std::forward<Args>(args)...));
+}
