@@ -11,7 +11,7 @@ export class ResourceManager : public Singleton<ResourceManager> {
 public:
     std::filesystem::path get_resources_path() const;
     std::filesystem::path get_entities_path() const; 
-    std::filesystem::path get_variants_path() const; 
+    std::filesystem::path get_components_path() const; 
 
     std::filesystem::directory_iterator get_entity_folder() const;
     std::filesystem::directory_iterator get_variant_folder() const;

@@ -9,6 +9,8 @@ import zeytin.component;
 export struct Transform : public Component 
 {
     Transform() = default; // Required default constructor
+	//
+	#if 0
 
     PROPERTY(READONLY, TRACK_VALUE)
     float positionX;
@@ -51,5 +53,6 @@ export struct Transform : public Component
 
     PROPERTY(READONLY)
     std::string name;
+	#endif
 };
 

@@ -38,7 +38,6 @@ void Zeytin::initialize() {
 
 #ifdef EDITOR_MODE
     initialize_editor_communication();
-    generate_variants();
     initial_sync_editor();
 #else
     initialize_standalone();
@@ -174,15 +173,14 @@ void Zeytin::run_frame() {
 
     begin_mode2d(m_camera);
     
-    post_init_variants();
-    update_variants();
+    update_components();
     
     if (m_state.play_mode && !m_state.pause_play_mode) {
         clean_dead_variants();
-        play_start_variants();
-        play_late_start_variants();
-        play_update_variants();
-        play_late_update_variants();
+        play_start_components();
+        play_late_start_components();
+        play_update_components();
+        play_late_update_components();
     }
 
     end_mode2d();
@@ -194,12 +192,12 @@ void Zeytin::run_frame() {
     end_drawing();
 }
 
-VariantList& Zeytin::get_variants(const EntityID& entity) {
+ComponentList& Zeytin::get_components(const EntityID& entity) {
     return m_storage[entity];
 }
 
 void Zeytin::remove_entity(EntityID id) {
-    for(rttr::variant& var : get_variants(id)) {
+    for(rttr::variant& var : get_components(id)) {
         var.get_value<Component&>().is_dead = true;
     }
 }
@@ -222,11 +220,11 @@ void Zeytin::clean_dead_variants() {
 }
 
 std::string Zeytin::serialize_entity(const EntityID id) {
-    return rttr_json::serialize_entity(id, get_variants(id));
+    return rttr_json::serialize_entity(id, get_components(id));
 }
 
 std::string Zeytin::serialize_entity(const EntityID id, const std::filesystem::path& path) {
-    return rttr_json::serialize_entity(id, get_variants(id), path);
+    return rttr_json::serialize_entity(id, get_components(id), path);
 }
 
 EntityID Zeytin::deserialize_entity(const std::string& entity_json) {
@@ -243,7 +241,7 @@ EntityID Zeytin::deserialize_entity(const std::string& entity_json) {
         return 0;
     }
 
-    auto& entity_variants = get_variants(id);
+    auto& entity_variants = get_components(id);
     entity_variants.clear();
 
     for (auto& var : variants) {
@@ -256,7 +254,7 @@ EntityID Zeytin::deserialize_entity(const std::string& entity_json) {
 }
 
 void Zeytin::remove_variant(EntityID id, const rttr::type& type) {
-    auto& variants = get_variants(id);
+    auto& variants = get_components(id);
     for (auto& variant : variants) {
         if (variant.get_type() == type) {
             Component& base = variant.get_value<Component&>();
@@ -305,13 +303,13 @@ std::string Zeytin::serialize_scene() {
 
 bool Zeytin::load_scene(const std::filesystem::path& path) {
     if (!std::filesystem::exists(path)) {
-        //log_error() << "Scene file does not exist: " << path << std::endl;
+        log_error("Scene file does not exist: {}", path.string());
         return false;
     }
 
     std::ifstream scene_file(path);
     if (!scene_file.is_open()) {
-        //log_error() << "Failed to open scene file: " << path << std::endl;
+        log_error("Failed to open scene file: {}", path.string());
         return false;
     }
 
@@ -321,7 +319,7 @@ bool Zeytin::load_scene(const std::filesystem::path& path) {
     
     std::string scene_content = buffer.str();
     if (scene_content.empty()) {
-        //log_error() << "Scene file is empty: " << path << std::endl;
+        log_error("Scene file is empty: {}", path.string());
         return false;
     }
     
@@ -332,7 +330,7 @@ bool Zeytin::deserialize_scene(const std::string& scene) {
     ZPROFILE_FUNCTION();
     
     if (scene.empty()) {
-        //log_error() << "Cannot deserialize empty scene" << std::endl;
+        log_error("Cannot deserialize empty scene");
         return false;
     }
     
@@ -356,7 +354,7 @@ bool Zeytin::deserialize_scene(const std::string& scene) {
         !scene_data.HasMember("entities") || 
         !scene_data["entities"].IsArray()) {
         
-        //log_error() << "Invalid scene format" << std::endl;
+        log_error("Invalid scene format");
         return false;
     }
 
@@ -368,16 +366,16 @@ bool Zeytin::deserialize_scene(const std::string& scene) {
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
         entities[i].Accept(writer);
         
-        std::string entity_str = buffer.GetString();
-        EntityID EntityID = deserialize_entity(entity_str);
+        const std::string entity_str = buffer.GetString();
+        const EntityID entity_id = deserialize_entity(entity_str);
         
-        if (EntityID != 0) {
+        if (entity_id != 0) {
             successful_entities++;
         }
     }
 
     if (successful_entities == 0 && entities.Size() > 0) {
-        //log_error() << "Failed to deserialize any entities from scene" << std::endl;
+        log_error("Failed to deserialize any entities from scene");
         return false;
     }
 
@@ -410,32 +408,7 @@ bool Zeytin::switch_to_level(const std::string& level_name) {
     return true;
 }
 
-void Zeytin::post_init_variants() {
-    ZPROFILE_ZONE_NAMED("Zeytin::post_init_variants()");
-
-    for (auto& pair : m_storage) {   
-        for (auto& variant : pair.second) {
-            Component& base = variant.get_value<Component&>();
-            
-            if (base.is_dead || base.post_inited) {
-                continue;
-            }
-            
-            base.post_inited = true;
-            
-            {
-                ZPROFILE_ZONE_NAMED("Component::on_post_init()");
-                ZPROFILE_TEXT(base.get_type().get_name().to_string().c_str(),
-                              base.get_type().get_name().to_string().size());
-                ZPROFILE_VALUE(pair.first);
-                
-                base.on_post_init();
-            }
-        }
-    }
-}
-
-void Zeytin::update_variants() {
+void Zeytin::update_components() {
     ZPROFILE_ZONE_NAMED("Zeytin::update_variants()");
 
     for (auto& pair : m_storage) {   
@@ -458,7 +431,7 @@ void Zeytin::update_variants() {
     }
 }
 
-void Zeytin::play_update_variants() {
+void Zeytin::play_update_components() {
     ZPROFILE_ZONE_NAMED("Zeytin::play_update_variants()");
 
     for (auto& pair : m_storage) {   
@@ -480,7 +453,7 @@ void Zeytin::play_update_variants() {
         }
     }
 }
-void Zeytin::play_late_update_variants() {
+void Zeytin::play_late_update_components() {
     ZPROFILE_ZONE_NAMED("Zeytin::play_late_update_variants()");
 
     for (auto& pair : m_storage) {   
@@ -503,7 +476,7 @@ void Zeytin::play_late_update_variants() {
     }
 }
 
-void Zeytin::play_start_variants() {
+void Zeytin::play_start_components() {
     ZPROFILE_ZONE_NAMED("Zeytin::play_start_variants()");
 
     if (m_state.started) {
@@ -532,7 +505,7 @@ void Zeytin::play_start_variants() {
     }
 }
 
-void Zeytin::play_late_start_variants() {
+void Zeytin::play_late_start_components() {
     ZPROFILE_ZONE_NAMED("Zeytin::play_late_start_variants()");
 
     if (m_state.late_started) {
@@ -564,17 +537,17 @@ void Zeytin::play_late_start_variants() {
 void Zeytin::render() {
     ZPROFILE_FUNCTION();
     
-    float screen_width = get_screen_width();
-    float screen_height = get_screen_height();
+    const float screen_width = get_screen_width();
+    const float screen_height = get_screen_height();
     
-    float scale_factor = (screen_width / VIRTUAL_WIDTH) < (screen_height / VIRTUAL_HEIGHT) ? 
+    const float scale_factor = (screen_width / VIRTUAL_WIDTH) < (screen_height / VIRTUAL_HEIGHT) ? 
                          (screen_width / VIRTUAL_WIDTH) : (screen_height / VIRTUAL_HEIGHT);
     
-    float render_width = VIRTUAL_WIDTH * scale_factor;
-    float render_height = VIRTUAL_HEIGHT * scale_factor;
+    const float render_width = VIRTUAL_WIDTH * scale_factor;
+    const float render_height = VIRTUAL_HEIGHT * scale_factor;
     
-    float pos_x = (screen_width - render_width) * 0.5f;
-    float pos_y = (screen_height - render_height) * 0.5f;
+    const float pos_x = (screen_width - render_width) * 0.5f;
+    const float pos_y = (screen_height - render_height) * 0.5f;
 
     draw_texture_pro(
         m_render_texture.texture,
@@ -677,23 +650,23 @@ void Zeytin::handle_entity_property_changed(const rapidjson::Document& doc) {
         !doc.HasMember("key_path") || 
         !doc.HasMember("value")) {
         
-        //log_error() << "Invalid property change document format" << std::endl;
+        log_error("Invalid property change document format");
         return;
     }
 
-    uint64_t EntityID = doc["entity_id"].GetUint64();
+    const uint64_t entity_id = doc["entity_id"].GetUint64();
     const std::string& variant_type = doc["variant_type"].GetString();
     const std::string& key_type = doc["key_type"].GetString();
     const std::string& key_path = doc["key_path"].GetString();
     const std::string& value_str = doc["value"].GetString();
 
-    auto& variants = get_variants(EntityID);
+    auto& variants = get_components(entity_id);
     for (auto& variant : variants) {
         if (variant.get_type().get_name() == variant_type) {
 
-            std::vector<std::string> path_parts = split_path(key_path);
+            const std::vector<std::string> path_parts = split_path(key_path);
             if (path_parts.empty()) {
-                //log_error() << "Invalid key path: " << key_path << std::endl;
+                log_error("Invalid key path: {}", key_path);
                 return;
             }
 
@@ -710,7 +683,7 @@ void Zeytin::handle_entity_property_changed(const rapidjson::Document& doc) {
                 update_property(variant, path_parts, 0, value_str);
             }
             else {
-                //log_error() << "Unsupported property type: " << key_type << std::endl;
+                log_error("Unsupported property type: {}", key_type);
             }
             
             return;
@@ -729,31 +702,29 @@ void Zeytin::handle_entity_variant_added(const rapidjson::Document& msg) {
         return;
     }
 
-    EntityID entity_id = msg["entity_id"].GetUint64();
+    const EntityID entity_id = msg["entity_id"].GetUint64();
     const char* variant_type_name = msg["variant_type"].GetString();
 
-    rttr::type rttr_type = rttr::type::get_by_name(variant_type_name);
+    const rttr::type rttr_type = rttr::type::get_by_name(variant_type_name);
 	assert(rttr_type.is_valid());
+
+    auto& variants = get_components(entity_id);
+
+	 for (const auto& existing : variants) {
+		if (existing.get_type() == rttr_type) {
+			log_warning("Entity with ID {} already has component of type {}", entity_id, rttr_type.get_name().to_string());
+			return;
+		}
+	}
 
     rttr::variant obj = rttr_type.create();
 	assert(obj.is_valid());
 	rttr_type.set_property_value("entity_id", obj, entity_id);
 
-    auto& variants = get_variants(entity_id);
-    
-    for (const auto& existing : variants) {
-        if (existing.get_type() == rttr_type) {
-            //log_warning() << "Entity " << EntityID << " already has a variant of type " 
-                        //<< variant_type_name << std::endl;
-            return;
-        }
-    }
     
     Component& base = obj.get_value<Component&>();
     base.on_init();
     variants.push_back(std::move(obj));
-    
-    //log_info() << "Added variant " << variant_type_name << " to entity " << EntityID << std::endl;
 }
 
 void Zeytin::handle_entity_variant_removed(const rapidjson::Document& msg) {
@@ -797,14 +768,14 @@ void Zeytin::enter_play_mode(bool is_paused) {
 
     std::string scene = serialize_scene();
     if (scene.empty()) {
-        //log_error() << "Failed to serialize scene for play mode" << std::endl;
+        log_error("Failed to serialize scene for play mode");
         return;
     }
 
     std::filesystem::create_directory("temp");
     std::ofstream scene_file("temp/backup.scene");
     if (!scene_file.is_open()) {
-        //log_error() << "Failed to create backup scene file" << std::endl;
+        log_error("Failed to create backup scene file");
         return;
     }
     
@@ -815,7 +786,6 @@ void Zeytin::enter_play_mode(bool is_paused) {
     m_state.play_mode = true;
     
 	log_info("Entered play mode");
-    //log_info() << "Entered play mode" << (is_paused ? " (paused)" : "") << std::endl;
 }
 
 void Zeytin::exit_play_mode() {
@@ -827,29 +797,29 @@ void Zeytin::exit_play_mode() {
 
     std::filesystem::path backup_path = "temp/backup.scene";
     if (!std::filesystem::exists(backup_path)) {
-        //log_error() << "Cannot exit play mode: scene backup not found" << std::endl;
+        log_error("Cannot exit play mode: scene backup not found");
         return;
     }
 
     m_storage.clear();
 
     if (!load_scene(backup_path)) {
-        //log_error() << "Failed to load scene from backup" << std::endl;
+        log_error("Failed to load scene from backup");
         return;
     }
 
     std::filesystem::remove_all("temp");
     
-    //log_info() << "Exited play mode" << std::endl;
+    log_info("Exited play mode");
 }
 
 void Zeytin::initial_sync_editor() {
     std::string scene = serialize_scene();
     if (!scene.empty()) {
         EditorEventBus::get().publish<std::string>(EditorEvent::SyncEditor, scene);
-        //log_info() << "Initial scene sync with editor" << std::endl;
+        log_info("Initial scene sync with editor");
     } else {
-        //log_error() << "Failed to serialize scene for initial sync" << std::endl;
+        log_error("Failed to serialize scene for initial sync");
     }
 }
 
@@ -866,38 +836,6 @@ void Zeytin::sync_editor() {
         if (!scene.empty()) {
             EditorEventBus::get().publish<std::string>(EditorEvent::SyncEditor, scene);
         }
-    }
-}
-
-void Zeytin::generate_variants() {
-    ZPROFILE_FUNCTION();
-    
-    auto variant_folder = ResourceManager::get().get_variant_folder();
-    for (const auto& entry : variant_folder) {
-        if (entry.is_regular_file() && entry.path().extension() == ".variant") {
-            std::filesystem::remove(entry.path());
-        }
-    }
-
-    auto all_types = rttr::type::get_types();
-    int variant_count = 0;
-
-    for (const auto& type : all_types) {
-		const bool is_component = [&type]() {
-			auto is_component = type.get_metadata("is_component");
-			if(!is_component.is_valid()) return false;
-			return is_component.get_value<bool>();
-		}();
-
-        if (!type.is_valid() || 
-			!is_component ||
-            type.is_pointer() ||
-            type.is_wrapper()) {
-            continue;
-        }
-
-        rttr_json::create_dummy(type);
-        variant_count++;
     }
 }
 

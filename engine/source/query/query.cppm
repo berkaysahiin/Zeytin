@@ -20,7 +20,7 @@ inline EntityID create_entity() {
 export template<typename T>
 bool has(EntityID id) {
     static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
-    auto& variants = Zeytin::get().get_variants(id);
+    auto& variants = Zeytin::get().get_components(id);
     
     for (const auto& variant : variants) {
         if (variant.get_type() == rttr::type::get<T>()) {
@@ -55,7 +55,7 @@ bool has(const Component* base) {
 export template<typename T>
 T& get(EntityID id) {
     static_assert(std::is_base_of<Component, T>::value, "T must derive from Component");
-    auto& variants = Zeytin::get().get_variants(id);
+    auto& variants = Zeytin::get().get_components(id);
 
     for (auto& variant : variants) {
         if (variant.get_type() == rttr::type::get<T>()) {
@@ -281,7 +281,7 @@ std::optional<std::reference_wrapper<T>> add(EntityID id, Args&&... args) {
     variant.EntityID = id;
     variant.on_init();
     
-    auto& variants = Zeytin::get().get_variants(id);
+    auto& variants = Zeytin::get().get_components(id);
     variants.push_back(std::move(variant));
 
     return std::ref(Query::get<T>(id));

@@ -149,7 +149,7 @@ void EditorCommunication::raise_events() {
         doc.Parse(msg.c_str());
         
         if (doc.HasParseError() || !doc.HasMember("type")) {
-            //log_warning() << "Invalid message format received" << std::endl;
+            log_warning("Invalid message format received");
             m_message_queue.pop();
             continue;
         }

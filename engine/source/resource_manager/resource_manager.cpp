@@ -19,7 +19,6 @@ ResourceManager::ResourceManager() {
     construct_paths();
 }
 
-
 std::filesystem::path ResourceManager::get_resources_path() const {
 	return m_resources_path;
 }
@@ -28,7 +27,7 @@ std::filesystem::path ResourceManager::get_entities_path() const {
 	return get_resource_subdir(ENTITY_FOLDER); 
 }
 
-std::filesystem::path ResourceManager::get_variants_path() const {
+std::filesystem::path ResourceManager::get_components_path() const {
 	return get_resource_subdir(VARIANT_FOLDER); 
 }
 
@@ -88,5 +87,5 @@ std::filesystem::path ResourceManager::get_entity_path(const std::string& name) 
 }
 
 std::filesystem::path ResourceManager::get_variant_path(const std::string& name) const {
-    return get_variants_path() / (name + ".variant");
+    return get_components_path() / (name + ".variant");
 }

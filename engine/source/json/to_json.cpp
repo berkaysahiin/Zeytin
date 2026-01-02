@@ -453,30 +453,4 @@ std::string serialize_entity(const EntityID EntityID, const std::vector<rttr::va
     }
 }
 
-void create_dummy(const rttr::type& type) {
-    if (!type.is_valid()) {
-        std::cerr << "Invalid type passed to create_dummy" << std::endl;
-        return;
-    }
-    
-    try {
-        std::filesystem::path variants_dir = ResourceManager::get().get_variants_path();
-
-        std::filesystem::create_directories(variants_dir);
-        
-        const std::filesystem::path path = variants_dir / (type.get_name().to_string() + ".variant");
-        
-        rttr::variant var = type.create();
-        if (!var.is_valid()) {
-            std::cerr << "Failed to create instance of type: " << type.get_name().to_string() << std::endl;
-            return;
-        }
-        
-        
-        to(var, path.string());
-    } catch (const std::exception& e) {
-        std::cerr << "Exception in create_dummy: " << e.what() << std::endl;
-    }
-}
-
 } // end of namespace

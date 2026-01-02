@@ -11,9 +11,12 @@ module;
 #include <rapidjson/document.h>     
 #include <rttr/type>
 
+#include "debugging/assert.h"
+
 module zeytin.json;
 import zeytin.entity;
 import zeytin.component;
+import zeytin.logger;
 
 using namespace rapidjson;
 using namespace rttr;
@@ -239,7 +242,8 @@ rttr::variant from(EntityID entity_id, const std::string& json)
     Value& value = document["value"];
 
     rttr::type rttr_type = rttr::type::get_by_name(type.GetString());
-	assert(rttr_type.is_valid());
+	std::string type_name = type.GetString();
+	ASSERT(rttr_type.is_valid(), "Cannot find type \"{}\". Make sure it is registered.", type_name);
 
     rttr::variant obj = rttr_type.create();
     assert(obj.is_valid()); // component type must have default constructor

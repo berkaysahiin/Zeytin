@@ -1,13 +1,9 @@
 #include "rttr/registration.h"
 
-import zeytin.component;
 import zeytin.game.position;
 
 RTTR_REGISTRATION
 {
-    rttr::registration::class_<Component>("Component")
-        .constructor<>()(rttr::policy::ctor::as_object);
-
 	rttr::registration::class_<Position>("Position")
 		(rttr::metadata("is_component", true))
         .constructor<>()(rttr::policy::ctor::as_object)

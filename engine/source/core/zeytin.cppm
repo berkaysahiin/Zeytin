@@ -3,7 +3,6 @@ module;
 #include <vector>
 #include <filesystem>
 
-#include "core/macros.h"
 #include "raylib.h"
 #include "rapidjson/document.h"
 #include "rttr/variant.h"
@@ -13,12 +12,13 @@ import zeytin.entity;
 import zeytin.raylib;
 import zeytin.editor.communication;
 import zeytin.editor.event;
+import zeytin.singleton;
 
 constexpr float VIRTUAL_WIDTH = 1920;
 constexpr float VIRTUAL_HEIGHT = 1080;
 
-export using VariantList = std::vector<rttr::variant>;
-export using Storage = std::unordered_map<EntityID, VariantList>;
+export using ComponentList = std::vector<rttr::variant>;
+export using Storage = std::unordered_map<EntityID, ComponentList>;
 
 export struct State {
     bool started : 1;            
@@ -32,8 +32,8 @@ export struct State {
 	bool load_level_next_frame : 1;
 };
 
-export class Zeytin {
-    MAKE_SINGLETON(Zeytin);
+export class Zeytin : public Singleton<Zeytin> {
+	friend class Singleton<Zeytin>;
 public:
     void initialize();
     void shutdown();
@@ -45,7 +45,7 @@ public:
     void remove_entity(EntityID id);
     void clean_dead_variants();
 
-    VariantList& get_variants(const EntityID& entity);
+    ComponentList& get_components(const EntityID& entity);
 
     std::string serialize_entity(const EntityID id);
     std::string serialize_entity(const EntityID id, const std::filesystem::path& path);
@@ -56,12 +56,11 @@ public:
     bool deserialize_scene(const std::string& scene); 
 	bool switch_to_level(const std::string& level_name);
 
-    void post_init_variants();
-    void update_variants();
-    void play_start_variants();
-    void play_late_start_variants();
-    void play_update_variants();
-    void play_late_update_variants();
+    void update_components();
+    void play_start_components();
+    void play_late_start_components();
+    void play_update_components();
+    void play_late_update_components();
 
     inline Camera2D& get_camera() { return m_camera; }
     inline const Storage& get_storage() const { return m_storage; }
@@ -78,7 +77,6 @@ public:
 	void request_level_load(const std::string& level_name);
 
 #ifdef EDITOR_MODE
-    void generate_variants();
     void subscribe_editor_events();
     void initial_sync_editor();
     void sync_editor();

@@ -10,13 +10,13 @@ export struct Position : public Component
 {
 	Position() = default; // Should have a default constructor
 
-	PROPERTY(READONLY, ENABLE_IF=IsDebug(), TRACK_VALUE) 
-	float x;
+	PROPERTY() 
+	float x = 31;
 
-	PROPERTY(READONLY) 
-	float y;
+	PROPERTY() 
+	float y = 32;
 
-	PROPERTY(READONLY) 
+	PROPERTY() 
 	std::string name;
 
 	bool IsDebug();

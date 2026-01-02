@@ -29,8 +29,9 @@ private:
 
 export template<typename... Args>
 void log_trace(std::format_string<Args...> fmt, Args&&... args) {
-    RemoteLogger::get().log(LogLevel::TRACE, 
-        std::format(fmt, std::forward<Args>(args)...));
+	std::string message = std::format(fmt, std::forward<Args>(args)...);
+	std::cout << message << std::endl;
+    RemoteLogger::get().log(LogLevel::TRACE, message);
 }
 
 export template<typename... Args>
@@ -42,12 +43,14 @@ void log_info(std::format_string<Args...> fmt, Args&&... args) {
 
 export template<typename... Args>
 void log_warning(std::format_string<Args...> fmt, Args&&... args) {
-    RemoteLogger::get().log(LogLevel::WARNING, 
-        std::format(fmt, std::forward<Args>(args)...));
+	std::string message = std::format(fmt, std::forward<Args>(args)...);
+	std::cout << message << std::endl;
+    RemoteLogger::get().log(LogLevel::WARNING, message);
 }
 
 export template<typename... Args>
 void log_error(std::format_string<Args...> fmt, Args&&... args) {
-    RemoteLogger::get().log(LogLevel::ERROR, 
-        std::format(fmt, std::forward<Args>(args)...));
+	std::string message = std::format(fmt, std::forward<Args>(args)...);
+	std::cout << message << std::endl;
+    RemoteLogger::get().log(LogLevel::ERROR, message);
 }
