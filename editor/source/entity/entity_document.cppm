@@ -2,6 +2,7 @@ module;
 
 #include <string>
 #include <filesystem>
+#include <cstdint>
 #include <rapidjson/document.h>
 
 export module zeytin.entity.document;
@@ -14,12 +15,17 @@ public:
     inline rapidjson::Document& get_document() { return m_document; }
     inline const rapidjson::Document& get_document() const { return m_document; }
 
-    inline void set_document(rapidjson::Document new_doc) { m_document = std::move(new_doc); }
+    inline void set_document(rapidjson::Document new_doc) { 
+		m_document = std::move(new_doc); 
+	}
 
     inline const std::string& get_name() const { return m_name ; }
 
     inline void mark_as_dead() { m_dead = true; }
     inline bool is_dead() const { return m_dead; }
+    
+    bool is_valid() const;
+    uint64_t get_id() const;
 
     void save_to_file(const std::filesystem::path& path) const;
     void load_from_file(const std::filesystem::path& path); 

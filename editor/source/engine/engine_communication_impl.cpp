@@ -219,18 +219,18 @@ void EngineCommunication::shutdown() {
 
 bool EngineCommunication::send_message(const std::string& json) {
     if (!m_initialized) {
-        //log_error() << "EngineCommunication not initialized" << std::endl;
+        log_error("EngineCommunication not initialized");
         return false;
     }
 
     if (json.empty()) {
-        //log_error() << "Attempted to send empty JSON message" << std::endl;
+        log_error("Attempted to send empty JSON message");
         return false;
     }
 
     zmq::message_t message(json.size());
     if (message.size() != json.size()) {
-        //log_error() << "Failed to allocate message of size " << json.size() << std::endl;
+        log_error("Failed to allocate message of size {}", json.size());
         return false;
     }
 
@@ -252,7 +252,7 @@ bool EngineCommunication::send_simple_message(const std::string& type,
         msg.AddMember("type", type_value, allocator);
     }
     else {
-        //log_error() << "Empty type is not allowed for send_simple_message" << std::endl;
+        log_error("Empty type is not allowed for send_simple_message");
         return false;
     }
 
@@ -293,10 +293,10 @@ void EngineCommunication::receive_messages() {
                         std::lock_guard<std::mutex> lock(m_queue_mutex);
                         m_message_queue.push(message_str);
                     } else {
-                        // log_error() << "Received empty message" << std::endl;
+                        log_error("Received empty message");
                     }
                 } else {
-                    // log_error() << "Received message with null data" << std::endl;
+                    log_error("Received message with null data");
                 }
             }
         }

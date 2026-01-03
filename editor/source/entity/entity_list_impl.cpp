@@ -1,14 +1,16 @@
 module;
 
-#include "rapidjson/document.h"
-#include "rapidjson/writer.h"
-
 #include <filesystem>
 #include <vector>
+#include <optional>
+
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
 
 module zeytin.entity.list;
 import zeytin.resource;
 import zeytin.engine.event;
+import zeytin.logger;
 
 namespace {
     constexpr const char* BACKUP_DIR = "temp_backup";
@@ -46,7 +48,7 @@ void EntityList::register_event_handlers() {
     EngineEvent::SyncEditor,
         [this](auto msg) {
             if(!should_sync_runtime()) {
-                //log_warning() << "EDITOR: Sync received but ignored" << std::endl;
+                log_warning("EDITOR: Sync received but ignored");
                 return;
             }
 
@@ -146,24 +148,24 @@ void EntityList::sync_entities_from_document(const rapidjson::Document& document
     }
 
     if (!document.HasMember("entities")) {
-        //log_error() << "Received sync message does not have 'entities' member" << std::endl;
+        log_error("Received sync message does not have 'entities' member");
         return;
     }
     
     if (!document["entities"].IsArray()) {
-        //log_error() << "Received sync message 'entities' is not an array" << std::endl;
+        log_error("Received sync message 'entities' is not an array");
         return;
     }
     
     const auto& entities = document["entities"].GetArray();
     for (const auto& entity : entities) {
         if (!entity.HasMember("entity_id") || !entity["entity_id"].IsUint64()) {
-            //log_error() << "Entity missing required 'entity_id' field" << std::endl;
+            log_error("Entity missing required 'entity_id' field");
             continue;
         }
         
         if (!entity.HasMember("variants") || !entity["variants"].IsArray()) {
-            //log_error() << "Entity missing required 'variants' field" << std::endl;
+            log_error("Entity missing required 'variants' field");
             continue;
         }
 
@@ -171,9 +173,12 @@ void EntityList::sync_entities_from_document(const rapidjson::Document& document
         bool found = false;
         
         for (auto& entity_doc : m_entities) {
-            const auto& existing_doc = entity_doc.get_document();
+            auto& existing_doc = entity_doc.get_document();
             if (existing_doc.HasMember("entity_id") &&
                 existing_doc["entity_id"].GetUint64() == entity_id) {
+
+				existing_doc["variants"].Clear();
+
                 rapidjson::Document new_doc;
                 new_doc.CopyFrom(entity, new_doc.GetAllocator());
                 entity_doc.set_document(std::move(new_doc));
@@ -286,6 +291,26 @@ void EntityList::load_entity_from_file(const std::filesystem::path& path) {
     auto& entity = m_entities.emplace_back(EntityDocument(std::move(file_name)));
 
     entity.load_from_file(path);
+}
+
+std::optional<std::reference_wrapper<EntityDocument>> EntityList::find_entity_by_id(uint64_t entity_id) {
+    auto it = std::ranges::find_if(m_entities.begin(), m_entities.end(), 
+        [entity_id](const EntityDocument& entity) {
+            return entity.get_id() == entity_id;
+        }
+    );
+    
+    if (it == m_entities.end()) {
+        log_error("EntityList: Entity with ID {} not found", entity_id);
+        return std::nullopt;
+    }
+    
+    if (!it->is_valid()) {
+        log_error("EntityList: Entity with ID {} is invalid", entity_id);
+        return std::nullopt;
+    }
+    
+    return std::ref(*it);
 }
 
 void EntityList::load_level(const Level& level) {

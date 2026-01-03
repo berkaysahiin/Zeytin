@@ -8,37 +8,19 @@ module;
 #include <string>
 #include <vector>
 #include <map>
-#include <algorithm>
+#include <memory>
+#include <variant> // IWYU pragma: keep
 
 module zeytin.inspector;
 import zeytin.selection;
 import zeytin.engine.event;
 import zeytin.resource;
+import zeytin.command.manager;
+import zeytin.command.property;
+import zeytin.entity.document;
+import zeytin.logger;
 
 namespace {
-    void notify_engine_entity_property_changed(uint64_t entity_id,
-                                               const std::string& variant_type,
-                                               const std::string& key_type,
-                                               const std::string& key_path,
-                                               const std::string& new_value) {
-        rapidjson::Document msg;
-        msg.SetObject();
-        auto& alloc = msg.GetAllocator();
-
-        msg.AddMember("type", "entity_property_changed", alloc);
-        msg.AddMember("entity_id", entity_id, alloc);
-        msg.AddMember("variant_type", rapidjson::Value(variant_type.c_str(), alloc), alloc);
-        msg.AddMember("key_type", rapidjson::Value(key_type.c_str(), alloc), alloc);
-        msg.AddMember("key_path", rapidjson::Value(key_path.c_str(), alloc), alloc);
-        msg.AddMember("value", rapidjson::Value(new_value.c_str(), alloc), alloc);
-
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        msg.Accept(writer);
-
-        EngineEventBus::get().publish<const std::string&>(EngineEvent::EntityModifiedEditor, buffer.GetString());
-    }
-
     void notify_engine_entity_variant_added(uint64_t entity_id, const std::string& type) {
         rapidjson::Document msg;
         msg.SetObject();
@@ -72,10 +54,39 @@ namespace {
     }
 }
 
+struct Inspector::Impl {
+    std::vector<VariantDocument>& variants;
+    std::map<std::string, PropertyValue> editing_original_values;
+
+    Impl(std::vector<VariantDocument>& vars) : variants(vars) {}
+
+    void render_entity_header(EntityDocument& entity);
+    void render_variants(EntityDocument& entity);
+    void render_variant(rapidjson::Document& document, rapidjson::Value& variant, 
+                        int index, uint64_t entity_id);
+
+    void render_object(rapidjson::Document& document, rapidjson::Value& object,
+                       uint64_t entity_id, const std::string& variant_type,
+                       const std::string& parent_path = "");
+
+    void render_property(rapidjson::Document& document, rapidjson::Value& value,
+                        uint64_t entity_id, const std::string& variant_type,
+                        const std::string& key, const std::string& current_path);
+
+    void render_array_field(rapidjson::Document& document, rapidjson::Value& value,
+                            uint64_t entity_id, const std::string& variant_type,
+                            const std::string& key, const std::string& current_path);
+
+    void render_add_component_button(EntityDocument& entity, uint64_t entity_id);
+    void add_variant_to_entity(EntityDocument& entity, VariantDocument& variant);
+};
+
 Inspector::Inspector(std::vector<VariantDocument>& variants)
-    : m_variants(variants)
+    : pImpl(std::make_unique<Impl>(variants))
 {
 }
+
+Inspector::~Inspector() = default;
 
 void Inspector::render() {
     EntityDocument* selected = SelectionManager::get().get_selected_entity();
@@ -85,12 +96,12 @@ void Inspector::render() {
         return;
     }
 
-    render_entity_header(*selected);
+    pImpl->render_entity_header(*selected);
     ImGui::Separator();
-    render_variants(*selected);
+    pImpl->render_variants(*selected);
 }
 
-void Inspector::render_entity_header(EntityDocument& entity) {
+void Inspector::Impl::render_entity_header(EntityDocument& entity) {
     rapidjson::Document& doc = entity.get_document();
     uint64_t entity_id = 0;
     if (doc.HasMember("entity_id") && doc["entity_id"].IsUint64()) {
@@ -105,7 +116,7 @@ void Inspector::render_entity_header(EntityDocument& entity) {
     ImGui::TextDisabled("(ID: %llu)", static_cast<unsigned long long>(entity_id));
 }
 
-void Inspector::render_variants(EntityDocument& entity) {
+void Inspector::Impl::render_variants(EntityDocument& entity) {
     rapidjson::Document& doc = entity.get_document();
 
     uint64_t entity_id = 0;
@@ -118,11 +129,11 @@ void Inspector::render_variants(EntityDocument& entity) {
         return;
     }
 
-    rapidjson::Value& variants = doc["variants"];
+    rapidjson::Value& variants_array = doc["variants"];
 
-    for (rapidjson::SizeType i = 0; i < variants.Size(); ++i) {
+    for (rapidjson::SizeType i = 0; i < variants_array.Size(); ++i) {
         ImGui::PushID(static_cast<int>(i));
-        render_variant(doc, variants[i], static_cast<int>(i), entity_id);
+        render_variant(doc, variants_array[i], static_cast<int>(i), entity_id);
         ImGui::PopID();
     }
 
@@ -130,7 +141,7 @@ void Inspector::render_variants(EntityDocument& entity) {
     render_add_component_button(entity, entity_id);
 }
 
-void Inspector::render_variant(rapidjson::Document& document, rapidjson::Value& variant,
+void Inspector::Impl::render_variant(rapidjson::Document& document, rapidjson::Value& variant,
                                 int index, uint64_t entity_id) {
     if (!variant.IsObject() || !variant.HasMember("type")) {
         return;
@@ -158,39 +169,7 @@ void Inspector::render_variant(rapidjson::Document& document, rapidjson::Value& 
     if (is_open) {
         ImGui::Indent(10.0f);
 
-        for (auto it = variant.MemberBegin(); it != variant.MemberEnd(); ++it) {
-            const char* key = it->name.GetString();
-            
-            if (strcmp(key, "type") == 0) continue;
-            if (strcmp(key, "entity_id") == 0) continue;
-
-            rapidjson::Value& value = it->value;
-            std::string path = key;
-
-            ImGui::PushID(key);
-
-            // If it's "value" object, render its contents directly without tree node
-            if (strcmp(key, "value") == 0 && value.IsObject()) {
-                render_object(document, value, entity_id, variant_type, path);
-            } else if (value.IsInt()) {
-                render_int_field(document, value, entity_id, variant_type, key, path);
-            } else if (value.IsFloat() || value.IsDouble()) {
-                render_float_field(document, value, entity_id, variant_type, key, path);
-            } else if (value.IsBool()) {
-                render_bool_field(value, entity_id, variant_type, key, path);
-            } else if (value.IsString()) {
-                render_string_field(document, value, entity_id, variant_type, key, path);
-            } else if (value.IsObject()) {
-                if (ImGui::TreeNode(key)) {
-                    render_object(document, value, entity_id, variant_type, path);
-                    ImGui::TreePop();
-                }
-            } else if (value.IsArray()) {
-                render_array_field(document, value, entity_id, variant_type, key, path);
-            }
-
-            ImGui::PopID();
-        }
+        render_object(document, variant, entity_id, variant_type, "");
 
         ImGui::Unindent(10.0f);
     }
@@ -198,135 +177,218 @@ void Inspector::render_variant(rapidjson::Document& document, rapidjson::Value& 
     ImGui::Spacing();
 }
 
-void Inspector::render_object(rapidjson::Document& document, rapidjson::Value& object,
-                               uint64_t entity_id, const std::string& variant_type,
-                               const std::string& parent_path) {
+void Inspector::Impl::render_object(rapidjson::Document& document, rapidjson::Value& object,
+                       uint64_t entity_id, const std::string& variant_type,
+                       const std::string& parent_path) {
     for (auto it = object.MemberBegin(); it != object.MemberEnd(); ++it) {
         const char* key = it->name.GetString();
+        
+        // Skip metadata fields
+        if (std::string(key) == "type" || std::string(key) == "entity_id") {
+            continue;
+        }
+        
+        if (std::string(key) == "value" && it->value.IsObject()) {
+            render_object(document, it->value, entity_id, variant_type, parent_path);
+            continue;
+        }
+        
         std::string current_path = parent_path.empty() ? key : parent_path + "." + key;
         rapidjson::Value& value = it->value;
 
         ImGui::PushID(key);
 
-        if (value.IsInt()) {
-            render_int_field(document, value, entity_id, variant_type, key, current_path);
-        } else if (value.IsFloat() || value.IsDouble()) {
-            render_float_field(document, value, entity_id, variant_type, key, current_path);
-        } else if (value.IsBool()) {
-            render_bool_field(value, entity_id, variant_type, key, current_path);
-        } else if (value.IsString()) {
-            render_string_field(document, value, entity_id, variant_type, key, current_path);
-        } else if (value.IsObject()) {
+        if (value.IsObject()) {
             if (ImGui::TreeNode(key)) {
                 render_object(document, value, entity_id, variant_type, current_path);
                 ImGui::TreePop();
             }
         } else if (value.IsArray()) {
             render_array_field(document, value, entity_id, variant_type, key, current_path);
+        } else {
+            render_property(document, value, entity_id, variant_type, key, current_path);
         }
 
         ImGui::PopID();
     }
 }
 
-void Inspector::render_int_field(rapidjson::Document& document, rapidjson::Value& value,
-                                  uint64_t entity_id, const std::string& variant_type,
-                                  const std::string& key, const std::string& current_path) {
+void Inspector::Impl::render_property(rapidjson::Document& document, rapidjson::Value& value,
+                                uint64_t entity_id, const std::string& variant_type,
+                                const std::string& key, const std::string& current_path) {
     std::string unique_id = std::to_string(entity_id) + "_" + variant_type + "_" + current_path;
-
-    int int_value = value.GetInt();
 
     ImGui::AlignTextToFramePadding();
     ImGui::Text("%s", key.c_str());
     ImGui::SameLine(150.0f);
-
     ImGui::PushItemWidth(-1);
-    bool edited = ImGui::DragInt(("##" + unique_id).c_str(), &int_value);
+
+    if (value.IsInt()) {
+        int int_value = value.GetInt();
+        
+        bool edited = ImGui::DragInt(("##" + unique_id).c_str(), &int_value);
+        bool activated = ImGui::IsItemActivated();
+        bool deactivated = ImGui::IsItemDeactivatedAfterEdit();
+        
+        if (activated || edited || deactivated) {
+            log_info("INT [{}]: activated={}, edited={}, deactivated={}, old={}, new={}", 
+                     key, activated, edited, deactivated, value.GetInt(), int_value);
+        }
+        
+        if (activated) {
+            editing_original_values[unique_id] = value.GetInt();
+            log_info("Captured old value for {}: {}", key, value.GetInt());
+        }
+        
+        if (edited) {
+            value.SetInt(int_value);
+        }
+        
+        if (deactivated) {
+            log_info("Deactivated for {}", key);
+            auto it = editing_original_values.find(unique_id);
+            if (it != editing_original_values.end()) {
+                int old_value = std::get<int>(it->second);
+                
+                log_info("Found old value: {}, new value: {}", old_value, int_value);
+                
+                if (old_value != int_value) {
+                    log_info("Creating command for {} change: {} -> {}", key, old_value, int_value);
+                    auto command = std::make_unique<PropertyChangeCommand>(
+                        PropertyLocation{entity_id, variant_type, current_path},
+                        old_value,
+                        int_value
+                    );
+                    CommandManager::get().execute_command(std::move(command));
+                } else {
+                    log_info("Values are equal, no command needed");
+                }
+                
+                editing_original_values.erase(it);
+            } else {
+                log_error("Deactivated for {} but no original value found!", key);
+            }
+        }
+    } 
+    else if (value.IsFloat() || value.IsDouble()) {
+        float float_value = value.IsDouble() ? 
+            static_cast<float>(value.GetDouble()) : value.GetFloat();
+        
+        bool edited = ImGui::DragFloat(("##" + unique_id).c_str(), &float_value, 0.1f, 0.0f, 0.0f, "%.3f");
+        bool activated = ImGui::IsItemActivated();
+        bool deactivated = ImGui::IsItemDeactivatedAfterEdit();
+        
+        if (activated || edited || deactivated) {
+            log_info("FLOAT [{}]: activated={}, edited={}, deactivated={}, old={}, new={}", 
+                     key, activated, edited, deactivated, 
+                     value.IsDouble() ? value.GetDouble() : value.GetFloat(), float_value);
+        }
+        
+        if (activated) {
+            editing_original_values[unique_id] = float_value;
+            log_info("Captured old value for {}: {}", key, float_value);
+        }
+        
+        if (edited) {
+            value.SetFloat(float_value);
+        }
+        
+        if (deactivated) {
+            log_info("Deactivated for {}", key);
+            auto it = editing_original_values.find(unique_id);
+            if (it != editing_original_values.end()) {
+                float old_value = std::get<float>(it->second);
+                
+                log_info("Found old value: {}, new value: {}", old_value, float_value);
+                
+                if (old_value != float_value) {
+                    log_info("Creating command for {} change: {} -> {}", key, old_value, float_value);
+                    auto command = std::make_unique<PropertyChangeCommand>(
+                        PropertyLocation{entity_id, variant_type, current_path},
+                        old_value,
+                        float_value
+                    );
+                    CommandManager::get().execute_command(std::move(command));
+                } else {
+                    log_info("Values are equal, no command needed");
+                }
+                
+                editing_original_values.erase(it);
+            } else {
+                log_error("Deactivated for {} but no original value found!", key);
+            }
+        }
+    } 
+    else if (value.IsBool()) {
+        bool bool_value = value.GetBool();
+        bool old_value = bool_value;
+        
+        if (ImGui::Checkbox(("##" + unique_id).c_str(), &bool_value)) {
+            log_info("BOOL [{}]: changed from {} to {}", key, old_value, bool_value);
+            value.SetBool(bool_value);
+            auto command = std::make_unique<PropertyChangeCommand>(
+                PropertyLocation{entity_id, variant_type, current_path},
+                old_value,
+                bool_value
+            );
+            CommandManager::get().execute_command(std::move(command));
+        }
+    } 
+    else if (value.IsString()) {
+        char buffer[256];
+        strncpy(buffer, value.GetString(), sizeof(buffer) - 1);
+        buffer[sizeof(buffer) - 1] = '\0';
+        
+        bool edited = ImGui::InputText(("##" + unique_id).c_str(), buffer, sizeof(buffer));
+        bool activated = ImGui::IsItemActivated();
+        bool deactivated = ImGui::IsItemDeactivatedAfterEdit();
+        
+        if (activated || edited || deactivated) {
+            log_info("STRING [{}]: activated={}, edited={}, deactivated={}, old='{}', new='{}'", 
+                     key, activated, edited, deactivated, value.GetString(), buffer);
+        }
+        
+        if (activated) {
+            editing_original_values[unique_id] = std::string(value.GetString());
+            log_info("Captured old value for {}: '{}'", key, value.GetString());
+        }
+        
+        if (edited) {
+            value.SetString(buffer, document.GetAllocator());
+        }
+        
+        if (deactivated) {
+            log_info("Deactivated for {}", key);
+            auto it = editing_original_values.find(unique_id);
+            if (it != editing_original_values.end()) {
+                std::string old_value = std::get<std::string>(it->second);
+                std::string new_str_value = buffer;
+                
+                log_info("Found old value: '{}', new value: '{}'", old_value, new_str_value);
+                
+                if (old_value != new_str_value) {
+                    log_info("Creating command for {} change: '{}' -> '{}'", key, old_value, new_str_value);
+                    auto command = std::make_unique<PropertyChangeCommand>(
+                        PropertyLocation{entity_id, variant_type, current_path},
+                        old_value,
+                        new_str_value
+                    );
+                    CommandManager::get().execute_command(std::move(command));
+                } else {
+                    log_info("Values are equal, no command needed");
+                }
+                
+                editing_original_values.erase(it);
+            } else {
+                log_error("Deactivated for {} but no original value found!", key);
+            }
+        }
+    }
+
     ImGui::PopItemWidth();
-
-    if (edited) {
-        value.SetInt(int_value);
-        m_editing_field[unique_id] = true;
-    }
-
-    if (m_editing_field[unique_id] && ImGui::IsItemDeactivatedAfterEdit()) {
-        notify_engine_entity_property_changed(entity_id, variant_type, "int", current_path, std::to_string(int_value));
-        m_editing_field[unique_id] = false;
-    }
 }
 
-void Inspector::render_float_field(rapidjson::Document& document, rapidjson::Value& value,
-                                    uint64_t entity_id, const std::string& variant_type,
-                                    const std::string& key, const std::string& current_path) {
-    std::string unique_id = std::to_string(entity_id) + "_" + variant_type + "_" + current_path;
-
-    float float_value = value.IsDouble() ? static_cast<float>(value.GetDouble()) : value.GetFloat();
-
-    ImGui::AlignTextToFramePadding();
-    ImGui::Text("%s", key.c_str());
-    ImGui::SameLine(150.0f);
-
-    ImGui::PushItemWidth(-1);
-    bool edited = ImGui::DragFloat(("##" + unique_id).c_str(), &float_value, 0.1f, 0.0f, 0.0f, "%.3f");
-    ImGui::PopItemWidth();
-
-    if (edited) {
-        value.SetFloat(float_value);
-        m_editing_field[unique_id] = true;
-    }
-
-    if (m_editing_field[unique_id] && ImGui::IsItemDeactivatedAfterEdit()) {
-        notify_engine_entity_property_changed(entity_id, variant_type, "float", current_path, std::to_string(float_value));
-        m_editing_field[unique_id] = false;
-    }
-}
-
-void Inspector::render_bool_field(rapidjson::Value& value, uint64_t entity_id,
-                                   const std::string& variant_type, const std::string& key,
-                                   const std::string& current_path) {
-    std::string unique_id = std::to_string(entity_id) + "_" + variant_type + "_" + current_path;
-
-    bool bool_value = value.GetBool();
-
-    ImGui::AlignTextToFramePadding();
-    ImGui::Text("%s", key.c_str());
-    ImGui::SameLine(150.0f);
-
-    if (ImGui::Checkbox(("##" + unique_id).c_str(), &bool_value)) {
-        value.SetBool(bool_value);
-        notify_engine_entity_property_changed(entity_id, variant_type, "bool", current_path, bool_value ? "true" : "false");
-    }
-}
-
-void Inspector::render_string_field(rapidjson::Document& document, rapidjson::Value& value,
-                                     uint64_t entity_id, const std::string& variant_type,
-                                     const std::string& key, const std::string& current_path) {
-    std::string unique_id = std::to_string(entity_id) + "_" + variant_type + "_" + current_path;
-
-    char buffer[256];
-    strncpy(buffer, value.GetString(), sizeof(buffer) - 1);
-    buffer[sizeof(buffer) - 1] = '\0';
-
-    ImGui::AlignTextToFramePadding();
-    ImGui::Text("%s", key.c_str());
-    ImGui::SameLine(150.0f);
-
-    ImGui::PushItemWidth(-1);
-    bool edited = ImGui::InputText(("##" + unique_id).c_str(), buffer, sizeof(buffer));
-    ImGui::PopItemWidth();
-
-    if (edited) {
-        value.SetString(buffer, document.GetAllocator());
-        m_editing_field[unique_id] = true;
-    }
-
-    if (m_editing_field[unique_id] && ImGui::IsItemDeactivatedAfterEdit()) {
-        notify_engine_entity_property_changed(entity_id, variant_type, "string", current_path, buffer);
-        m_editing_field[unique_id] = false;
-    }
-}
-
-void Inspector::render_array_field(rapidjson::Document& document, rapidjson::Value& value,
+void Inspector::Impl::render_array_field(rapidjson::Document& document, rapidjson::Value& value,
                                     uint64_t entity_id, const std::string& variant_type,
                                     const std::string& key, const std::string& current_path) {
     std::string header_label = key + " [" + std::to_string(value.Size()) + "]";
@@ -339,19 +401,13 @@ void Inspector::render_array_field(rapidjson::Document& document, rapidjson::Val
             std::string item_label = "[" + std::to_string(i) + "]";
             rapidjson::Value& item = value[i];
 
-            if (item.IsInt()) {
-                render_int_field(document, item, entity_id, variant_type, item_label, item_path);
-            } else if (item.IsFloat() || item.IsDouble()) {
-                render_float_field(document, item, entity_id, variant_type, item_label, item_path);
-            } else if (item.IsBool()) {
-                render_bool_field(item, entity_id, variant_type, item_label, item_path);
-            } else if (item.IsString()) {
-                render_string_field(document, item, entity_id, variant_type, item_label, item_path);
-            } else if (item.IsObject()) {
+            if (item.IsObject()) {
                 if (ImGui::TreeNode(item_label.c_str())) {
                     render_object(document, item, entity_id, variant_type, item_path);
                     ImGui::TreePop();
                 }
+            } else {
+                render_property(document, item, entity_id, variant_type, item_label, item_path);
             }
 
             ImGui::PopID();
@@ -360,85 +416,59 @@ void Inspector::render_array_field(rapidjson::Document& document, rapidjson::Val
     }
 }
 
-void Inspector::render_add_component_button(EntityDocument& entity, uint64_t entity_id) {
-    float button_width = ImGui::GetContentRegionAvail().x;
-
-    if (ImGui::Button("Add Component", ImVec2(button_width, 0))) {
-        ImGui::OpenPopup("AddComponentPopup");
+void Inspector::Impl::render_add_component_button(EntityDocument& entity, uint64_t entity_id) {
+    if (ImGui::Button("+ Add Component")) {
+        ImGui::OpenPopup("add_component_popup");
     }
 
-    if (ImGui::BeginPopup("AddComponentPopup")) {
-        static char search_buffer[128] = "";
-        ImGui::InputTextWithHint("##search", "Search...", search_buffer, sizeof(search_buffer));
-
-        ImGui::Separator();
-
-        std::string search_lower = search_buffer;
-        std::transform(search_lower.begin(), search_lower.end(), search_lower.begin(), ::tolower);
-
-        for (const auto& variant : m_variants) {
-            if (variant.is_dead() || variant.get_name().empty()) continue;
-
-            const std::string& name = variant.get_name();
-
-            // Filter by search
-            if (!search_lower.empty()) {
-                std::string name_lower = name;
-                std::transform(name_lower.begin(), name_lower.end(), name_lower.begin(), ::tolower);
-                if (name_lower.find(search_lower) == std::string::npos) continue;
+    if (ImGui::BeginPopup("add_component_popup")) {
+        for (auto& variant_doc : variants) {
+            rapidjson::Document& variant_json = variant_doc.get_document();
+            if (!variant_json.HasMember("type")) {
+                continue;
             }
 
-            // Check if already exists
-            bool exists = false;
-            if (entity.get_document().HasMember("variants")) {
-                for (const auto& v : entity.get_document()["variants"].GetArray()) {
-                    if (std::string(v["type"].GetString()) == name) {
-                        exists = true;
-                        break;
-                    }
-                }
-            }
+            std::string variant_type = variant_json["type"].GetString();
 
-            if (exists) {
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
-                ImGui::Selectable(name.c_str(), false, ImGuiSelectableFlags_Disabled);
-                ImGui::PopStyleColor();
-            } else {
-                if (ImGui::Selectable(name.c_str())) {
-                    add_variant_to_entity(entity, const_cast<VariantDocument&>(variant));
-                    search_buffer[0] = '\0';
-                }
+            if (ImGui::MenuItem(variant_type.c_str())) {
+                add_variant_to_entity(entity, variant_doc);
             }
         }
-
         ImGui::EndPopup();
     }
 }
 
-void Inspector::add_variant_to_entity(EntityDocument& entity, VariantDocument& variant) {
+void Inspector::Impl::add_variant_to_entity(EntityDocument& entity, VariantDocument& variant) {
     rapidjson::Document& entity_doc = entity.get_document();
-    const rapidjson::Document& variant_doc = variant.get_document();
+    rapidjson::Document& variant_doc = variant.get_document();
 
-    uint64_t entity_id = entity_doc["entity_id"].GetUint64();
-
-    if (!entity_doc.HasMember("variants")) {
-        rapidjson::Value variants_array(rapidjson::kArrayType);
-        entity_doc.AddMember("variants", variants_array, entity_doc.GetAllocator());
+    if (!entity_doc.HasMember("variants") || !entity_doc["variants"].IsArray()) {
+        return;
     }
 
-    rapidjson::Value& variants = entity_doc["variants"];
+    uint64_t entity_id = 0;
+    if (entity_doc.HasMember("entity_id") && entity_doc["entity_id"].IsUint64()) {
+        entity_id = entity_doc["entity_id"].GetUint64();
+    }
 
-    const std::string& type = variant_doc["type"].GetString();
+    std::string variant_type;
+    if (variant_doc.HasMember("type") && variant_doc["type"].IsString()) {
+        variant_type = variant_doc["type"].GetString();
+    }
 
-    // Check duplicates
-    for (const auto& v : variants.GetArray()) {
-        if (std::string(v["type"].GetString()) == type) {
+    rapidjson::Value& variants_array = entity_doc["variants"];
+
+    for (auto& existing_variant : variants_array.GetArray()) {
+        if (existing_variant.HasMember("type") && 
+            std::string(existing_variant["type"].GetString()) == variant_type) {
             return;
         }
     }
 
-    rapidjson::Value copied(variant_doc, entity_doc.GetAllocator());
-    variants.PushBack(copied, entity_doc.GetAllocator());
+    rapidjson::Value new_variant;
+    new_variant.CopyFrom(variant_doc, entity_doc.GetAllocator());
 
-    notify_engine_entity_variant_added(entity_id, type);
+    variants_array.PushBack(new_variant, entity_doc.GetAllocator());
+
+    notify_engine_entity_variant_added(entity_id, variant_type);
 }

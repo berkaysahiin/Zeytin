@@ -1,8 +1,10 @@
 module;
 
+#include "rapidjson/document.h"
+
+#include <optional>
 #include <vector>
 #include <filesystem>
-#include "rapidjson/document.h"
 
 export module zeytin.entity.list;
 import zeytin.entity.document;
@@ -15,6 +17,8 @@ public:
     ~EntityList() {
         clean_backup_entities();
     }
+
+	std::optional<std::reference_wrapper<EntityDocument>> find_entity_by_id(uint64_t entity_id);
 
 	void load_level(const Level& level);
     std::vector<Level> get_available_levels() const;

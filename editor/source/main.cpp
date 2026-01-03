@@ -13,8 +13,10 @@ import zeytin.engine.communication;
 import zeytin.testviewer;
 import zeytin.variant.list;
 import zeytin.entity.list;
+import zeytin.entity.registry;
 import zeytin.windows.level;
 import zeytin.inspector;
+import zeytin.command.keyboardlistener;
 
 int main(int argc, char* argv[])
 {
@@ -35,6 +37,8 @@ int main(int argc, char* argv[])
     EngineCommunication engine_communication;
 
     EntityList entity_list;
+	EntityRegistry::get().set_entity_list(entity_list);  
+
     VariantList variant_list;
 
 	Hierarchy hierarchy(variant_list.get_variants(), &entity_list);
@@ -102,6 +106,8 @@ int main(int argc, char* argv[])
 
     while (!WindowShouldClose())
     {
+		handle_undo_redo();
+
         BeginDrawing();
         ClearBackground(BLACK);
 

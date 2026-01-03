@@ -7,6 +7,7 @@ module;
 #include <filesystem>
 
 module zeytin.entity.document;
+import zeytin.logger;
 
 std::string EntityDocument::as_string() const {
     rapidjson::StringBuffer buffer;
@@ -17,6 +18,37 @@ std::string EntityDocument::as_string() const {
         exit(1);
     }
     return buffer.GetString();
+}
+
+bool EntityDocument::is_valid() const {
+	bool is_valid = true;
+	std::string invalid_reason;
+
+    if (!m_document.HasMember("entity_id")) {
+		invalid_reason = "Entity doesn't have an ID";
+		is_valid = false;
+    }
+    
+    if (!m_document["entity_id"].IsUint64()) {
+		invalid_reason = "Entity doesn't have an ID that is uint64_t";
+		is_valid = false;
+    }
+
+	if (!m_document.HasMember("variants") || !m_document["variants"].IsArray()) {
+		invalid_reason = "Entity doesn't have variants array";
+		is_valid = false;
+    }
+
+	if(!is_valid) {
+		std::string entity_name = m_name.empty() ? "_unkown_entity_" : m_name;
+    	log_error("Entity validation failed ({}). Reason: {}", entity_name, invalid_reason);
+	}
+
+	return is_valid;
+}
+
+uint64_t EntityDocument::get_id() const {
+    return m_document["entity_id"].GetUint64();
 }
 
 void EntityDocument::save_to_file(const std::filesystem::path& path) const {
