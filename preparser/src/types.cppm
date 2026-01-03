@@ -19,6 +19,7 @@ export struct PropertyInfo {
 
 export struct ComponentInfo {
     std::string name;
+    std::string module_name;
     std::vector<PropertyInfo> properties;
 };
 

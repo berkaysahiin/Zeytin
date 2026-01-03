@@ -4,6 +4,7 @@ module;
 #include <vector>
 #include <filesystem>
 #include <optional>
+#include <fstream>
 
 #include <clang/ASTMatchers/ASTMatchers.h>
 
@@ -46,4 +47,29 @@ export std::optional<std::string> get_annotation_value(const clang::Decl* D) {
         }
     }
     return {};
+}
+
+export std::optional<std::string> extract_module_name(const std::string& filepath) {
+    std::ifstream file(filepath);
+    if (!file.is_open()) {
+        return {};
+    }
+    
+    std::string line;
+    while (std::getline(file, line)) {
+        // Look for "export module <name>;"
+        size_t export_pos = line.find("export module");
+        if (export_pos != std::string::npos) {
+            size_t module_start = export_pos + 13; // length of "export module"
+            size_t semicolon = line.find(';', module_start);
+            if (semicolon != std::string::npos) {
+                std::string module = line.substr(module_start, semicolon - module_start);
+                module.erase(0, module.find_first_not_of(" \t"));
+                module.erase(module.find_last_not_of(" \t") + 1);
+                return module;
+            }
+        }
+    }
+
+	return {};
 }

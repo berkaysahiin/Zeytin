@@ -17,6 +17,7 @@ import preparser.logger;
 import preparser.utility;
 import preparser.matchers.component;
 import preparser.jsonexport;
+import preparser.rttr_generator;
 
 int main(int argc, const char** argv) {
     if (argc < 2) {
@@ -65,11 +66,26 @@ int main(int argc, const char** argv) {
 
     const bool rv = Tool.run(newFrontendActionFactory(&Finder).get());
 
-	for(const auto& component: Callback.components) 
-	{
-		log("---------------------------");
-		debug_print_component(component);
+	if(rv != 0) {
+		log("Error, will not export or generate code");
+		return -1;
 	}
 
-	export_components(Callback.components);
+	std::filesystem::path components_path = 
+        std::filesystem::path(compile_commands_dir).parent_path().parent_path() / "shared_resources" / "components";
+
+    std::filesystem::create_directories(components_path);
+
+	export_components(Callback.components, components_path);
+
+	std::filesystem::path generated_dir = 
+        std::filesystem::path(compile_commands_dir).parent_path() / "source" / "game" / "generated";
+    
+    std::filesystem::create_directories(generated_dir);
+    
+    std::string rttr_output = (generated_dir / "components_rttr_register.cpp").string();
+    
+    log("Generating RTTR registration: {}", rttr_output);
+    generate_rttr_registration(Callback.components, rttr_output);
+    log("RTTR registration generated successfully!");
 }

@@ -85,7 +85,7 @@ void debug_print_component(const ComponentInfo& component) {
     //    } 
     //};
 
-	log("Component: {}", component.name);
+	log("Component: {} in module {}", component.name, component.module_name);
 	for(const auto& property : component.properties) {
 		debug_print_property(property);
 	}

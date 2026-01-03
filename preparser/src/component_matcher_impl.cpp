@@ -48,6 +48,26 @@ void ComponentMatchCallback::run(const clang::ast_matchers::MatchFinder::MatchRe
 	ComponentInfo component;
 	component.name = Record->getName().str();
 
+	auto& SourceManager = Result.Context->getSourceManager();
+    auto Loc = Record->getLocation();
+    auto FileID = SourceManager.getFileID(Loc);
+    auto FileEntry = SourceManager.getFileEntryRefForID(FileID);
+
+	if (FileEntry) {
+        std::string filepath = FileEntry->getName().str();
+        auto module_name = extract_module_name(filepath);
+        
+        if (module_name) {
+            component.module_name = *module_name;
+        } else {
+            log("Erro: Could not extract module name for component: {}", component.name);
+			found_errors = true;
+        }
+    } else {
+        log("Error: Could not get source file for component: {}", component.name);
+		found_errors = true;
+    }
+
 	std::vector<const clang::FieldDecl*> fields;
     collect_fields_recursive(Record, fields);
 	
@@ -74,6 +94,10 @@ void ComponentMatchCallback::run(const clang::ast_matchers::MatchFinder::MatchRe
 		PropertyInfo property;
 		parse_property(Field, property);
 		component.properties.push_back(property);
+	}
+
+	if(found_errors) {
+        log("Error: Errors while parsing component: {}. See logs for errors...", component.name);
 	}
 
 	components.push_back(component);
