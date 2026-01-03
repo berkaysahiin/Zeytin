@@ -14,6 +14,7 @@ import zeytin.testviewer;
 import zeytin.variant.list;
 import zeytin.entity.list;
 import zeytin.windows.level;
+import zeytin.inspector;
 
 int main(int argc, char* argv[])
 {
@@ -87,6 +88,17 @@ int main(int argc, char* argv[])
         true,  // visible by default
         "Levels",
         true);
+
+	Inspector inspector(variant_list.get_variants());
+
+	// Add the Inspector window registration:
+	window_manager.add_window("Inspector",
+    [&inspector]() {
+        inspector.render();
+    },
+    true,
+    "Inspector",
+    true);
 
     while (!WindowShouldClose())
     {

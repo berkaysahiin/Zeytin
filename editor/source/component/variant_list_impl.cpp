@@ -7,7 +7,7 @@ module zeytin.variant.list;
 import zeytin.filewatcher;
 import zeytin.resource;
 
-VariantList::VariantList() : m_variant_watcher(ResourceManager::get().get_variants_path(), std::chrono::milliseconds(500)) {
+VariantList::VariantList() : m_variant_watcher(ResourceManager::get().get_components_paths(), std::chrono::milliseconds(500)) {
     load_variants();
     start_watching();
 }
@@ -15,8 +15,8 @@ VariantList::VariantList() : m_variant_watcher(ResourceManager::get().get_varian
 void VariantList::load_variants() {
     m_variants.clear();
 
-    for(const auto& entry : std::filesystem::directory_iterator(ResourceManager::get().get_variants_path())) {
-        if(!entry.is_regular_file() || entry.path().extension() != ".variant") {
+    for(const auto& entry : std::filesystem::directory_iterator(ResourceManager::get().get_components_paths())) {
+        if(!entry.is_regular_file() || entry.path().extension() != ".component") {
             continue;
         }
 
@@ -49,7 +49,7 @@ void VariantList::load_variant(const std::filesystem::path& path) {
 }
 
 void VariantList::start_watching() {
-    m_variant_watcher.add_callback({ ".variant"}, [this](const std::filesystem::path& path, const FileEvent event) {
+    m_variant_watcher.add_callback({ ".component"}, [this](const std::filesystem::path& path, const FileEvent event) {
         if(event == FileEvent::Modified || event == FileEvent::Created) {
             load_variant(path);
         }

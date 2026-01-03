@@ -20,7 +20,6 @@ EntityList::EntityList() {
     if (!levels.empty()) {
         load_level(levels[0]);
     } else {
-        //log_warning() << "No levels found. Creating default level." << std::endl;
         auto default_level_path = ResourceManager::get().get_resource_subdir("levels") / "default";
         std::filesystem::create_directories(default_level_path);
         load_level(Level("default", default_level_path));

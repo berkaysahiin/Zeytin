@@ -12,7 +12,7 @@ void VariantDocument::load_from_file() {
         return;
     }
 
-    std::filesystem::path path = ResourceManager::get().get_variant_path(m_name);
+    std::filesystem::path path = ResourceManager::get().get_component_path(m_name);
 
     std::ifstream in_file(path);
     if (!in_file.is_open()) {

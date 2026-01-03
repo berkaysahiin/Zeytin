@@ -80,10 +80,10 @@ std::filesystem::path ResourceManager::get_engine_subdir(const std::filesystem::
 }
 
 std::filesystem::directory_iterator ResourceManager::get_variant_folder() const {
-    const std::filesystem::path variants_path = get_variants_path(); // ensured to exist
+    const std::filesystem::path variants_path = get_components_paths(); // ensured to exist
     return std::filesystem::directory_iterator(variants_path);
 }
 
-std::filesystem::path ResourceManager::get_variant_path(const std::string& name) const {
-    return get_variants_path() / (name + ".variant");
+std::filesystem::path ResourceManager::get_component_path(const std::string& name) const {
+    return get_components_paths() / (name + ".component");
 }

@@ -15,6 +15,7 @@ module;
 module zeytin.engine.controls;
 import zeytin.resource;
 import zeytin.engine.event;
+import zeytin.logger;
 
 static void write_status_file(const std::string& status, const std::string& message);
 static void clean_status_file();
@@ -316,13 +317,13 @@ void EngineControls::monitor_build() {
 
         
         #ifdef _WIN32
-        build_command = "cd " + engine_scripts_path + " && python build_with_status.py";
+        	build_command = "cd " + engine_scripts_path + " && python build_with_status.py";
         #else
-        build_command = "cd " + engine_scripts_path + " && python3 build_with_status.py";
-        //log_info() << std::filesystem::current_path() << std::endl;
+        	build_command = "cd " + engine_scripts_path + " && python3 build_with_status.py";
         #endif
         
         //log_info() << "Executing: " << build_command << std::endl;
+		log_info("Executing: {}", build_command);
         int result = std::system(build_command.c_str());
         
         if (result != 0) {

@@ -13,6 +13,7 @@ module;
 module zeytin.engine.communication;
 import zeytin.engine.event;
 import zeytin.engine.controls;
+import zeytin.logger;
 
 EngineCommunication::EngineCommunication()
     : m_running(false)
@@ -179,16 +180,16 @@ void EngineCommunication::raise_events() {
                 std::string msg = doc["message"].GetString();
 
                 if(level == "INFO") {
-                   // Logger::get().info() << "[ENGINE] " << msg;
+					log_info("[ENGINE] {}", msg);
                 }
                 else if(level == "TRACE") {
-                    //Logger::get().trace() << "[ENGINE] " << msg;
+					log_trace("[ENGINE] {}", msg);
                 }
                 else if(level == "WARNING") {
-                    //Logger::get().warning() << "[ENGINE] " << msg;
+					log_warning("[ENGINE] {}", msg);
                 }
                 else if(level == "ERROR") {
-                    //Logger::get().error() << "[ENGINE] " << msg;
+					log_error("[ENGINE] {}", msg);
                 }
             }
         }

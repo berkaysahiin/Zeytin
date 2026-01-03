@@ -40,7 +40,7 @@ AssetType AssetBrowser::determine_asset_type(const std::string& extension) {
     else if (extension == ".entity") {
         return AssetType::Entity;
     }
-    else if (extension == ".variant") {
+    else if (extension == ".component") {
         return AssetType::Variant;
     }
     else if (extension == ".scene") {
