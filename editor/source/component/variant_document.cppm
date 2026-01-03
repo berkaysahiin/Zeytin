@@ -11,6 +11,7 @@ public:
     inline VariantDocument(rapidjson::Document document, std::string name) : m_document(std::move(document)), m_name(name) {}
 
     inline const rapidjson::Document& get_document() const { return m_document; }
+    inline rapidjson::Document& get_document() { return m_document; }
     inline const std::string& get_name() const { return m_name ; }
 
     inline bool is_dead() const { return m_is_dead; }
