@@ -168,7 +168,6 @@ void EngineCommunication::raise_events() {
             EngineEventBus::get().publish<bool>(EngineEvent::EngineStarted, true);
         }
         else if (type == "engine_shutdown") {
-            // log_info() << "Engine shutdown" << std::endl;
             EngineEventBus::get().publish<bool>(EngineEvent::EngineStopped, true);
         }
         else if(type == "log_message") {
