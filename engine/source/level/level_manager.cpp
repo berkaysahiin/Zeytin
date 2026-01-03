@@ -51,14 +51,14 @@ Level LevelManager::get_level(const std::string& name) {
 }
 
 std::string LevelManager::load_scene_file(const std::string& scene_name) {
-    auto scenes_path = get_scenes_directory();
+    const auto scenes_path = get_scenes_directory();
     
     std::string filename = scene_name;
     if (filename.find(".scene") == std::string::npos) {
         filename += ".scene";
     }
     
-    std::filesystem::path scene_file = scenes_path / filename;
+    const std::filesystem::path scene_file = scenes_path / filename;
     
     if (!std::filesystem::exists(scene_file)) {
         //log_warning() << "Scene file not found: " << scene_file << std::endl;

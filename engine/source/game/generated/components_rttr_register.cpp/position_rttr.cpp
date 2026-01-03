@@ -9,6 +9,5 @@ RTTR_REGISTRATION
         .constructor<>()(rttr::policy::ctor::as_object)
 		.property("x", &Position::x)
 		.property("y", &Position::y)
-		.property("name", &Position::name)
 		.property("entity_id", &Position::entity_id)(rttr::metadata("is_hidden", true));
 }

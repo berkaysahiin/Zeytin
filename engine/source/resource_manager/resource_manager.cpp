@@ -72,20 +72,10 @@ std::filesystem::path ResourceManager::get_resource_subdir(const std::filesystem
     return full_path;
 }
 
-std::filesystem::directory_iterator ResourceManager::get_entity_folder() const {
-    const std::filesystem::path entities_path = get_entities_path(); // ensured to exist
-    return std::filesystem::directory_iterator(entities_path);
-}
-
-std::filesystem::directory_iterator ResourceManager::get_variant_folder() const {
-    const std::filesystem::path variants_path = get_entities_path(); // ensured to exist
-    return std::filesystem::directory_iterator(variants_path);
-}
-
 std::filesystem::path ResourceManager::get_entity_path(const std::string& name) const {
     return get_entities_path() / (name + ".entity");
 }
 
-std::filesystem::path ResourceManager::get_variant_path(const std::string& name) const {
+std::filesystem::path ResourceManager::get_component_path(const std::string& name) const {
     return get_components_path() / (name + ".variant");
 }

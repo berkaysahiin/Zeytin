@@ -379,6 +379,11 @@ bool Zeytin::deserialize_scene(const std::string& scene) {
         return false;
     }
 
+#ifdef EDITOR_MODE
+	// NOTE: this might need more testing
+	initial_sync_editor();
+#endif
+
     //log_info() << "Scene loaded with " << successful_entities << " entities" << std::endl;
     return true;
 }
@@ -814,7 +819,7 @@ void Zeytin::exit_play_mode() {
 }
 
 void Zeytin::initial_sync_editor() {
-    std::string scene = serialize_scene();
+    const std::string scene = serialize_scene();
     if (!scene.empty()) {
         EditorEventBus::get().publish<std::string>(EditorEvent::SyncEditor, scene);
         log_info("Initial scene sync with editor");
