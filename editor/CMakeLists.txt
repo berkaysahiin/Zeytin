@@ -39,7 +39,7 @@ target_link_directories(ZeytinEditor PRIVATE
     3rdparty/zmq/linux
 )
 
-target_compile_options(ZeytinEditor PRIVATE -w)
+target_compile_options(ZeytinEditor PRIVATE -w -g -O0)
 
 target_compile_definitions(ZeytinEditor PRIVATE
     DEBUG=1

@@ -30,7 +30,7 @@ namespace {
         msg.AddMember("variant_type", rapidjson::Value(variant_type.c_str(), alloc), alloc);
         msg.AddMember("key_type", rapidjson::Value(key_type.c_str(), alloc), alloc);
         msg.AddMember("key_path", rapidjson::Value(key_path.c_str(), alloc), alloc);
-        msg.AddMember("new_value", rapidjson::Value(new_value.c_str(), alloc), alloc);
+        msg.AddMember("value", rapidjson::Value(new_value.c_str(), alloc), alloc);
 
         rapidjson::StringBuffer buffer;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
