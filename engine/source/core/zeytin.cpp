@@ -567,7 +567,7 @@ void Zeytin::render() {
 void Zeytin::request_level_load(const std::string& level_name) {
     m_pending_level_name = level_name;
     m_state.load_level_next_frame = true;
-    //log_info() << "Level load requested: " << level_name << " (will load next frame)" << std::endl;
+    log_info("Level load requested: {}", level_name);
 }
 
 #ifdef EDITOR_MODE
@@ -648,33 +648,53 @@ void Zeytin::subscribe_editor_events() {
 }
 
 void Zeytin::handle_entity_property_changed(const rapidjson::Document& doc) {
-    if (doc.HasParseError() || 
-        !doc.HasMember("entity_id") || 
-        !doc.HasMember("variant_type") || 
-        !doc.HasMember("key_type") || 
-        !doc.HasMember("key_path") || 
-        !doc.HasMember("value")) {
-        
-        log_error("Invalid property change document format");
+    // Validate document structure
+    if (doc.HasParseError()) {
+        log_error("JSON parse error in property change document");
+        return;
+    }
+    
+    if (!doc.HasMember("entity_id")) {
+        log_error("[handle_entity_property_changed] Missing required field: entity_id");
+        return;
+    }
+    if (!doc.HasMember("variant_type")) {
+        log_error("[handle_entity_property_changed] Missing required field: variant_type");
+        return;
+    }
+    if (!doc.HasMember("key_type")) {
+        log_error("[handle_entity_property_changed] Missing required field: key_type");
+        return;
+    }
+    if (!doc.HasMember("key_path")) {
+        log_error("[handle_entity_property_changed] Missing required field: key_path");
+        return;
+    }
+    if (!doc.HasMember("value")) {
+        log_error("[handle_entity_property_changed] Missing required field: value");
         return;
     }
 
+    
     const uint64_t entity_id = doc["entity_id"].GetUint64();
-    const std::string& variant_type = doc["variant_type"].GetString();
-    const std::string& key_type = doc["key_type"].GetString();
-    const std::string& key_path = doc["key_path"].GetString();
-    const std::string& value_str = doc["value"].GetString();
+    const std::string variant_type = doc["variant_type"].GetString();
+    const std::string key_type = doc["key_type"].GetString();
+    const std::string key_path = doc["key_path"].GetString();
+    const std::string value_str = doc["value"].GetString();
 
+    log_trace("[handle_entity_property_changed] {} {} {} {}", entity_id, variant_type, key_type, key_path, value_str);
+    
     auto& variants = get_components(entity_id);
+    
     for (auto& variant : variants) {
         if (variant.get_type().get_name() == variant_type) {
-
             const std::vector<std::string> path_parts = split_path(key_path);
+            
             if (path_parts.empty()) {
-                log_error("Invalid key path: {}", key_path);
+                log_error("Empty key path for entity {} variant {}", entity_id, variant_type);
                 return;
             }
-
+            
             if (key_type == "int") {
                 update_property(variant, path_parts, 0, std::stoi(value_str));
             }
@@ -688,14 +708,16 @@ void Zeytin::handle_entity_property_changed(const rapidjson::Document& doc) {
                 update_property(variant, path_parts, 0, value_str);
             }
             else {
-                log_error("Unsupported property type: {}", key_type);
+                log_error("Unsupported key_type '{}' for entity {} variant {} property {}", 
+                         key_type, entity_id, variant_type, key_path);
+                return;
             }
             
             return;
         }
     }
     
-    //log_error() << "Variant " << variant_type << " not found on entity " << EntityID << std::endl;
+    log_error("Variant '{}' not found on entity {}", variant_type, entity_id);
 }
 
 void Zeytin::handle_entity_variant_added(const rapidjson::Document& msg) {
