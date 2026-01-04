@@ -790,7 +790,6 @@ void Zeytin::handle_entity_variant_removed(const rapidjson::Document& msg) {
 
     remove_variant(EntityID, rttr_type);
     log_trace("Removed variant {}, from entity {}", variant_type_name, EntityID);
-	log_trace("------------- I AM CALLED ------------------");
 }
 
 void Zeytin::handle_entity_removed(const rapidjson::Document& msg) {
