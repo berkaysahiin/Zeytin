@@ -44,6 +44,7 @@ public:
     void remove_variant(EntityID id, const rttr::type& type);
     void remove_entity(EntityID id);
     void clean_dead_variants();
+    void clean_dead_variants(const EntityID id);
 
     ComponentList& get_components(const EntityID& entity);
 

@@ -219,6 +219,20 @@ void Zeytin::clean_dead_variants() {
     }
 }
 
+void Zeytin::clean_dead_variants(const EntityID entity) {
+    ZPROFILE_FUNCTION();
+	auto& components = get_components(entity);
+ 	components.erase(
+            std::remove_if(components.begin(), components.end(),
+                [](rttr::variant& variant) {
+                    Component& var_base = variant.get_value<Component&>();
+                    return var_base.is_dead;
+                }
+            ),
+            components.end()
+        );
+}
+
 std::string Zeytin::serialize_entity(const EntityID id) {
     return rttr_json::serialize_entity(id, get_components(id));
 }
@@ -258,6 +272,7 @@ void Zeytin::remove_variant(EntityID id, const rttr::type& type) {
     for (auto& variant : variants) {
         if (variant.get_type() == type) {
             Component& base = variant.get_value<Component&>();
+			log_trace("!!!!!!!!!!!!!!!!!!!Removed component {} from entity {}", type.get_name().data(), base.get_id());
             base.is_dead = true;
         }
     }
@@ -725,7 +740,7 @@ void Zeytin::handle_entity_variant_added(const rapidjson::Document& msg) {
         !msg.HasMember("entity_id") || 
         !msg.HasMember("variant_type")) {
         
-        //log_error() << "Invalid variant add document format" << std::endl;
+        log_error("Invalid variant add document format");
         return;
     }
 
@@ -735,6 +750,7 @@ void Zeytin::handle_entity_variant_added(const rapidjson::Document& msg) {
     const rttr::type rttr_type = rttr::type::get_by_name(variant_type_name);
 	assert(rttr_type.is_valid());
 
+	clean_dead_variants(entity_id);
     auto& variants = get_components(entity_id);
 
 	 for (const auto& existing : variants) {
@@ -759,7 +775,7 @@ void Zeytin::handle_entity_variant_removed(const rapidjson::Document& msg) {
         !msg.HasMember("entity_id") || 
         !msg.HasMember("variant_type")) {
         
-        //log_error() << "Invalid variant remove document format" << std::endl;
+        log_error("Invalid variant remove document format");
         return;
     }
 
@@ -768,24 +784,25 @@ void Zeytin::handle_entity_variant_removed(const rapidjson::Document& msg) {
 
     rttr::type rttr_type = rttr::type::get_by_name(variant_type_name);
     if (!rttr_type.is_valid()) {
-        //log_error() << "Invalid variant type: " << variant_type_name << std::endl;
+        log_error("Invalid variant type: {}", variant_type_name);
         return;
     }
 
     remove_variant(EntityID, rttr_type);
-    //log_info() << "Removed variant " << variant_type_name << " from entity " << EntityID << std::endl;
+    log_trace("Removed variant {}, from entity {}", variant_type_name, EntityID);
+	log_trace("------------- I AM CALLED ------------------");
 }
 
 void Zeytin::handle_entity_removed(const rapidjson::Document& msg) {
     if (msg.HasParseError() || !msg.HasMember("entity_id")) {
-        //log_error() << "Invalid entity remove document format" << std::endl;
+        log_error("Invalid entity remove document format");
         return;
     }
 
     EntityID EntityID = msg["entity_id"].GetUint64();
 
     remove_entity(EntityID);
-    //log_info() << "Removed entity " << EntityID << std::endl;
+    log_info("Removed entity {}", EntityID);
 }
 
 void Zeytin::enter_play_mode(bool is_paused) {
