@@ -197,9 +197,12 @@ ComponentList& Zeytin::get_components(const EntityID& entity) {
 }
 
 void Zeytin::remove_entity(EntityID id) {
-    for(rttr::variant& var : get_components(id)) {
-        var.get_value<Component&>().is_dead = true;
-    }
+    //for(rttr::variant& var : get_components(id)) {
+    //    var.get_value<Component&>().is_dead = true;
+    //}
+
+	// Lets try full deletion instead of deferred.
+	m_storage.erase(id);
 }
 
 
@@ -618,6 +621,13 @@ void Zeytin::subscribe_editor_events() {
         }
     );
 
+	EditorEventBus::get().subscribe<const rapidjson::Document&>(
+        EditorEvent::EntityAdded, 
+        [this](const rapidjson::Document& msg) {
+            handle_entity_added(msg);
+        }
+    );
+
     EditorEventBus::get().subscribe<const rapidjson::Document&>(
         EditorEvent::EntityRemoved, 
         [this](const rapidjson::Document& msg) {
@@ -790,6 +800,45 @@ void Zeytin::handle_entity_variant_removed(const rapidjson::Document& msg) {
 
     remove_variant(EntityID, rttr_type);
     log_trace("Removed variant {}, from entity {}", variant_type_name, EntityID);
+}
+
+void Zeytin::handle_entity_added(const rapidjson::Document& msg) {
+    if (msg.HasParseError() || 
+        !msg.HasMember("entity_id") || 
+        !msg.HasMember("entity_data")) {
+        log_error("Invalid entity add document format");
+        return;
+    }
+
+    const EntityID entity_id = msg["entity_id"].GetUint64();
+    
+    // Check if entity already exists
+    if (m_storage.find(entity_id) != m_storage.end()) {
+        log_warning("Entity with ID {} already exists, removing the entity first...", entity_id);
+		remove_entity(entity_id);
+    }
+
+    // Serialize entity_data back to JSON string
+    const rapidjson::Value& entity_data = msg["entity_data"];
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    entity_data.Accept(writer);
+    std::string entity_json(buffer.GetString(), buffer.GetSize());
+
+    // Deserialize the entity (this will add it to storage)
+    EntityID deserialized_id = deserialize_entity(entity_json);
+    
+    if (deserialized_id == 0) {
+        log_error("Failed to deserialize entity with ID {}", entity_id);
+        return;
+    }
+    
+    if (deserialized_id != entity_id) {
+        log_warning("Deserialized entity ID {} doesn't match expected ID {}", 
+                    deserialized_id, entity_id);
+    }
+
+    log_info("Added entity {}", entity_id);
 }
 
 void Zeytin::handle_entity_removed(const rapidjson::Document& msg) {

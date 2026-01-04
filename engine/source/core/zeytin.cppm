@@ -89,6 +89,7 @@ public:
     void handle_entity_property_changed(const rapidjson::Document& doc);
     void handle_entity_variant_added(const rapidjson::Document& msg);
     void handle_entity_variant_removed(const rapidjson::Document& msg);
+	void handle_entity_added(const rapidjson::Document& msg);
     void handle_entity_removed(const rapidjson::Document& msg);
 #endif
 

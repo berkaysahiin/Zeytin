@@ -15,6 +15,7 @@ export module zeytin.editor.event;
 export enum class EditorEvent {
     EngineStartConfirmed,
     Scene,
+	EntityAdded,
     EntityRemoved,
     EntityPropertyChanged,
     EntityVariantAdded,

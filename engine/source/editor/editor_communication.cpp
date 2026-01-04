@@ -165,6 +165,9 @@ void EditorCommunication::raise_events() {
         else if (type == "entity_variant_removed") {
             EditorEventBus::get().publish<const rapidjson::Document&>(EditorEvent::EntityVariantRemoved, doc);
         }
+		else if (type == "entity_added") {  // ADD THIS
+            EditorEventBus::get().publish<const rapidjson::Document&>(EditorEvent::EntityAdded, doc);
+        }
         else if (type == "entity_removed") {
             EditorEventBus::get().publish<const rapidjson::Document&>(EditorEvent::EntityRemoved, doc);
         }
