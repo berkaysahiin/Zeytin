@@ -301,12 +301,12 @@ std::optional<std::reference_wrapper<EntityDocument>> EntityList::find_entity_by
     );
     
     if (it == m_entities.end()) {
-        log_error("EntityList: Entity with ID {} not found", entity_id);
+        log_trace("EntityList: Entity with ID {} not found", entity_id);
         return std::nullopt;
     }
     
     if (!it->is_valid()) {
-        log_error("EntityList: Entity with ID {} is invalid", entity_id);
+        log_trace("EntityList: Entity with ID {} is invalid", entity_id);
         return std::nullopt;
     }
     
@@ -315,8 +315,13 @@ std::optional<std::reference_wrapper<EntityDocument>> EntityList::find_entity_by
 
 void EntityList::load_level(const Level& level) {
     if (!level.is_valid()) {
-        //log_error() << "Invalid level" << std::endl;
+        log_error("Invalid level {}", level.name);
         return;
+    }
+
+	// Notify all subscribers that the current level is about to be unloaded
+    for (auto& callback : m_level_unloading_callbacks) {
+        callback(m_current_level);  
     }
     
     m_current_level = level;
@@ -356,4 +361,8 @@ void EntityList::save_all_entities() {
             std::filesystem::remove(entity_path);
         }
     }
+}
+
+void EntityList::add_level_unloading_callback(LevelUnloadingCallback callback) {
+    m_level_unloading_callbacks.push_back(std::move(callback));
 }

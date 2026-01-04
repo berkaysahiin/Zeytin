@@ -204,17 +204,27 @@ void Hierarchy::render_entity(EntityDocument& entity_document) {
     ImGui::PushID(static_cast<int>(entity_id));
 
     const bool is_selected = SelectionManager::get().is_selected(entity_document.get_id());
+    const bool is_dead = entity_document.is_dead();  
 
     float item_width = ImGui::GetContentRegionAvail().x;
     float item_height = ImGui::GetFrameHeight() + 4.0f;
 
-    ImVec4 bg_color = is_selected 
-        ? ImVec4(0.24f, 0.42f, 0.62f, 1.0f)
-        : ImVec4(0.18f, 0.18f, 0.2f, 1.0f);
-
-    ImVec4 bg_hover_color = is_selected
-        ? ImVec4(0.28f, 0.46f, 0.66f, 1.0f)
-        : ImVec4(0.25f, 0.25f, 0.28f, 1.0f);
+    ImVec4 bg_color;
+    ImVec4 bg_hover_color;
+    
+    if (is_dead) {
+        bg_color = is_selected 
+            ? ImVec4(0.62f, 0.24f, 0.24f, 1.0f)  
+            : ImVec4(0.4f, 0.18f, 0.18f, 1.0f); 
+        bg_hover_color = ImVec4(0.66f, 0.28f, 0.28f, 1.0f);  
+    } else {
+        bg_color = is_selected 
+            ? ImVec4(0.24f, 0.42f, 0.62f, 1.0f)
+            : ImVec4(0.18f, 0.18f, 0.2f, 1.0f);
+        bg_hover_color = is_selected
+            ? ImVec4(0.28f, 0.46f, 0.66f, 1.0f)
+            : ImVec4(0.25f, 0.25f, 0.28f, 1.0f);
+    }
 
     ImGui::PushStyleColor(ImGuiCol_Header, bg_color);
     ImGui::PushStyleColor(ImGuiCol_HeaderHovered, bg_hover_color);
@@ -222,7 +232,9 @@ void Hierarchy::render_entity(EntityDocument& entity_document) {
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8.0f, 6.0f));
     ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(8.0f, 2.0f));
 
-    std::string display_name = std::string("O ") + name;  
+    std::string display_name = is_dead 
+        ? std::string("X ") + name  
+        : std::string("O ") + name; 
 
     bool clicked = ImGui::Selectable(display_name.c_str(), is_selected, 
                                       ImGuiSelectableFlags_None,
@@ -254,17 +266,13 @@ void Hierarchy::handle_entity_context_menu(EntityDocument& entity_document, uint
 
         ImGui::Separator();
 
-        if (ImGui::MenuItem("Duplicate")) {
-            // TODO: implement duplication
+        if (ImGui::MenuItem("As prefab")) {
+            // TODO: implement 
         }
 
         if (ImGui::MenuItem("Delete")) {
-            entity_document.mark_as_dead();
-            notify_entity_removed(entity_id);
-            
-            if (SelectionManager::get().is_selected(entity_document.get_id())) {
-                SelectionManager::get().clear_selection();
-            }
+			auto command = std::make_unique<RemoveEntityCommand>(entity_id);
+    		CommandManager::get().execute_command(std::move(command));
         }
 
         ImGui::EndPopup();

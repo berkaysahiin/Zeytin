@@ -4,6 +4,7 @@ module;
 #include "rapidjson/document.h"
 
 #include <string>
+#include <unistd.h>
 #include <vector>
 #include <map>
 #include <memory>
@@ -56,27 +57,20 @@ Inspector::Inspector(std::vector<VariantDocument>& variants)
 Inspector::~Inspector() = default;
 
 void Inspector::render() {
-	std::optional<EntityID> selected_entity_opt = SelectionManager::get().get_selected_entity();
-	if(!selected_entity_opt.has_value()) {
+	EntityDocument* entity = SelectionManager::get().get_selected_entity_unsafe();
+
+	if(entity == nullptr) {
 		return;
 	}
 
-	EntityID entity_id = selected_entity_opt.value();
-	auto entity_opt = EntityRegistry::get().find_entity(entity_id);
-
-	if(!entity_opt) {
+	if(entity->is_dead()) {
+		log_trace("Selected entity is dead: {}", entity->get_id());
 		return;
 	}
 
-	EntityDocument& entity = entity_opt->get();
-
-	if(entity.is_dead()) {
-		return;
-	}
-
-    pImpl->render_entity_header(entity);
+    pImpl->render_entity_header(*entity);
     ImGui::Separator();
-    pImpl->render_variants(entity);
+    pImpl->render_variants(*entity);
 }
 
 void Inspector::Impl::render_entity_header(EntityDocument& entity) {

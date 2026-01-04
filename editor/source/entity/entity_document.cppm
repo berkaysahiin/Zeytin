@@ -27,6 +27,7 @@ public:
     bool is_valid() const;
     bool is_dead() const;
     void mark_as_dead();
+	void mark_as_alive();
     
     bool has_component(const std::string& component_type) const;
     std::vector<std::string> get_component_types() const;

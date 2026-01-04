@@ -25,7 +25,7 @@ public:
 private:
     ConsoleWindow() = default;
 
-    bool m_show_trace = true;
+    bool m_show_trace = false;
     bool m_show_info = true;
     bool m_show_warning = true;
     bool m_show_error = true;

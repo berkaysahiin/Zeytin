@@ -74,19 +74,34 @@ AddEntityCommand::AddEntityCommand(std::string entity_name)
 }
 
 void AddEntityCommand::execute() {
-	//auto entity_list_opt = EntityRegister
-	auto entity_list_opt = EntityRegistry::get().get_entity_list();
-	if(!entity_list_opt.has_value()) {
+    auto entity_list_opt = EntityRegistry::get().get_entity_list();
+    if(!entity_list_opt.has_value()) {
         pImpl->succeeded = false;
         return;
-	}
+    }
 
-    // Generate ID if first time executing
     if (pImpl->entity_id == 0) {
         pImpl->entity_id = EntityRegistry::get().generate_entity_id();
     }
 
-    // Create entity document
+    // check if entity already exists, from undo/redo
+    auto entity_doc_opt = EntityRegistry::get().find_entity(pImpl->entity_id);
+    if (entity_doc_opt.has_value()) {
+        // entity exists (was undone) so just resurrect it
+        EntityDocument& entity = entity_doc_opt->get();
+        entity.mark_as_alive();
+        
+        std::string entity_json = entity.as_string();
+        notify_entity_added(pImpl->entity_id, entity_json);
+        
+        log_trace("Resurrected entity '{}' with ID {}", pImpl->entity_name, pImpl->entity_id);
+        pImpl->succeeded = true;
+        
+        SelectionManager::get().select_entity(&entity);
+        return;
+    }
+
+    // create new entity (first time executing)
     rapidjson::Document new_doc;
     new_doc.SetObject();
     auto& allocator = new_doc.GetAllocator();
@@ -107,10 +122,9 @@ void AddEntityCommand::execute() {
     log_trace("Added entity '{}' with ID {}", pImpl->entity_name, pImpl->entity_id);
     pImpl->succeeded = true;
     
-	// TODO: fix this mess with selection manager.
-	// Really bad idea to mess with pointers like this when we have already an ID to identify entities...
     SelectionManager::get().select_entity(&entities.back());
 }
+
 
 void AddEntityCommand::undo() {
     if (!pImpl->succeeded) {
@@ -141,4 +155,77 @@ void AddEntityCommand::undo() {
 
 std::optional<std::string> AddEntityCommand::get_description() const {
     return "Add entity: " + pImpl->entity_name;
+}
+
+/// -------------------------------------------------------------------------------------------------------
+
+struct RemoveEntityCommand::Impl {
+    uint64_t entity_id;
+    std::string entity_name;  // store for description
+    bool succeeded = false;
+};
+
+RemoveEntityCommand::~RemoveEntityCommand() = default;
+
+RemoveEntityCommand::RemoveEntityCommand(uint64_t entity_id)
+    : pImpl(std::make_unique<Impl>()) {
+    pImpl->entity_id = entity_id;
+    
+    // capture entity name for description
+    auto entity_opt = EntityRegistry::get().find_entity(entity_id);
+    if (entity_opt.has_value()) {
+        pImpl->entity_name = entity_opt->get().get_name();
+    }
+}
+
+void RemoveEntityCommand::execute() {
+    auto entity_doc_opt = EntityRegistry::get().find_entity(pImpl->entity_id);
+    if (!entity_doc_opt.has_value()) {
+        log_warning("Cannot remove entity {}: not found", pImpl->entity_id);
+        pImpl->succeeded = false;
+        return;
+    }
+
+    EntityDocument& entity = entity_doc_opt->get();
+
+    // check if entity was selected
+    if (SelectionManager::get().is_selected(entity.get_id())) {
+        SelectionManager::get().clear_selection();
+    }
+
+    entity.mark_as_dead();
+
+    notify_entity_removed(pImpl->entity_id);
+
+    log_trace("Removed entity '{}' (ID: {})", entity.get_name(), pImpl->entity_id);
+    pImpl->succeeded = true;
+}
+
+void RemoveEntityCommand::undo() {
+    if (!pImpl->succeeded) {
+        log_warning("Skipping undo for failed RemoveEntityCommand");
+        return;
+    }
+
+    auto entity_doc_opt = EntityRegistry::get().find_entity(pImpl->entity_id);
+    if (!entity_doc_opt.has_value()) {
+        log_error("Cannot restore entity {}: not found in list", pImpl->entity_id);
+        return;
+    }
+
+    // entity exists (was removed), just resurrect it
+    EntityDocument& entity = entity_doc_opt->get();
+    entity.mark_as_alive();
+
+	SelectionManager::get().select_entity(&entity);
+
+    // Notify engine
+    std::string entity_json = entity.as_string();
+    notify_entity_added(pImpl->entity_id, entity_json);
+
+    log_trace("Restored entity '{}' with ID {}", entity.get_name(), pImpl->entity_id);
+}
+
+std::optional<std::string> RemoveEntityCommand::get_description() const {
+    return "Remove entity: " + pImpl->entity_name;
 }

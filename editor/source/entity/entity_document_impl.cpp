@@ -242,6 +242,10 @@ void EntityDocument::mark_as_dead() {
     pImpl->is_dead_flag = true;
 }
 
+void EntityDocument::mark_as_alive() {
+    pImpl->is_dead_flag = false;
+}
+
 bool EntityDocument::has_component(const std::string& component_type) const {
     return pImpl->has_component(component_type);
 }
