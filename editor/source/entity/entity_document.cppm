@@ -38,6 +38,7 @@ public:
     rapidjson::Document& get_document();
     const rapidjson::Document& get_document() const;
     void set_document(rapidjson::Document new_doc);  
+	rapidjson::Value& get_components_json();
 
 private:
     struct Impl;

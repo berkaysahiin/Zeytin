@@ -108,14 +108,7 @@ namespace {
         
         rapidjson::Document& entity_doc = entity->get_document();
         const rapidjson::Document& variant_doc = variant_template->get_document();
-        
-        // Ensure variants array exists
-        if (!entity_doc.HasMember("variants")) {
-            rapidjson::Value variants_array(rapidjson::kArrayType);
-            entity_doc.AddMember("variants", variants_array, entity_doc.GetAllocator());
-        }
-        
-        rapidjson::Value& variants_array = entity_doc["variants"];
+        rapidjson::Value& variants_array = entity->get_components_json();
         
         // Check if component already exists
         for (const auto& v : variants_array.GetArray()) {
@@ -141,14 +134,7 @@ namespace {
         EntityDocument* entity = get_entity(entity_id);
         if (!entity) return false;
         
-        rapidjson::Document& entity_doc = entity->get_document();
-        
-        if (!entity_doc.HasMember("variants") || !entity_doc["variants"].IsArray()) {
-            log_error("Entity {} has no variants array", entity_id);
-            return false;
-        }
-        
-        rapidjson::Value& variants_array = entity_doc["variants"];
+        rapidjson::Value& variants_array = entity->get_components_json();
         
         // Find and remove the component
         for (rapidjson::SizeType i = 0; i < variants_array.Size(); ++i) {
@@ -225,15 +211,7 @@ void RemoveComponentCommand::execute() {
         return;
     }
     
-    rapidjson::Document& entity_doc = entity->get_document();
-    
-    if (!entity_doc.HasMember("variants") || !entity_doc["variants"].IsArray()) {
-        log_error("Entity {} has no variants array", pImpl->entity_id);
-        pImpl->succeeded = false;
-        return;
-    }
-    
-    rapidjson::Value& variants_array = entity_doc["variants"];
+    rapidjson::Value& variants_array = entity->get_components_json();
     
     // Find and backup the component before removing
     for (rapidjson::SizeType i = 0; i < variants_array.Size(); ++i) {
@@ -265,17 +243,10 @@ void RemoveComponentCommand::undo() {
     }
     
     EntityDocument* entity = get_entity(pImpl->entity_id);
-    if (!entity) return;
+    if (!entity) return; // get_entity already logs
     
     rapidjson::Document& entity_doc = entity->get_document();
-    
-    // Ensure variants array exists
-    if (!entity_doc.HasMember("variants")) {
-        rapidjson::Value variants_array(rapidjson::kArrayType);
-        entity_doc.AddMember("variants", variants_array, entity_doc.GetAllocator());
-    }
-    
-    rapidjson::Value& variants_array = entity_doc["variants"];
+    rapidjson::Value& variants_array = entity->get_components_json();
     
     // Restore from backup
     rapidjson::Value restored_variant;

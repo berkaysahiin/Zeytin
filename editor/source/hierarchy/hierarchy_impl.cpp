@@ -3,52 +3,18 @@ module;
 #include "imgui.h"
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
 
 #include <random>
 #include <algorithm>
-#include <fstream>
-#include <filesystem>
 
 module zeytin.hierarchy;
-import zeytin.resource;
 import zeytin.entity.list;
 import zeytin.engine.event;
 import zeytin.selection;
+import zeytin.command.manager;
+import zeytin.command.component;
 
 namespace {
-    void notify_engine_entity_variant_added(uint64_t entity_id, const std::string& type) {
-        rapidjson::Document msg;
-        msg.SetObject();
-        auto& alloc = msg.GetAllocator();
-
-        msg.AddMember("type", "entity_variant_added", alloc);
-        msg.AddMember("entity_id", entity_id, alloc);
-        msg.AddMember("variant_type", rapidjson::Value(type.c_str(), alloc), alloc);
-
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        msg.Accept(writer);
-
-        EngineEventBus::get().publish<const std::string&>(EngineEvent::EntityModifiedEditor, buffer.GetString());
-    }
-
-    void notify_engine_entity_variant_removed(uint64_t entity_id, const std::string& type) {
-        rapidjson::Document msg;
-        msg.SetObject();
-        auto& alloc = msg.GetAllocator();
-
-        msg.AddMember("type", "entity_variant_removed", alloc);
-        msg.AddMember("entity_id", entity_id, alloc);
-        msg.AddMember("variant_type", rapidjson::Value(type.c_str(), alloc), alloc);
-
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        msg.Accept(writer);
-
-        EngineEventBus::get().publish<const std::string&>(EngineEvent::EntityModifiedEditor, buffer.GetString());
-    }
-
     void notify_entity_removed(uint64_t entity_id) {
         rapidjson::Document msg;
         msg.SetObject();
@@ -194,7 +160,7 @@ void Hierarchy::create_new_entity(const char* name) {
         }
     }
 
-	SelectionManager::get().clear_selection();
+    SelectionManager::get().clear_selection();
 
     std::random_device rd;
     std::mt19937_64 gen(rd());
@@ -214,20 +180,12 @@ void Hierarchy::create_new_entity(const char* name) {
 }
 
 void Hierarchy::render_entity(EntityDocument& entity_document) {
-    rapidjson::Document& document = entity_document.get_document();
-    if (!document.IsObject()) {
-        return;
-    }
-
-    uint64_t entity_id = 0;
-    if (document.HasMember("entity_id") && document["entity_id"].IsUint64()) {
-        entity_id = document["entity_id"].GetUint64();
-    }
-
     const std::string& name = entity_document.get_name();
     if (name.empty()) {
         return;
     }
+
+    uint64_t entity_id = entity_document.get_id();
 
     ImGui::PushID(static_cast<int>(entity_id));
 
@@ -276,7 +234,7 @@ void Hierarchy::render_entity(EntityDocument& entity_document) {
 void Hierarchy::handle_entity_context_menu(EntityDocument& entity_document, uint64_t entity_id) {
     if (ImGui::BeginPopup("entity_context_menu")) {
         if (ImGui::BeginMenu("Add Component")) {
-            render_add_variant_menu(entity_document);
+            render_add_component_menu(entity_document);
             ImGui::EndMenu();
         }
 
@@ -299,100 +257,22 @@ void Hierarchy::handle_entity_context_menu(EntityDocument& entity_document, uint
     }
 }
 
-void Hierarchy::render_add_variant_menu(EntityDocument& entity_document) {
+void Hierarchy::render_add_component_menu(EntityDocument& entity_document) {
+    uint64_t entity_id = entity_document.get_id();
+    
     for (const auto& variant : m_variants) {
         if (variant.is_dead() || variant.get_name().empty()) continue;
 
-        const std::string& variant_name = variant.get_name();
-        bool already_exists = check_variant_exists(entity_document, variant_name);
+        const std::string& component_name = variant.get_name();
+        bool already_exists = entity_document.has_component(component_name);
 
         if (already_exists) {
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
-            ImGui::MenuItem(variant_name.c_str(), nullptr, false, false);
+            ImGui::MenuItem(component_name.c_str(), nullptr, false, false);
             ImGui::PopStyleColor();
-        } else if (ImGui::MenuItem(variant_name.c_str())) {
-            add_variant_to_entity(entity_document, const_cast<VariantDocument&>(variant));
+        } else if (ImGui::MenuItem(component_name.c_str())) {
+            auto command = std::make_unique<AddComponentCommand>(entity_id, component_name);
+            CommandManager::get().execute_command(std::move(command));
         }
-    }
-}
-
-bool Hierarchy::check_variant_exists(const EntityDocument& entity_document, const std::string& variant_name) {
-    const rapidjson::Document& doc = entity_document.get_document();
-    if (doc.HasMember("variants") && doc["variants"].IsArray()) {
-        for (const auto& variant : doc["variants"].GetArray()) {
-            if (std::string(variant["type"].GetString()) == variant_name) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-void Hierarchy::add_variant_to_entity(EntityDocument& entity_document, VariantDocument& variant_document) {
-    rapidjson::Document& entity_doc = entity_document.get_document();
-    const rapidjson::Document& variant_doc = variant_document.get_document();
-    
-    uint64_t entity_id = entity_doc["entity_id"].GetUint64();
-
-    if (!entity_doc.HasMember("variants")) {
-        rapidjson::Value variants_array(rapidjson::kArrayType);
-        entity_doc.AddMember("variants", variants_array, entity_doc.GetAllocator());
-    }
-
-    rapidjson::Value& entity_variants = entity_doc["variants"];
-    const std::string& type = variant_doc["type"].GetString();
-
-    for (const auto& v : entity_variants.GetArray()) {
-        if (std::string(v["type"].GetString()) == type) {
-            return;
-        }
-    }
-
-    rapidjson::Value copied_variant(variant_doc, entity_doc.GetAllocator());
-    entity_variants.PushBack(copied_variant, entity_doc.GetAllocator());
-    notify_engine_entity_variant_added(entity_id, type);
-    add_required_variants_to_entity(entity_document, type);
-}
-
-void Hierarchy::add_required_variants_to_entity(EntityDocument& entity_document, const std::string& variant_type) {
-    std::filesystem::path requires_path = ResourceManager::get().get_components_paths() / "requires" / (variant_type + ".requires");
-
-    if (!std::filesystem::exists(requires_path)) {
-        return;
-    }
-
-    try {
-        std::ifstream requires_file(requires_path);
-        if (!requires_file.is_open()) {
-            return;
-        }
-
-        std::string json_str((std::istreambuf_iterator<char>(requires_file)),
-                              std::istreambuf_iterator<char>());
-        requires_file.close();
-
-        rapidjson::Document requires_doc;
-        requires_doc.Parse(json_str.c_str());
-
-        if (requires_doc.HasParseError() || !requires_doc.IsArray()) {
-            return;
-        }
-
-        for (const auto& req : requires_doc.GetArray()) {
-            if (!req.IsString()) continue;
-            
-            std::string required_type = req.GetString();
-            
-            if (check_variant_exists(entity_document, required_type)) continue;
-
-            for (auto& variant : m_variants) {
-                if (variant.get_name() == required_type) {
-                    add_variant_to_entity(entity_document, variant);
-                    break;
-                }
-            }
-        }
-    } catch (...) {
-        // Silent fail
     }
 }

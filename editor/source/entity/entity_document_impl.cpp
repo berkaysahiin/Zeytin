@@ -278,3 +278,8 @@ void EntityDocument::set_document(rapidjson::Document new_doc) {
     pImpl->document = std::move(new_doc);
     pImpl->ensure_valid_structure();
 }
+
+rapidjson::Value& EntityDocument::get_components_json() {
+	pImpl->ensure_valid_structure();
+    return pImpl->document["variants"];
+}
