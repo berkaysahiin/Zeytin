@@ -3,37 +3,43 @@ module;
 #include <string>
 #include <filesystem>
 #include <cstdint>
+#include <optional>
+#include <memory>
+#include <vector>
 #include <rapidjson/document.h>
 
 export module zeytin.entity.document;
 
 export class EntityDocument final {
 public:
-    inline EntityDocument(std::string name) : m_name(name) {}
-    inline EntityDocument(rapidjson::Document document, std::string name) : m_document(std::move(document)), m_name(name) {}
-
-    inline rapidjson::Document& get_document() { return m_document; }
-    inline const rapidjson::Document& get_document() const { return m_document; }
-
-    inline void set_document(rapidjson::Document new_doc) { 
-		m_document = std::move(new_doc); 
-	}
-
-    inline const std::string& get_name() const { return m_name ; }
-
-    inline void mark_as_dead() { m_dead = true; }
-    inline bool is_dead() const { return m_dead; }
+    EntityDocument(std::string name);
+    EntityDocument(rapidjson::Document document, std::string name);  
+    ~EntityDocument();
     
-    bool is_valid() const;
+    EntityDocument(const EntityDocument&) = delete;
+    EntityDocument& operator=(const EntityDocument&) = delete;
+    EntityDocument(EntityDocument&&) noexcept;
+    EntityDocument& operator=(EntityDocument&&) noexcept;
+    
+    const std::string& get_name() const;
     uint64_t get_id() const;
-
+    bool is_valid() const;
+    bool is_dead() const;
+    void mark_as_dead();
+    
+    bool has_component(const std::string& component_type) const;
+    std::vector<std::string> get_component_types() const;
+    size_t get_component_count() const;
+    
     void save_to_file(const std::filesystem::path& path) const;
-    void load_from_file(const std::filesystem::path& path); 
-
+    void load_from_file(const std::filesystem::path& path);
     std::string as_string() const;
+    
+    rapidjson::Document& get_document();
+    const rapidjson::Document& get_document() const;
+    void set_document(rapidjson::Document new_doc);  
 
 private:
-    std::string m_name;
-    rapidjson::Document m_document;
-    bool m_dead = false;
+    struct Impl;
+    std::unique_ptr<Impl> pImpl;
 };

@@ -12,6 +12,7 @@ public:
     VariantList();
 
     inline std::vector<VariantDocument>& get_variants() { return m_variants;}
+    inline const std::vector<VariantDocument>& get_variants() const { return m_variants;}
 
 private:
     void load_variants();

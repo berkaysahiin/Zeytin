@@ -18,41 +18,8 @@ import zeytin.resource;
 import zeytin.command.manager;
 import zeytin.command.property;
 import zeytin.entity.document;
+import zeytin.command.component;  
 import zeytin.logger;
-
-namespace {
-    void notify_engine_entity_variant_added(uint64_t entity_id, const std::string& type) {
-        rapidjson::Document msg;
-        msg.SetObject();
-        auto& alloc = msg.GetAllocator();
-
-        msg.AddMember("type", "entity_variant_added", alloc);
-        msg.AddMember("entity_id", entity_id, alloc);
-        msg.AddMember("variant_type", rapidjson::Value(type.c_str(), alloc), alloc);
-
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        msg.Accept(writer);
-
-        EngineEventBus::get().publish<const std::string&>(EngineEvent::EntityModifiedEditor, buffer.GetString());
-    }
-
-    void notify_engine_entity_variant_removed(uint64_t entity_id, const std::string& type) {
-        rapidjson::Document msg;
-        msg.SetObject();
-        auto& alloc = msg.GetAllocator();
-
-        msg.AddMember("type", "entity_variant_removed", alloc);
-        msg.AddMember("entity_id", entity_id, alloc);
-        msg.AddMember("variant_type", rapidjson::Value(type.c_str(), alloc), alloc);
-
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        msg.Accept(writer);
-
-        EngineEventBus::get().publish<const std::string&>(EngineEvent::EntityModifiedEditor, buffer.GetString());
-    }
-}
 
 struct Inspector::Impl {
     std::vector<VariantDocument>& variants;
@@ -159,9 +126,8 @@ void Inspector::Impl::render_variant(rapidjson::Document& document, rapidjson::V
 
     if (ImGui::BeginPopupContextItem("variant_context")) {
         if (ImGui::MenuItem("Remove Component")) {
-            notify_engine_entity_variant_removed(entity_id, variant_type);
-            rapidjson::Value& variants_array = document["variants"];
-            variants_array.Erase(variants_array.Begin() + index);
+			auto command = std::make_unique<RemoveComponentCommand>(entity_id, variant_type);
+            CommandManager::get().execute_command(std::move(command));
         }
         ImGui::EndPopup();
     }
@@ -439,36 +405,13 @@ void Inspector::Impl::render_add_component_button(EntityDocument& entity, uint64
 }
 
 void Inspector::Impl::add_variant_to_entity(EntityDocument& entity, VariantDocument& variant) {
-    rapidjson::Document& entity_doc = entity.get_document();
-    rapidjson::Document& variant_doc = variant.get_document();
+    const rapidjson::Document& variant_doc = variant.get_document();
 
-    if (!entity_doc.HasMember("variants") || !entity_doc["variants"].IsArray()) {
-        return;
-    }
-
-    uint64_t entity_id = 0;
-    if (entity_doc.HasMember("entity_id") && entity_doc["entity_id"].IsUint64()) {
-        entity_id = entity_doc["entity_id"].GetUint64();
-    }
-
-    std::string variant_type;
+    std::string component_type;
     if (variant_doc.HasMember("type") && variant_doc["type"].IsString()) {
-        variant_type = variant_doc["type"].GetString();
+        component_type = variant_doc["type"].GetString();
     }
 
-    rapidjson::Value& variants_array = entity_doc["variants"];
-
-    for (auto& existing_variant : variants_array.GetArray()) {
-        if (existing_variant.HasMember("type") && 
-            std::string(existing_variant["type"].GetString()) == variant_type) {
-            return;
-        }
-    }
-
-    rapidjson::Value new_variant;
-    new_variant.CopyFrom(variant_doc, entity_doc.GetAllocator());
-
-    variants_array.PushBack(new_variant, entity_doc.GetAllocator());
-
-    notify_engine_entity_variant_added(entity_id, variant_type);
+    auto command = std::make_unique<AddComponentCommand>(entity.get_id(), component_type);
+    CommandManager::get().execute_command(std::move(command));
 }

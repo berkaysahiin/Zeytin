@@ -40,6 +40,7 @@ int main(int argc, char* argv[])
 	EntityRegistry::get().set_entity_list(entity_list);  
 
     VariantList variant_list;
+	EntityRegistry::get().set_variant_list(variant_list);  
 
 	Hierarchy hierarchy(variant_list.get_variants(), &entity_list);
     TestViewer test_viewer;
