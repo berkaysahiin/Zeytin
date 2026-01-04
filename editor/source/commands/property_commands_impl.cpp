@@ -27,7 +27,7 @@ struct PropertyChangeCommand::Impl {
     PropertyValue new_value;
     
     void apply_value(const PropertyValue& value, const PropertyLocation& loc);
-    void update_entity_document(const PropertyValue& value, const PropertyLocation& loc);
+    bool update_entity_document(const PropertyValue& value, const PropertyLocation& loc);
     void notify_engine(const PropertyValue& value, const PropertyLocation& loc);
     
     std::string value_to_string(const PropertyValue& value) const;
@@ -56,15 +56,16 @@ void PropertyChangeCommand::undo() {
 }
 
 void PropertyChangeCommand::Impl::apply_value(const PropertyValue& value, const PropertyLocation& loc) {
-    update_entity_document(value, loc);
-    notify_engine(value, loc);
+    if(update_entity_document(value, loc)) {
+    	notify_engine(value, loc);
+	}
 }
 
-void PropertyChangeCommand::Impl::update_entity_document(const PropertyValue& value, const PropertyLocation& loc) {
+bool PropertyChangeCommand::Impl::update_entity_document(const PropertyValue& value, const PropertyLocation& loc) {
     auto entity_list_opt = EntityRegistry::get().get_entity_list();
     if (!entity_list_opt) {
         log_error("PropertyChangeCommand: EntityList not registered in EntityRegistry");
-        return;
+        return false;
     }
     
     EntityList& entity_list = entity_list_opt->get();
@@ -72,7 +73,7 @@ void PropertyChangeCommand::Impl::update_entity_document(const PropertyValue& va
     auto entity_opt = entity_list.find_entity_by_id(loc.entity_id);
     if (!entity_opt) {
         log_error("PropertyChangeCommand: Failed to find entity with ID {}", loc.entity_id);
-        return;
+        return false;
     }
     
     EntityDocument& entity = entity_opt->get();
@@ -80,7 +81,7 @@ void PropertyChangeCommand::Impl::update_entity_document(const PropertyValue& va
 
 	if(!entity.is_valid()) {
 		log_error("Entity is invalid!. Stopping here.");
-		return;
+		return false;
 	}
     
     rapidjson::Value& variants = doc["variants"];
@@ -104,7 +105,7 @@ void PropertyChangeCommand::Impl::update_entity_document(const PropertyValue& va
         if (!target) {
             log_error("PropertyChangeCommand: Property '{}' not found at path on entity {}", 
                       loc.key_path, loc.entity_id);
-            return;
+            return false;
         }
         
         std::visit([&](auto&& val) {
@@ -120,12 +121,13 @@ void PropertyChangeCommand::Impl::update_entity_document(const PropertyValue& va
             }
         }, value);
         
-        return;
+        return true;
     }
     
     // If we reach here, the variant type was not found
     log_error("PropertyChangeCommand: Variant '{}' not found on entity {}", 
               loc.variant_type, loc.entity_id);
+	return false;
 }
 
 void PropertyChangeCommand::Impl::notify_engine(const PropertyValue& value, const PropertyLocation& loc) {
