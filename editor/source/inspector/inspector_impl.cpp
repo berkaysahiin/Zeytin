@@ -2,13 +2,12 @@ module;
 
 #include "imgui.h"
 #include "rapidjson/document.h"
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
 
 #include <string>
 #include <vector>
 #include <map>
 #include <memory>
+#include <optional>
 #include <variant> // IWYU pragma: keep
 
 module zeytin.inspector;
@@ -20,6 +19,7 @@ import zeytin.command.property;
 import zeytin.entity.document;
 import zeytin.command.component;  
 import zeytin.logger;
+import zeytin.entity.registry;
 
 struct Inspector::Impl {
     std::vector<VariantDocument>& variants;
@@ -56,16 +56,27 @@ Inspector::Inspector(std::vector<VariantDocument>& variants)
 Inspector::~Inspector() = default;
 
 void Inspector::render() {
-    EntityDocument* selected = SelectionManager::get().get_selected_entity();
+	std::optional<EntityID> selected_entity_opt = SelectionManager::get().get_selected_entity();
+	if(!selected_entity_opt.has_value()) {
+		return;
+	}
 
-    if (!selected || selected->is_dead()) {
-        ImGui::TextDisabled("No entity selected");
-        return;
-    }
+	EntityID entity_id = selected_entity_opt.value();
+	auto entity_opt = EntityRegistry::get().find_entity(entity_id);
 
-    pImpl->render_entity_header(*selected);
+	if(!entity_opt) {
+		return;
+	}
+
+	EntityDocument& entity = entity_opt->get();
+
+	if(entity.is_dead()) {
+		return;
+	}
+
+    pImpl->render_entity_header(entity);
     ImGui::Separator();
-    pImpl->render_variants(*selected);
+    pImpl->render_variants(entity);
 }
 
 void Inspector::Impl::render_entity_header(EntityDocument& entity) {

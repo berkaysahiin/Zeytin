@@ -1,7 +1,8 @@
 module;
 
 #include <functional>
-#include <vector>
+#include <memory>
+#include <optional>
 
 export module zeytin.selection;
 import zeytin.singleton;
@@ -17,37 +18,23 @@ export class SelectionManager : public Singleton<SelectionManager> {
 public:
     using SelectionChangedCallback = std::function<void()>;
 
-    void select_entity(EntityDocument* entity) {
-        if (m_selected_entity == entity) return;
-        m_selected_entity = entity;
-        m_selection_type = entity ? SelectionType::Entity : SelectionType::None;
-        notify_selection_changed();
-    }
-
-    void clear_selection() {
-        m_selected_entity = nullptr;
-        m_selection_type = SelectionType::None;
-        notify_selection_changed();
-    }
-
-    EntityDocument* get_selected_entity() const { return m_selected_entity; }
-    SelectionType get_selection_type() const { return m_selection_type; }
-    bool has_selection() const { return m_selection_type != SelectionType::None; }
-
-    void add_selection_changed_callback(SelectionChangedCallback callback) {
-        m_callbacks.push_back(std::move(callback));
-    }
+	// Have to be defined in the translation unit even though its default since Impl is incomplete. Weird shit
+    ~SelectionManager();
+    
+    void select_entity(EntityDocument* entity);
+    void clear_selection();
+    
+	std::optional<EntityID> get_selected_entity() const;
+    
+    bool is_selected(const EntityID entity_id) const;
+    SelectionType get_selection_type() const;
+    bool has_selection() const;
+    
+    void add_selection_changed_callback(SelectionChangedCallback callback);
 
 private:
-    SelectionManager() = default;
-
-    void notify_selection_changed() {
-        for (auto& callback : m_callbacks) {
-            callback();
-        }
-    }
-
-    EntityDocument* m_selected_entity = nullptr;
-    SelectionType m_selection_type = SelectionType::None;
-    std::vector<SelectionChangedCallback> m_callbacks;
+    SelectionManager();
+    
+    struct Impl;
+    std::unique_ptr<Impl> pImpl;
 };

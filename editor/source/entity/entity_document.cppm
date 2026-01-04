@@ -3,12 +3,13 @@ module;
 #include <string>
 #include <filesystem>
 #include <cstdint>
-#include <optional>
 #include <memory>
 #include <vector>
 #include <rapidjson/document.h>
 
 export module zeytin.entity.document;
+
+export using EntityID = uint64_t;
 
 export class EntityDocument final {
 public:
@@ -22,7 +23,7 @@ public:
     EntityDocument& operator=(EntityDocument&&) noexcept;
     
     const std::string& get_name() const;
-    uint64_t get_id() const;
+    EntityID get_id() const;
     bool is_valid() const;
     bool is_dead() const;
     void mark_as_dead();

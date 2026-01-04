@@ -13,6 +13,10 @@ import zeytin.engine.event;
 import zeytin.selection;
 import zeytin.command.manager;
 import zeytin.command.component;
+import zeytin.command.entity;
+
+import zeytin.validation;
+import zeytin.validation.entity;
 
 namespace {
     void notify_entity_removed(uint64_t entity_id) {
@@ -94,9 +98,11 @@ void Hierarchy::render_create_entity() {
     constexpr size_t MAX_ENTITY_NAME_LENGTH = 128;
     static char new_entity_name[MAX_ENTITY_NAME_LENGTH] = "";
     static bool show_new_entity_popup = false;
+    static std::string validation_error = "";
 
     if (ImGui::Button("+ Create New Entity", ImVec2(150, 20))) {
         memset(new_entity_name, 0, sizeof(new_entity_name));
+        validation_error = "";
         show_new_entity_popup = true;
     }
 
@@ -117,27 +123,35 @@ void Hierarchy::render_create_entity() {
             ImGuiInputTextFlags_EnterReturnsTrue
         );
 
+        if (!validation_error.empty()) {
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.3f, 0.3f, 1.0f));
+            ImGui::TextWrapped("%s", validation_error.c_str());
+            ImGui::PopStyleColor();
+        }
+
         ImGui::Spacing();
 
-        bool is_valid_name = strlen(new_entity_name) > 0;
+        bool create_clicked = ImGui::Button("Create", ImVec2(120, 0)) || enter_pressed;
 
-        if (!is_valid_name) {
-            ImGui::BeginDisabled();
-        }
-
-        if ((ImGui::Button("Create", ImVec2(120, 0)) || enter_pressed) && is_valid_name) {
-            create_new_entity(new_entity_name);
-            show_new_entity_popup = false;
-            ImGui::CloseCurrentPopup();
-        }
-
-        if (!is_valid_name) {
-            ImGui::EndDisabled();
+        if (create_clicked) {
+            std::string name_str(new_entity_name);
+            ValidationResult validation = entity_validation::validate_entity_name(name_str, *m_entity_list);
+            
+            if (validation.is_valid()) {
+                auto command = std::make_unique<AddEntityCommand>(name_str);
+                CommandManager::get().execute_command(std::move(command));
+                validation_error = "";
+                show_new_entity_popup = false;
+                ImGui::CloseCurrentPopup();
+            } else {
+                validation_error = validation.get_all_errors();
+            }
         }
 
         ImGui::SameLine();
 
         if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+            validation_error = "";
             show_new_entity_popup = false;
             ImGui::CloseCurrentPopup();
         }
@@ -189,7 +203,7 @@ void Hierarchy::render_entity(EntityDocument& entity_document) {
 
     ImGui::PushID(static_cast<int>(entity_id));
 
-    bool is_selected = (SelectionManager::get().get_selected_entity() == &entity_document);
+    const bool is_selected = SelectionManager::get().is_selected(entity_document.get_id());
 
     float item_width = ImGui::GetContentRegionAvail().x;
     float item_height = ImGui::GetFrameHeight() + 4.0f;
@@ -248,7 +262,7 @@ void Hierarchy::handle_entity_context_menu(EntityDocument& entity_document, uint
             entity_document.mark_as_dead();
             notify_entity_removed(entity_id);
             
-            if (SelectionManager::get().get_selected_entity() == &entity_document) {
+            if (SelectionManager::get().is_selected(entity_document.get_id())) {
                 SelectionManager::get().clear_selection();
             }
         }
