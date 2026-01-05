@@ -7,6 +7,8 @@ module;
 
 module zeytin.command.manager;
 import zeytin.logger;
+import zeytin.entity.registry;
+import zeytin.level;
 
 // The implementation treats undo/redo as navigating through a timeline of executed commands.
 //
@@ -33,8 +35,15 @@ struct CommandManager::Impl {
 };
 
 CommandManager::CommandManager() 
-    : pImpl(std::make_unique<Impl>()) 
-{}
+    : pImpl(std::make_unique<Impl>()) {
+	// Not sure about cleaning command history on level change.
+	//auto entity_list_opt = EntityRegistry::get().get_entity_list();
+    //if (entity_list_opt.has_value()) {
+    //    entity_list_opt->get().add_level_unloading_callback([this](const Level&) {
+	//		clear();
+    //    });
+    //}
+}
 
 CommandManager::~CommandManager() = default;
 
