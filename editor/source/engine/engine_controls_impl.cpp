@@ -10,17 +10,14 @@ module;
 #include <fstream>
 #include <sstream>
 #include <future>
-#include <vector>
+#include <thread>
+#include <chrono>
+#include <sys/wait.h>
 
 module zeytin.engine.controls;
 import zeytin.resource;
 import zeytin.engine.event;
 import zeytin.logger;
-
-static void write_status_file(const std::string& status, const std::string& message);
-static void clean_status_file();
-
-static constexpr std::string_view BUILD_STATUS = ".build_status";
 
 EngineControls::EngineControls() 
     : m_is_running(false)
@@ -55,8 +52,7 @@ EngineControls::EngineControls()
             m_is_engine_starting = false;
         }
     );
-    
-    write_status_file("none", "Editor started");
+
 }
 
 EngineControls::~EngineControls() {
@@ -65,12 +61,9 @@ EngineControls::~EngineControls() {
         m_build_monitor_future.wait();
     }
     kill_engine();
-    clean_status_file();
 }
 
 void EngineControls::render() {
-    check_build_status();
-
     float total_width = ImGui::GetWindowWidth();
     float center_width = total_width * 0.2f;
     float center_pos = (total_width - center_width) * 0.5f;
@@ -205,6 +198,34 @@ void EngineControls::render_build_status() {
     if (m_build_status == BuildStatus::Failed) {
         m_is_engine_starting = false;
         m_is_running = false;
+        
+        ImGui::OpenPopup("Build Failed");
+        ImGui::SetNextWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
+        if (ImGui::BeginPopupModal("Build Failed", nullptr, ImGuiWindowFlags_None)) {
+            ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Engine build failed!");
+            ImGui::Separator();
+            
+            if (!m_build_message.empty()) {
+                ImGui::TextWrapped("%s", m_build_message.c_str());
+            }
+            
+            if (!m_build_details.empty()) {
+                ImGui::Separator();
+                ImGui::Text("Build output:");
+                ImGui::BeginChild("ErrorDetails", ImVec2(0, -30), true);
+                ImGui::TextWrapped("%s", m_build_details.c_str());
+                ImGui::EndChild();
+            }
+            
+            ImGui::Separator();
+            if (ImGui::Button("Close", ImVec2(120, 0))) {
+                ImGui::CloseCurrentPopup();
+                m_build_status = BuildStatus::None;
+                m_build_message.clear();
+                m_build_details.clear();
+            }
+            ImGui::EndPopup();
+        }
     }
     else if (m_build_status == BuildStatus::Running) {
         ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 210, 50));
@@ -226,92 +247,12 @@ void EngineControls::render_build_status() {
     }
 }
 
-void EngineControls::check_build_status() {
-    std::filesystem::path status_file = ResourceManager::get().get_engine_path() / BUILD_STATUS.data() / "build_status.json";
-    
-    if (!std::filesystem::exists(status_file)) {
-        return;
-    }
-    
-    try {
-        std::ifstream file(status_file);
-        if (!file.is_open()) {
-            return;
-        }
-        
-        std::stringstream buffer;
-        buffer << file.rdbuf();
-        std::string json_string = buffer.str();
-        file.close();
-        
-        rapidjson::Document doc;
-        doc.Parse(json_string.c_str());
-        
-        if (doc.HasParseError() || !doc.IsObject() || !doc.HasMember("status")) {
-            return;
-        }
-        
-        std::string status = doc["status"].GetString();
-        std::string message = doc.HasMember("message") ? doc["message"].GetString() : "";
-        
-        if (status == "none") {
-            return;
-        }
-        
-        if (status == "running" && m_build_status != BuildStatus::Running) {
-            m_build_status = BuildStatus::Running;
-            //log_info() << "Build status: RUNNING - " << message << std::endl;
-            
-            std::filesystem::path build_log_path = ResourceManager::get().get_editor_path() / BUILD_STATUS.data() / "build_output.log";
-            if (std::filesystem::exists(build_log_path)) {
-                std::ifstream log_file(build_log_path);
-                if (log_file.is_open()) {
-                    std::string line;
-                    while (std::getline(log_file, line)) {
-                        //log_info() << "BUILD: " << line << std::endl;
-                    }
-                }
-            }
-        }
-        else if (status == "success" && m_build_status != BuildStatus::Success) {
-            m_build_status = BuildStatus::Success;
-            
-            static float success_timer = 0.0f;
-            if (m_build_status == BuildStatus::Success) {
-                success_timer += ImGui::GetIO().DeltaTime;
-                if (success_timer > 3.0f) {
-                    m_build_status = BuildStatus::None;
-                    success_timer = 0.0f;
-                }
-            }
-        }
-        else if (status == "failed" && m_build_status != BuildStatus::Failed) {
-            m_build_status = BuildStatus::Failed;
-            
-            if (doc.HasMember("message")) {
-                m_build_message = doc["message"].GetString();
-            }
-            
-            if (doc.HasMember("details")) {
-                m_build_details = doc["details"].GetString();
-                //log_error() << "Build status: FAILED - " << m_build_message << std::endl;
-                //log_error() << "Details: " << m_build_details << std::endl;
-            }
-        }
-    }
-    catch (const std::exception& e) {
-        //log_error() << "Error reading build status: " << e.what() << std::endl;
-    }
-}
-
 void EngineControls::start_engine() {
-    //log_info() << "Attempt to start the engine..." << std::endl;
+    log_info("Attempting to start the engine...");
     
     m_build_status = BuildStatus::Running;
     m_build_message.clear();
     m_build_details.clear();
-    
-    std::filesystem::create_directories(ResourceManager::get().get_engine_path() / BUILD_STATUS.data());
     
     monitor_build();
 }
@@ -323,66 +264,60 @@ void EngineControls::monitor_build() {
     }
     
     m_build_monitor_active = true;
-    //log_info() << "Starting build process..." << std::endl;
+    log_info("Starting build process...");
     
     m_build_monitor_future = std::async(std::launch::async, [this]() {
-        std::filesystem::path build_status_path = ResourceManager::get().get_engine_path() / BUILD_STATUS.data();
-        std::filesystem::create_directories(build_status_path);
-        
         std::string engine_path = ResourceManager::get().get_engine_path().string();
-        std::string engine_scripts_path = engine_path + "/scripts/";
-        std::string build_command;
-
+        std::string build_script = engine_path + "/build_and_run.sh";
         
-        #ifdef _WIN32
-        	build_command = "cd " + engine_scripts_path + " && python build_with_status.py";
-        #else
-        	build_command = "cd " + engine_scripts_path + " && python3 build_with_status.py";
-        #endif
+        std::string temp_output_file = engine_path + "/.build_output.log";
+        std::string build_command = "\"" + build_script + "\" > \"" + temp_output_file + "\" 2>&1";
         
-        //log_info() << "Executing: " << build_command << std::endl;
-		log_info("Executing: {}", build_command);
+        log_info("Executing: {}", build_command);
         int result = std::system(build_command.c_str());
         
-        if (result != 0) {
-            //log_error() << "Build command failed with exit code: " << result << std::endl;
-            write_status_file("failed", "Build process failed with code " + std::to_string(result));
+        // WIFEXITED checks if process terminated normally
+        // WEXITSTATUS extracts the actual exit code
+        int exit_code = WIFEXITED(result) ? WEXITSTATUS(result) : -1;
+        
+        if (exit_code != 0) {
+            log_error("Build failed with exit code: {}", exit_code);
             
+            m_build_status = BuildStatus::Failed;
+            m_build_message = "Build failed with exit code " + std::to_string(exit_code);
+            
+            // read build output from temporary file
             try {
-                std::filesystem::path log_path = build_status_path / "build_output.log";
-                std::ifstream log_file(log_path);
-                if (log_file.is_open()) {
-                    std::string line;
-                    std::vector<std::string> last_lines;
-                    while (std::getline(log_file, line)) {
-                        last_lines.push_back(line);
-                        if (last_lines.size() > 10) {
-                            last_lines.erase(last_lines.begin());
-                        }
+                if (std::filesystem::exists(temp_output_file)) {
+                    std::ifstream output_file(temp_output_file);
+                    if (output_file.is_open()) {
+                        std::stringstream buffer;
+                        buffer << output_file.rdbuf();
+                        m_build_details = buffer.str();
+                        output_file.close();
+                        
+                        if (m_build_details.empty()) {
+                            log_error("Build output file was empty");
+                        }                     } else {
+                    	log_error("Failed to open build output file: {}", temp_output_file);
                     }
-                    log_file.close();
-                    
-                    //log_error() << "Last " << last_lines.size() << " lines of build log:" << std::endl;
-                    for (const auto& line : last_lines) {
-                        //log_error() << line << std::endl;
-                    }
+                } else {
+                    log_error("Build output file does not exist: {}", temp_output_file);
                 }
             } catch (const std::exception& e) {
-                //log_error() << "Failed to read build log: " << e.what() << std::endl;
+                log_error("Failed to read build log: {}", e.what());
             }
+            
+            std::filesystem::remove(temp_output_file);
         } else {
-            write_status_file("success", "Build completed successfully");
+            log_info("Build and launch successful!");
+            m_build_status = BuildStatus::Success;
             
-            //log_info() << "Launching engine..." << std::endl;
-            std::string run_command;
+            std::filesystem::remove(temp_output_file);
             
-            #ifdef _WIN32
-            run_command = "cd " + engine_scripts_path + " && python run.py";
-            #else
-            run_command = "cd " + engine_scripts_path + " && python3 run.py";
-            #endif
-            
-            std::system(run_command.c_str());
+            // auto-hide success status after 3 seconds
+            std::this_thread::sleep_for(std::chrono::seconds(3));
+            m_build_status = BuildStatus::None;
         }
     });
 }
@@ -406,38 +341,6 @@ void EngineControls::exit_play_mode() {
     m_is_play_mode = false;
     m_is_paused = false;
     EngineEventBus::get().publish<bool>(EngineEvent::ExitPlayMode, true);
-}
-
-static void write_status_file(const std::string& status, const std::string& message) {
-    std::filesystem::path status_path = ResourceManager::get().get_engine_path() / BUILD_STATUS.data() / "build_status.json";
-    std::filesystem::create_directories(status_path.parent_path());
-    
-    try {
-        rapidjson::Document doc;
-        doc.SetObject();
-        auto& allocator = doc.GetAllocator();
-        
-        doc.AddMember("status", rapidjson::Value(status.c_str(), allocator), allocator);
-        doc.AddMember("message", rapidjson::Value(message.c_str(), allocator), allocator);
-        doc.AddMember("timestamp", rapidjson::Value(std::to_string(std::time(nullptr)).c_str(), allocator), allocator);
-        
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        doc.Accept(writer);
-        
-        std::ofstream file(status_path);
-        if (file.is_open()) {
-            file << buffer.GetString();
-            file.close();
-        }
-    } catch (const std::exception& e) {
-        log_error("Failed to write status file: {}", e.what());
-    }
-}
-
-static void clean_status_file() {
-    std::filesystem::path status_folder = ResourceManager::get().get_engine_path() / BUILD_STATUS.data();
-    std::filesystem::remove_all(status_folder);
 }
 
 void EngineControls::send_window_state(bool hidden) {

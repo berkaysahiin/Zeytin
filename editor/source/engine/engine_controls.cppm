@@ -29,7 +29,6 @@ private:
     void enter_play_mode();
     void exit_play_mode();
     
-    void check_build_status();
     void monitor_build();
 
     bool m_is_running;
