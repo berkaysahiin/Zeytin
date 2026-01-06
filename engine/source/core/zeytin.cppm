@@ -13,6 +13,7 @@ import zeytin.raylib;
 import zeytin.editor.communication;
 import zeytin.editor.event;
 import zeytin.singleton;
+import zeytin.shared_texture;
 
 constexpr float VIRTUAL_WIDTH = 1920;
 constexpr float VIRTUAL_HEIGHT = 1080;
@@ -119,5 +120,6 @@ private:
 
 #ifdef EDITOR_MODE
     std::unique_ptr<EditorCommunication> m_editor_communication;
+    SharedTextureWriter m_shared_texture_writer;
 #endif
 };

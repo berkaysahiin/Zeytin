@@ -11,6 +11,7 @@ import zeytin.hierarchy;
 import zeytin.engine.controls;
 import zeytin.engine.communication;
 import zeytin.testviewer;
+import zeytin.engine_view;
 import zeytin.variant.list;
 import zeytin.entity.list;
 import zeytin.entity.registry;
@@ -44,6 +45,7 @@ int main(int argc, char* argv[])
 
 	Hierarchy hierarchy(variant_list.get_variants(), &entity_list);
     TestViewer test_viewer;
+    EngineView engine_view;
 
 	LevelWindow::get().set_entity_list(&entity_list);  
 
@@ -74,12 +76,20 @@ int main(int argc, char* argv[])
         "Asset Browser",
         true);
         
-    window_manager.add_window("Test Viewer", 
+    window_manager.add_window("Test Viewer",
         [&test_viewer]() {
             test_viewer.render();
         },
-        false, 
-        "Test Viewer", 
+        false,
+        "Test Viewer",
+        true);
+
+    window_manager.add_window("Engine View",
+        [&engine_view]() {
+            engine_view.render();
+        },
+        true,  
+        "Engine View",
         true);
 
    	window_manager.add_main_menu_component([&engine_controls]{
@@ -90,13 +100,12 @@ int main(int argc, char* argv[])
         []() {
             LevelWindow::get().render();
         },
-        true,  // visible by default
+        false,  // visible by default
         "Levels",
         true);
 
 	Inspector inspector(variant_list.get_variants());
 
-	// Add the Inspector window registration:
 	window_manager.add_window("Inspector",
     [&inspector]() {
         inspector.render();

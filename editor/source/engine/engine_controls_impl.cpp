@@ -37,8 +37,11 @@ EngineControls::EngineControls()
                 m_is_running = true;
                 m_is_engine_starting = false;
                 m_build_status = BuildStatus::None;
-                //log_info() << "Engine started successfully." << std::endl;
-            } 
+
+                if (m_engine_window_hidden) {
+                    send_window_state(true);
+                }
+            }
         }
     );
 
@@ -90,7 +93,22 @@ void EngineControls::render_engine_controls() {
     }
 
     ImGui::SameLine();
-    
+
+    if (m_is_running) {
+        if (m_engine_window_hidden) {
+            if (ImGui::Button("Show Window")) {
+                m_engine_window_hidden = false;
+                send_window_state(false);
+            }
+        } else {
+            if (ImGui::Button("Hide Window")) {
+                m_engine_window_hidden = true;
+                send_window_state(true);
+            }
+        }
+        ImGui::SameLine();
+    }
+
     if (!m_is_running) {
         if (!m_is_engine_starting) {
             if (m_build_status == BuildStatus::Running) {
@@ -370,7 +388,7 @@ void EngineControls::monitor_build() {
 }
 
 void EngineControls::kill_engine() {
-    //log_info() << "Killing the engine..." << std::endl;
+    log_info("Killing the engine...");
 
     m_is_play_mode = false;
     m_is_running = false;
@@ -413,11 +431,26 @@ static void write_status_file(const std::string& status, const std::string& mess
             file.close();
         }
     } catch (const std::exception& e) {
-        //log_error() << "Failed to write status file: " << e.what() << std::endl;
+        log_error("Failed to write status file: {}", e.what());
     }
 }
 
 static void clean_status_file() {
     std::filesystem::path status_folder = ResourceManager::get().get_engine_path() / BUILD_STATUS.data();
     std::filesystem::remove_all(status_folder);
+}
+
+void EngineControls::send_window_state(bool hidden) {
+    rapidjson::Document doc;
+    doc.SetObject();
+    auto& allocator = doc.GetAllocator();
+
+    doc.AddMember("type", "window_state", allocator);
+    doc.AddMember("hidden", hidden, allocator);
+
+    rapidjson::StringBuffer buffer;
+    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+    doc.Accept(writer);
+
+    EngineEventBus::get().publish<const std::string&>(EngineEvent::WindowStateChanged, buffer.GetString());
 }

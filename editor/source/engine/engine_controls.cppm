@@ -36,7 +36,10 @@ private:
     bool m_is_play_mode;
     bool m_is_paused;
     bool m_is_engine_starting;
-    
+    bool m_engine_window_hidden = true;  
+
+    void send_window_state(bool hidden);
+
     BuildStatus m_build_status;
     std::string m_build_message;
     std::string m_build_details;

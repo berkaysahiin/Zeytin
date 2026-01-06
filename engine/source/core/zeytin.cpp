@@ -25,6 +25,7 @@ import zeytin.guid;
 import zeytin.property;
 import zeytin.raylib;
 import zeytin.editor.communication;
+import zeytin.shared_texture;
 
 Zeytin::Zeytin() {
     initialize();
@@ -62,6 +63,11 @@ void Zeytin::initialize_camera() {
 void Zeytin::initialize_editor_communication() {
     m_editor_communication = std::make_unique<EditorCommunication>();
     subscribe_editor_events();
+
+    // init shared texture for editor viewport
+    if (!m_shared_texture_writer.initialize()) {
+        log_error("Failed to initialize shared texture writer");
+    }
     
     // wait for editor connection to be established
     while (!m_editor_communication->is_connection_confirmed() || !m_state.scene_ready) {
@@ -185,6 +191,21 @@ void Zeytin::run_frame() {
 
     end_mode2d();
     end_texture_mode();
+
+#ifdef EDITOR_MODE
+    // Write render texture to shared memory for editor viewport
+    if (m_shared_texture_writer.is_initialized()) {
+        Image image = LoadImageFromTexture(m_render_texture.texture);
+        // Flip vertically since OpenGL textures are upside down
+        ImageFlipVertical(&image);
+        m_shared_texture_writer.write_pixels(
+            static_cast<const unsigned char*>(image.data),
+            static_cast<uint32_t>(image.width),
+            static_cast<uint32_t>(image.height)
+        );
+        UnloadImage(image);
+    }
+#endif
 
     begin_drawing();
     clear_background(BLACK);
@@ -665,9 +686,23 @@ void Zeytin::subscribe_editor_events() {
     );
 
     EditorEventBus::get().subscribe<bool>(
-        EditorEvent::Die, 
+        EditorEvent::Die,
         [this](bool) {
             m_state.should_die = true;
+        }
+    );
+
+    EditorEventBus::get().subscribe<const rapidjson::Document&>(
+        EditorEvent::WindowStateChanged,
+        [](const rapidjson::Document& doc) {
+            if (doc.HasMember("hidden")) {
+                bool hidden = doc["hidden"].GetBool();
+                if (hidden) {
+                    SetWindowState(FLAG_WINDOW_HIDDEN);
+                } else {
+                    ClearWindowState(FLAG_WINDOW_HIDDEN);
+                }
+            }
         }
     );
 }

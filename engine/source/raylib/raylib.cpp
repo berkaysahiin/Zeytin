@@ -5,6 +5,141 @@ module;
 
 module zeytin.raylib;
 
+#ifdef EDITOR_MODE
+import zeytin.shared_input;
+
+// global shared input reader for editor mode
+static SharedInputReader g_shared_input;
+static float g_shared_input_retry_timer = 0.0f;
+
+static bool ensure_shared_input_ready() {
+    if (g_shared_input.is_initialized()) {
+        return true;
+    }
+
+    // retry every 0.5 seconds
+    g_shared_input_retry_timer += GetFrameTime();
+    if (g_shared_input_retry_timer >= 0.5f) {
+        g_shared_input_retry_timer = 0.0f;
+        g_shared_input.initialize();
+    }
+
+    return g_shared_input.is_initialized();
+}
+#endif
+
+bool is_key_pressed(int key) {
+#ifdef EDITOR_MODE
+    if (ensure_shared_input_ready() && g_shared_input.has_focus()) {
+        return g_shared_input.is_key_pressed(key);
+    }
+#endif
+    return IsKeyPressed(key);
+}
+
+bool is_key_down(int key) {
+#ifdef EDITOR_MODE
+    if (ensure_shared_input_ready() && g_shared_input.has_focus()) {
+        return g_shared_input.is_key_down(key);
+    }
+#endif
+    return IsKeyDown(key);
+}
+
+bool is_key_released(int key) {
+#ifdef EDITOR_MODE
+    if (ensure_shared_input_ready() && g_shared_input.has_focus()) {
+        return g_shared_input.is_key_released(key);
+    }
+#endif
+    return IsKeyReleased(key);
+}
+
+bool is_key_up(int key) {
+#ifdef EDITOR_MODE
+    if (ensure_shared_input_ready() && g_shared_input.has_focus()) {
+        return !g_shared_input.is_key_down(key);
+    }
+#endif
+    return IsKeyUp(key);
+}
+
+bool is_mouse_button_pressed(int button) {
+#ifdef EDITOR_MODE
+    if (ensure_shared_input_ready() && (g_shared_input.is_hovered() || g_shared_input.has_focus())) {
+        return g_shared_input.is_mouse_button_pressed(button);
+    }
+#endif
+    return IsMouseButtonPressed(button);
+}
+
+bool is_mouse_button_down(int button) {
+#ifdef EDITOR_MODE
+    if (ensure_shared_input_ready() && (g_shared_input.is_hovered() || g_shared_input.has_focus())) {
+        return g_shared_input.is_mouse_button_down(button);
+    }
+#endif
+    return IsMouseButtonDown(button);
+}
+
+bool is_mouse_button_released(int button) {
+#ifdef EDITOR_MODE
+    if (ensure_shared_input_ready() && (g_shared_input.is_hovered() || g_shared_input.has_focus())) {
+        return g_shared_input.is_mouse_button_released(button);
+    }
+#endif
+    return IsMouseButtonReleased(button);
+}
+
+bool is_mouse_button_up(int button) {
+#ifdef EDITOR_MODE
+    if (ensure_shared_input_ready() && (g_shared_input.is_hovered() || g_shared_input.has_focus())) {
+        return !g_shared_input.is_mouse_button_down(button);
+    }
+#endif
+    return IsMouseButtonUp(button);
+}
+
+Vector2 get_mouse_position() {
+#ifdef EDITOR_MODE
+    if (ensure_shared_input_ready() && (g_shared_input.is_hovered() || g_shared_input.has_focus())) {
+        return { g_shared_input.get_mouse_x(), g_shared_input.get_mouse_y() };
+    }
+#endif
+    return GetMousePosition();
+}
+
+Vector2 get_mouse_delta() {
+#ifdef EDITOR_MODE
+    if (ensure_shared_input_ready() && (g_shared_input.is_hovered() || g_shared_input.has_focus())) {
+        return { g_shared_input.get_mouse_delta_x(), g_shared_input.get_mouse_delta_y() };
+    }
+#endif
+    return GetMouseDelta();
+}
+
+float get_mouse_wheel_move() {
+#ifdef EDITOR_MODE
+    if (ensure_shared_input_ready() && (g_shared_input.is_hovered() || g_shared_input.has_focus())) {
+        return g_shared_input.get_scroll_delta();
+    }
+#endif
+    return GetMouseWheelMove();
+}
+
+void set_mouse_position(int x, int y) { SetMousePosition(x, y); }
+void set_mouse_cursor(int cursor) { SetMouseCursor(cursor); }
+
+void begin_drawing() {
+#ifdef EDITOR_MODE
+    // Update shared input state at start of each frame
+    if (ensure_shared_input_ready()) {
+        g_shared_input.update();
+    }
+#endif
+    BeginDrawing();
+}
+
 void init_window(int width, int height, const char* title) { InitWindow(width, height, title); }
 bool window_should_close() { return WindowShouldClose(); }
 void close_window() { CloseWindow(); }
@@ -36,22 +171,6 @@ float get_screen_width() { return GetScreenWidth(); }
 float get_screen_height() { return GetScreenHeight(); }
 void set_exit_key(int key) { SetExitKey(key); }
 
-bool is_key_pressed(int key) { return IsKeyPressed(key); }
-bool is_key_down(int key) { return IsKeyDown(key); }
-bool is_key_released(int key) { return IsKeyReleased(key); }
-bool is_key_up(int key) { return IsKeyUp(key); }
-
-bool is_mouse_button_pressed(int button) { return IsMouseButtonPressed(button); }
-bool is_mouse_button_down(int button) { return IsMouseButtonDown(button); }
-bool is_mouse_button_released(int button) { return IsMouseButtonReleased(button); }
-bool is_mouse_button_up(int button) { return IsMouseButtonUp(button); }
-Vector2 get_mouse_position() { return GetMousePosition(); }
-Vector2 get_mouse_delta() { return GetMouseDelta(); }
-float get_mouse_wheel_move() { return GetMouseWheelMove(); }
-void set_mouse_position(int x, int y) { SetMousePosition(x, y); }
-void set_mouse_cursor(int cursor) { SetMouseCursor(cursor); }
-
-void begin_drawing() { BeginDrawing(); }
 void end_drawing() { EndDrawing(); }
 void begin_mode2d(Camera2D camera) { BeginMode2D(camera); }
 void end_mode2d() { EndMode2D(); }

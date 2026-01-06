@@ -11,13 +11,15 @@ RTTR_REGISTRATION
 		.property("position_y", &TestRendering::position_y)
 		.property("width", &TestRendering::width)
 		.property("height", &TestRendering::height)
-		.property("color_r", &TestRendering::color_r)
-		.property("color_g", &TestRendering::color_g)
-		.property("color_b", &TestRendering::color_b)
+		.property("move_speed", &TestRendering::move_speed)
+		.property("base_color_r", &TestRendering::base_color_r)
+		.property("base_color_g", &TestRendering::base_color_g)
+		.property("base_color_b", &TestRendering::base_color_b)
 		.property("color_a", &TestRendering::color_a)
 		.property("is_filled", &TestRendering::is_filled)
 		.property("border_thickness", &TestRendering::border_thickness)
 		.property("label", &TestRendering::label)
 		.property("visible", &TestRendering::visible)
+		.property("follow_mouse", &TestRendering::follow_mouse)
 		.property("entity_id", &TestRendering::entity_id)(rttr::metadata("is_hidden", true));
 }
