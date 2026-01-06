@@ -9,7 +9,7 @@ file(GLOB_RECURSE SOURCES
     source/*.cpp
     source/*.c
     3rdparty/imgui/*.cpp
-    3rdparty/imgui_test_engine/*.cpp
+	3rdparty/imgui_test_engine/*.cpp
     3rdparty/rlimgui/*.cpp
 )
 list(APPEND SOURCES 3rdparty/backward-cpp/backward.cpp)
@@ -42,6 +42,7 @@ target_link_directories(ZeytinEditor PRIVATE
 target_compile_options(ZeytinEditor PRIVATE -w -g -O0)
 
 target_compile_definitions(ZeytinEditor PRIVATE
+	NO_FONT_AWESOME
     DEBUG=1
     IMGUI_ENABLE_TEST_ENGINE
     IMGUI_TEST_ENGINE_ENABLE_COROUTINE_STDTHREAD_IMPL=1
