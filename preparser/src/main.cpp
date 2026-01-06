@@ -26,41 +26,38 @@ static void cleanup_orphaned_files(
     const std::filesystem::path& generated_dir,
     const std::filesystem::path& components_path)
 {
-	//// Build sets of expected filenames
-	//std::unordered_set<std::string> expected_rttr_files;
-	//std::unordered_set<std::string> expected_component_files;
+	// Build sets of expected filenames
+	std::unordered_set<std::string> expected_rttr_files;
+	std::unordered_set<std::string> expected_component_files;
 
-	//for (const auto& comp : components) {
-	//	expected_rttr_files.insert(comp.generated_code_path.filename().string());
-	//	expected_component_files.insert(comp.generated_component_file.filename().string());
-	//}
+	for (const auto& comp : components) {
+		expected_rttr_files.insert(comp.generated_code_path.filename().string());
+		expected_component_files.insert(comp.generated_component_file.filename().string());
+	}
 
-	//// Always keep component_rttr.cpp
-	//expected_rttr_files.insert("component_rttr.cpp");
+	// Clean up generated RTTR files
+	for (const auto& entry : std::filesystem::directory_iterator(generated_dir)) {
+		if (entry.is_regular_file() && entry.path().extension() == ".cpp") {
+			const std::string filename = entry.path().filename().string();
+			if (expected_rttr_files.find(filename) == expected_rttr_files.end()) {
+				log("Removing orphaned RTTR file: {}", entry.path().string());
+				std::filesystem::remove(entry.path());
+			}
+		}
+	}
 
-	//// Clean up generated RTTR files
-	//for (const auto& entry : std::filesystem::directory_iterator(generated_dir)) {
-	//	if (entry.is_regular_file() && entry.path().extension() == ".cpp") {
-	//		const std::string filename = entry.path().filename().string();
-	//		if (expected_rttr_files.find(filename) == expected_rttr_files.end()) {
-	//			log("Removing orphaned RTTR file: {}", entry.path().string());
-	//			std::filesystem::remove(entry.path());
-	//		}
-	//	}
-	//}
-
-	//// Clean up generated component files
-	//if (std::filesystem::exists(components_path)) {
-	//	for (const auto& entry : std::filesystem::directory_iterator(components_path)) {
-	//		if (entry.is_regular_file() && entry.path().extension() == ".component") {
-	//			const std::string filename = entry.path().filename().string();
-	//			if (expected_component_files.find(filename) == expected_component_files.end()) {
-	//				log("Removing orphaned component file: {}", entry.path().string());
-	//				std::filesystem::remove(entry.path());
-	//			}
-	//		}
-	//	}
-	//}
+	// Clean up generated component files
+	if (std::filesystem::exists(components_path)) {
+		for (const auto& entry : std::filesystem::directory_iterator(components_path)) {
+			if (entry.is_regular_file() && entry.path().extension() == ".component") {
+				const std::string filename = entry.path().filename().string();
+				if (expected_component_files.find(filename) == expected_component_files.end()) {
+					log("Removing orphaned component file: {}", entry.path().string());
+					std::filesystem::remove(entry.path());
+				}
+			}
+		}
+	}
 }
 
 int main(int argc, const char** argv) {
@@ -93,9 +90,13 @@ int main(int argc, const char** argv) {
         return 1;
     }
 
+	log("Compile commands dir: {}", compile_commands_dir);
+
 	// exported .component files
 	const std::filesystem::path components_path =
         std::filesystem::absolute(std::filesystem::path(compile_commands_dir).parent_path().parent_path() / "shared_resources" / "components");
+
+	log("Components path: {}", components_path.string());
 
     std::filesystem::create_directories(components_path);
 
