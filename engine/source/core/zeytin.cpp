@@ -805,10 +805,23 @@ void Zeytin::handle_entity_variant_added(const rapidjson::Document& msg) {
 		}
 	}
 
-    rttr::variant obj = rttr_type.create();
-	assert(obj.is_valid());
-	rttr_type.set_property_value("entity_id", obj, entity_id);
-
+    rttr::variant obj;
+    
+    // if component_data is provided, deserialize from it
+    if (msg.HasMember("component_data")) {
+        const rapidjson::Value& component_data = msg["component_data"];
+        
+        // convert component_data to JSON string
+        rapidjson::StringBuffer buffer;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+        component_data.Accept(writer);
+        obj = rttr_json::deserialize_component(entity_id, buffer.GetString());
+    } else {
+        // create with defaults
+        obj = rttr_type.create();
+        assert(obj.is_valid());
+        rttr_type.set_property_value("entity_id", obj, entity_id);
+    }
     
     Component& base = obj.get_value<Component&>();
     base.on_init();
@@ -824,7 +837,7 @@ void Zeytin::handle_entity_variant_removed(const rapidjson::Document& msg) {
         return;
     }
 
-    EntityID EntityID = msg["entity_id"].GetUint64();
+    const EntityID EntityID = msg["entity_id"].GetUint64();
     const char* variant_type_name = msg["variant_type"].GetString();
 
     rttr::type rttr_type = rttr::type::get_by_name(variant_type_name);

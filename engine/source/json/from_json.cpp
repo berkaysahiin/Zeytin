@@ -298,4 +298,8 @@ EntityID deserialize_entity(const std::string& entity_json, EntityID& entity, st
     return entity_id;
 }
 
+rttr::variant deserialize_component(EntityID entity_id, const std::string& component_json) {
+    return from(entity_id, component_json);
+}
+
 }   // end of namespace

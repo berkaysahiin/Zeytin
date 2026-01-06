@@ -21,7 +21,7 @@ import zeytin.engine.event;
 import zeytin.logger;
 
 namespace {
-    void notify_engine_component_added(uint64_t entity_id, const std::string& type) {
+    void notify_engine_component_added(uint64_t entity_id, const std::string& type, const rapidjson::Value* component_data = nullptr) {
         rapidjson::Document msg;
         msg.SetObject();
         auto& alloc = msg.GetAllocator();
@@ -29,6 +29,12 @@ namespace {
         msg.AddMember("type", "entity_variant_added", alloc);
         msg.AddMember("entity_id", entity_id, alloc);
         msg.AddMember("variant_type", rapidjson::Value(type.c_str(), alloc), alloc);
+        
+        if (component_data) {
+            rapidjson::Value data_copy;
+            data_copy.CopyFrom(*component_data, alloc);
+            msg.AddMember("component_data", data_copy, alloc);
+        }
         
         rapidjson::StringBuffer buffer;
         rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
@@ -253,7 +259,7 @@ void RemoveComponentCommand::undo() {
     restored_variant.CopyFrom(pImpl->component_backup, entity_doc.GetAllocator());
     variants_array.PushBack(restored_variant, entity_doc.GetAllocator());
     
-    notify_engine_component_added(pImpl->entity_id, pImpl->component_type);
+    notify_engine_component_added(pImpl->entity_id, pImpl->component_type, &pImpl->component_backup);
     
     log_trace("Restored component {} to entity {}", pImpl->component_type, pImpl->entity_id);
 }
