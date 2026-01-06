@@ -45,13 +45,13 @@ void WindowManager::render() {
     for (auto& window : m_windows) {
         if (!window.is_open)
             continue;
-        
+
         if (ImGui::Begin(window.menu_info.name.c_str(), &window.is_open, window.flags)) {
             if (window.render_func) {
                 window.render_func();
             }
-            ImGui::End();
         }
+        ImGui::End();
     }
 }
 
