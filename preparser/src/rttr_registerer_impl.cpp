@@ -24,10 +24,6 @@ static std::string to_snake_case(const std::string& name) {
 
 void generate_rttr_registration(const std::vector<ComponentInfo>& components) {
     // Generate a separate .cpp file for each component
-
-	// Figure out the parent folder
-	std::filesystem::path folder;
-
     for (const auto& component : components) {
 		if (!component.requires_code_generation) {
 			log("Up to date: {}", component.generated_code_path.string());
@@ -37,7 +33,6 @@ void generate_rttr_registration(const std::vector<ComponentInfo>& components) {
 		log("Generating: {}", component.generated_code_path.string());
 
         const std::string filepath = component.generated_code_path;
-		folder = component.generated_code_path.parent_path();
 
         std::ofstream out(filepath);
         if (!out.is_open()) {
@@ -66,19 +61,4 @@ void generate_rttr_registration(const std::vector<ComponentInfo>& components) {
         out << "}\n";
         out.close();
     }
-    
-    // Also generate the base Component registration file
-    std::string base_filepath = std::filesystem::path(folder) / "component_rttr.cpp";
-    std::ofstream base_out(base_filepath);
-    if (!base_out.is_open()) {
-        throw std::runtime_error(std::format("Failed to open output file: {}", base_filepath));
-    }
-    
-    base_out << "#include \"rttr/registration.h\"\n\n";
-    base_out << "import zeytin.component;\n\n";
-    base_out << "RTTR_REGISTRATION\n{\n";
-    base_out << "    rttr::registration::class_<Component>(\"Component\")\n";
-    base_out << "        .constructor<>()(rttr::policy::ctor::as_object);\n";
-    base_out << "}\n";
-    base_out.close();
 }
