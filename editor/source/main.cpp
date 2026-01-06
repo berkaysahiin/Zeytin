@@ -52,67 +52,48 @@ int main(int argc, char* argv[])
     WindowManager window_manager;
     window_manager.init();
     
-    window_manager.add_window("Hierarchy", 
+    window_manager.add_window("Hierarchy",
         [&hierarchy]() {
             hierarchy.update();
-        },
-        true, 
-        "Hierarchy", 
-        true); 
+        }); 
     
-    window_manager.add_window("Console", 
+    window_manager.add_window("Console",
         []() {
             ConsoleWindow::get().render();
-        },
-        true,
-        "Console",
-        true);
+        });
     
-    window_manager.add_window("Asset Browser", 
+    window_manager.add_window("Asset Browser",
         []() {
             AssetBrowser::get().render();
-        },
-        true,
-        "Asset Browser",
-        true);
+        });
         
     window_manager.add_window("Test Viewer",
         [&test_viewer]() {
             test_viewer.render();
         },
-        false,
-        "Test Viewer",
-        true);
+        false);
 
     window_manager.add_window("Engine View",
         [&engine_view]() {
             engine_view.render();
-        },
-        true,  
-        "Engine View",
-        true);
+        });
 
    	window_manager.add_main_menu_component([&engine_controls]{
             engine_controls.render();
     });
 
-	window_manager.add_window("Levels",
+    window_manager.add_window("Levels",
         []() {
             LevelWindow::get().render();
         },
-        false,  // visible by default
-        "Levels",
-        true);
+        false);
 
 	Inspector inspector(variant_list.get_variants());
 
-	window_manager.add_window("Inspector",
-    [&inspector]() {
-        inspector.render();
-    },
-    true,
-    "Inspector",
-    true);
+    window_manager.add_window("Inspector",
+        [&inspector]() {
+            inspector.render();
+        });
 
     while (!WindowShouldClose())
     {
