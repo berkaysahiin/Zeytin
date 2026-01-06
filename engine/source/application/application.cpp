@@ -27,7 +27,7 @@ void Application::init_window() {
 
 #ifdef EDITOR_MODE
     SetTraceLogLevel(LOG_ERROR);
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_TOPMOST | FLAG_WINDOW_ALWAYS_RUN);
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_TOPMOST | FLAG_WINDOW_ALWAYS_RUN | FLAG_WINDOW_HIDDEN);
 
 	const int screen_width = pImpl->config.get_or("screen_width", 1280);
     const int screen_height = pImpl->config.get_or("screen_height",  720);
