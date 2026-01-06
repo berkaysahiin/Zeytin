@@ -34,83 +34,86 @@ int main(int argc, char* argv[])
 	LoadEditorFonts();
     SetEditorTheme();
 
-    EngineControls engine_controls;
-    EngineCommunication engine_communication;
-
-    EntityList entity_list;
-	EntityRegistry::get().set_entity_list(entity_list);  
-
-    VariantList variant_list;
-	EntityRegistry::get().set_variant_list(variant_list);  
-
-	Hierarchy hierarchy(variant_list.get_variants(), &entity_list);
-    TestViewer test_viewer;
-    EngineView engine_view;
-
-	LevelWindow::get().set_entity_list(&entity_list);  
-
-    WindowManager window_manager;
-    window_manager.init();
-    
-    window_manager.add_window("Hierarchy",
-        [&hierarchy]() {
-            hierarchy.update();
-        }); 
-    
-    window_manager.add_window("Console",
-        []() {
-            ConsoleWindow::get().render();
-        });
-    
-    window_manager.add_window("Asset Browser",
-        []() {
-            AssetBrowser::get().render();
-        });
-        
-    window_manager.add_window("Test Viewer",
-        [&test_viewer]() {
-            test_viewer.render();
-        },
-        false);
-
-    window_manager.add_window("Engine View",
-        [&engine_view]() {
-            engine_view.render();
-        });
-
-   	window_manager.add_main_menu_component([&engine_controls]{
-            engine_controls.render();
-    });
-
-    window_manager.add_window("Levels",
-        []() {
-            LevelWindow::get().render();
-        },
-        false);
-
-	Inspector inspector(variant_list.get_variants());
-
-    window_manager.add_window("Inspector",
-        [&inspector]() {
-            inspector.render();
-        });
-
-    while (!WindowShouldClose())
+    // wrap everything in a scope to ensure proper destruction order
     {
-		handle_undo_redo();
+        EngineControls engine_controls;
+        EngineCommunication engine_communication;
 
-        BeginDrawing();
-        ClearBackground(BLACK);
+        EntityList entity_list;
+        EntityRegistry::get().set_entity_list(entity_list);  
 
-        rlImGuiBegin();
+        VariantList variant_list;
+        EntityRegistry::get().set_variant_list(variant_list);  
 
-        window_manager.render();
+        Hierarchy hierarchy(variant_list.get_variants(), &entity_list);
+        TestViewer test_viewer;
+        EngineView engine_view;
 
-        rlImGuiEnd();
-        EndDrawing();
-    }
+        LevelWindow::get().set_entity_list(&entity_list);  
 
-    engine_controls.kill_engine();
+        WindowManager window_manager;
+        window_manager.init();
+        
+        window_manager.add_window("Hierarchy",
+            [&hierarchy]() {
+                hierarchy.update();
+            }); 
+        
+        window_manager.add_window("Console",
+            []() {
+                ConsoleWindow::get().render();
+            });
+        
+        window_manager.add_window("Asset Browser",
+            []() {
+                AssetBrowser::get().render();
+            });
+            
+        window_manager.add_window("Test Viewer",
+            [&test_viewer]() {
+                test_viewer.render();
+            },
+            false);
+
+        window_manager.add_window("Engine View",
+            [&engine_view]() {
+                engine_view.render();
+            });
+
+        window_manager.add_main_menu_component([&engine_controls]{
+                engine_controls.render();
+        });
+
+        window_manager.add_window("Levels",
+            []() {
+                LevelWindow::get().render();
+            },
+            false);
+
+        Inspector inspector(variant_list.get_variants());
+
+        window_manager.add_window("Inspector",
+            [&inspector]() {
+                inspector.render();
+            });
+
+        while (!WindowShouldClose())
+        {
+            handle_undo_redo();
+
+            BeginDrawing();
+            ClearBackground(BLACK);
+
+            rlImGuiBegin();
+
+            window_manager.render();
+
+            rlImGuiEnd();
+            EndDrawing();
+        }
+
+        engine_controls.kill_engine();
+    } 
 
     rlImGuiShutdown();
     CloseWindow();

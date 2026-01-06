@@ -88,7 +88,11 @@ struct WindowManager::Impl {
 
 WindowManager::WindowManager() : m_impl(std::make_unique<Impl>()) {}
 
-WindowManager::~WindowManager() = default;
+WindowManager::~WindowManager() {
+    // Disable ImGui ini saving before our ini_filename string is destroyed
+    ImGuiIO& io = ImGui::GetIO();
+    io.IniFilename = nullptr;
+}
 
 void WindowManager::init() {
     ImGuiIO& io = ImGui::GetIO();
