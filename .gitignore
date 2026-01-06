@@ -46,3 +46,4 @@ engine/.build_status
 editor/build
 editor/bin
 shared_resources/config
+engine/preparser
