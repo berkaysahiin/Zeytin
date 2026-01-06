@@ -72,19 +72,6 @@ void debug_print_property(const PropertyInfo& property)
 }
 
 void debug_print_component(const ComponentInfo& component) {
-	//auto visitor = [](auto&& arg) -> std::string { 
-    //    using T = std::decay_t<decltype(arg)>; // Get the underlying type of 'arg'
-
-    //    // Check if 'arg' is an int at compile-time
-    //    if constexpr (std::is_same_v<T, int>) {
-    //        return "It's an int: " + std::to_string(arg); // Convert int to string and return
-    //    } 
-    //    // Check if 'arg' is a string at compile-time
-    //    else if constexpr (std::is_same_v<T, std::string>) {
-    //        return "It's a string: " + arg; // Concatenate and return
-    //    } 
-    //};
-
 	log("Component: {} in module {}", component.name, component.module_name);
 	for(const auto& property : component.properties) {
 		debug_print_property(property);

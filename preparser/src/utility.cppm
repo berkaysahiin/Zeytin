@@ -54,7 +54,7 @@ export std::optional<std::string> extract_module_name(const std::string& filepat
     if (!file.is_open()) {
         return {};
     }
-    
+
     std::string line;
     while (std::getline(file, line)) {
         // Look for "export module <name>;"

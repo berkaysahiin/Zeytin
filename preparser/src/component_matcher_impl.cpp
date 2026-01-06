@@ -7,6 +7,7 @@ module;
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 #include <clang/Tooling/Tooling.h>
 #include <clang/Tooling/CompilationDatabase.h>
+#include <filesystem>
 #include <llvm/Support/FileSystem.h>
 
 #include <cassert>
@@ -45,22 +46,27 @@ void ComponentMatchCallback::run(const clang::ast_matchers::MatchFinder::MatchRe
 
 	bool found_errors = false;
 
+	// Component to fill. Pushed to components vector if needs generation.
 	ComponentInfo component;
 	component.name = Record->getName().str();
 
-	auto& SourceManager = Result.Context->getSourceManager();
-    auto Loc = Record->getLocation();
-    auto FileID = SourceManager.getFileID(Loc);
-    auto FileEntry = SourceManager.getFileEntryRefForID(FileID);
+	const auto& SourceManager = Result.Context->getSourceManager();
+    const auto Loc = Record->getLocation();
+    const auto FileID = SourceManager.getFileID(Loc);
+    const auto FileEntry = SourceManager.getFileEntryRefForID(FileID);
 
 	if (FileEntry) {
-        std::string filepath = FileEntry->getName().str();
-        auto module_name = extract_module_name(filepath);
-        
+        const std::string filepath = FileEntry->getName().str();
+        const auto module_name = extract_module_name(filepath);
+
+		component.source_file = filepath;
+		component.generated_code_path = this->code_path / (component.source_file.stem().string() + ".cpp");
+		component.generated_component_file = this->component_path / (component.name + ".component");
+
         if (module_name) {
             component.module_name = *module_name;
         } else {
-            log("Erro: Could not extract module name for component: {}", component.name);
+            log("Error: Could not extract module name for component: {}", component.name);
 			found_errors = true;
         }
     } else {
@@ -68,15 +74,53 @@ void ComponentMatchCallback::run(const clang::ast_matchers::MatchFinder::MatchRe
 		found_errors = true;
     }
 
+	// Fields for Record
 	std::vector<const clang::FieldDecl*> fields;
-    collect_fields_recursive(Record, fields);
-	
+
+	// Check if this file needs parsing.
+	const auto source_timestmap = std::filesystem::last_write_time(component.source_file);
+
+	if(!std::filesystem::exists(component.generated_code_path)) {
+		//log("[CODE_GENERATOR] Parsing: {}. First time generating {}", component.source_file.string(), component.generated_code_path.string());
+		component.requires_code_generation = true;
+    	collect_fields_recursive(Record, fields);
+	}
+	else if(source_timestmap > std::filesystem::last_write_time(component.generated_code_path)) {
+		//log("[CODE_GENERATOR] Parsing: {}. Generated code is outdated {}", component.source_file.string(), component.generated_code_path.string());
+		component.requires_code_generation = true;
+    	collect_fields_recursive(Record, fields);
+	}
+	else {
+		//log("[CODE_GENERATOR] Skipping: {}. Generated code is up to date {}", component.source_file.string(), component.generated_code_path.string());
+		component.requires_code_generation = false;
+	}
+
+	if(!std::filesystem::exists(component.generated_component_file)) {
+		//log("[DATA_GENERATOR] Parsing: {}. First time generating {}", component.source_file.string(), component.generated_component_file.string());
+		component.requires_data_generation = true;
+    	collect_fields_recursive(Record, fields);
+	}
+	else if(source_timestmap > std::filesystem::last_write_time(component.generated_component_file)) {
+		//log("[DATA_GENERATOR] Parsing: {}. Generated data is outdated {}", component.source_file.string(), component.generated_component_file.string());
+		component.requires_data_generation = true;
+    	collect_fields_recursive(Record, fields);
+	}
+	else {
+		//log("[DATA_GENERATOR] Skipping: {}. Generated data is up to date {}", component.source_file.string(), component.generated_component_file.string());
+		component.requires_data_generation = false;
+	}
+
+	if(!component.requires_code_generation && !component.requires_data_generation) {
+		goto END;
+	}
+
+	log("Parsing {}", component.name);
+
 	for (const auto* Field : fields) {
 		if(!Field || !has_any_annotation(Field)) {
 			continue;
 		}
-		// Below is to handle fields that are marked as property
-
+		// Handle fields that are marked as property
 		// First check if type is valid
 		const auto [valid, messages] = property_type_rules(Field);
 
@@ -100,6 +144,7 @@ void ComponentMatchCallback::run(const clang::ast_matchers::MatchFinder::MatchRe
         log("Error: Errors while parsing component: {}. See logs for errors...", component.name);
 	}
 
+END:
 	components.push_back(component);
 }
 
