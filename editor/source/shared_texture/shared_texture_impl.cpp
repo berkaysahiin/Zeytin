@@ -6,6 +6,7 @@ module;
 #include <fcntl.h>
 #include <unistd.h>
 #include <cstdint>
+#include <atomic>
 
 module zeytin.shared_texture;
 
@@ -53,8 +54,8 @@ bool SharedTextureWriter::initialize() {
     auto* header = static_cast<SharedTextureHeader*>(m_mapped_memory);
     header->width = SHARED_TEXTURE_WIDTH;
     header->height = SHARED_TEXTURE_HEIGHT;
-    header->frame_counter = 0;
-    header->ready = 0;
+    header->frame_counter.store(0, std::memory_order_relaxed);
+    header->ready.store(0, std::memory_order_relaxed);
 
     m_initialized = true;
     return true;
@@ -83,8 +84,8 @@ void SharedTextureWriter::write_pixels(const unsigned char* pixels, const uint32
     auto* header = static_cast<SharedTextureHeader*>(m_mapped_memory);
     unsigned char* pixel_data = static_cast<unsigned char*>(m_mapped_memory) + sizeof(SharedTextureHeader);
 
-    // mark as being written
-    header->ready = 0;
+    // mark as being written (release ensures all previous writes are visible)
+    header->ready.store(0, std::memory_order_release);
 
     // update dimensions
     header->width = width;
@@ -94,9 +95,9 @@ void SharedTextureWriter::write_pixels(const unsigned char* pixels, const uint32
     size_t data_size = width * height * 4;  // RGBA
     std::memcpy(pixel_data, pixels, data_size);
 
-    // increment frame counter and mark as ready
-    header->frame_counter++;
-    header->ready = 1;
+    // increment frame counter and mark as ready (release ensures pixel data is visible before ready flag)
+    header->frame_counter.fetch_add(1, std::memory_order_release);
+    header->ready.store(1, std::memory_order_release);
 }
 
 SharedTextureReader::SharedTextureReader() = default;
@@ -154,12 +155,14 @@ bool SharedTextureReader::read_pixels(unsigned char* pixels, uint32_t& width, ui
     auto* header = static_cast<const SharedTextureHeader*>(m_mapped_memory);
     const unsigned char* pixel_data = static_cast<const unsigned char*>(m_mapped_memory) + sizeof(SharedTextureHeader);
 
-    // check if data is ready and if it's a new frame
-    if (header->ready == 0) {
+    // check if data is ready (acquire ensures we see all writes before ready was set)
+    if (header->ready.load(std::memory_order_acquire) == 0) {
         return false;  // Still being written
     }
 
-    if (header->frame_counter == m_last_frame) {
+    // check frame counter (acquire ensures we see the latest frame)
+    uint64_t current_frame = header->frame_counter.load(std::memory_order_acquire);
+    if (current_frame == m_last_frame) {
         return false;  // no new frame
     }
 
@@ -167,11 +170,11 @@ bool SharedTextureReader::read_pixels(unsigned char* pixels, uint32_t& width, ui
     width = header->width;
     height = header->height;
 
-    // copy pixel data
+    // copy pixel data (now safe because ready flag guarantees pixel data is complete)
     size_t data_size = width * height * 4;
     std::memcpy(pixels, pixel_data, data_size);
 
-    m_last_frame = header->frame_counter;
+    m_last_frame = current_frame;
     return true;
 }
 
@@ -181,7 +184,7 @@ uint64_t SharedTextureReader::get_frame_counter() const {
     }
 
     auto* header = static_cast<const SharedTextureHeader*>(m_mapped_memory);
-    return header->frame_counter;
+    return header->frame_counter.load(std::memory_order_acquire);
 }
 
 bool SharedTextureReader::is_connected() const {
@@ -190,5 +193,5 @@ bool SharedTextureReader::is_connected() const {
     }
 
     auto* header = static_cast<const SharedTextureHeader*>(m_mapped_memory);
-    return header->frame_counter > 0;
+    return header->frame_counter.load(std::memory_order_acquire) > 0;
 }

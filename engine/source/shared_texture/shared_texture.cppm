@@ -2,6 +2,7 @@ module;
 
 #include <cstdint>
 #include <string>
+#include <atomic>
 
 export module zeytin.shared_texture;
 
@@ -10,8 +11,8 @@ export module zeytin.shared_texture;
 export struct SharedTextureHeader {
     uint32_t width;
     uint32_t height;
-    uint64_t frame_counter;  // increment each frame by writer
-    uint32_t ready;          // 1 = data ready to read 0 = being written
+    std::atomic<uint64_t> frame_counter;  // increment each frame by writer
+    std::atomic<uint32_t> ready;          // 1 = data ready to read 0 = being written
 };
 
 export constexpr const char* SHARED_TEXTURE_NAME = "/zeytin_texture";
