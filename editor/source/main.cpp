@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
     
     InitWindow(1280, 720, "ZeytinEditor");
     
-    SetTargetFPS(60);
+    SetTargetFPS(144);
     SetExitKey(0);
     
     rlImGuiSetup(true);
