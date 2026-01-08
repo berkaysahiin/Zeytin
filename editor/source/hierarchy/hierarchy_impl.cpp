@@ -64,9 +64,11 @@ void Hierarchy::update() {
 }
 
 void Hierarchy::render_save_controls() {
-    static bool save_real_time = false;
-    static float save_interval = 1.0f;
+    static bool save_real_time = true;
     static float time_since_last_save = 0.0f;
+	
+	// every x secs
+    const static float save_interval = 15.0f;
 
     if (save_real_time) {
         time_since_last_save += ImGui::GetIO().DeltaTime;
@@ -78,7 +80,7 @@ void Hierarchy::render_save_controls() {
     }
 
     ImGui::SameLine();
-    if (ImGui::Checkbox("Save Realtime", &save_real_time)) {
+    if (ImGui::Checkbox("Auto-save", &save_real_time)) {
         time_since_last_save = 0.0f;
     }
 
