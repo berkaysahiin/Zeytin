@@ -1,0 +1,23 @@
+{
+    "entity_id": 18242669093304890194,
+    "variants": [
+        {
+            "annotations": {
+                "_x": {
+                    "HIDDEN": true,
+                    "SAVE": true
+                },
+                "_y": {
+                    "HIDDEN": true
+                }
+            },
+            "type": "Position",
+            "value": {
+                "_x": 0.0,
+                "_y": 0.0,
+                "x": 31.0,
+                "y": 32.0
+            }
+        }
+    ]
+}
