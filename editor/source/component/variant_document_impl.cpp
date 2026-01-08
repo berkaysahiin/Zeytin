@@ -40,7 +40,7 @@ void VariantDocument::Impl::ensure_valid_structure() {
     
     bool structure_was_invalid = false;
     
-    // Ensure type field exists
+    // ensure type field exists
     if (!document.HasMember("type")) {
         log_warning("Variant '{}' missing 'type' field, adding it", name);
         rapidjson::Value type_value;
@@ -116,6 +116,11 @@ void VariantDocument::Impl::load_from_file() {
     if (!document.IsObject()) {
         log_error("Error: Variant file does not contain a valid JSON object: {}", path.string());
         return;
+    }
+    
+    // Remove annotations section if present
+    if (document.HasMember("annotations")) {
+        document.RemoveMember("annotations");
     }
     
     // Ensure the loaded document has valid structure

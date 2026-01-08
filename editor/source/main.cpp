@@ -13,6 +13,8 @@ import zeytin.engine.communication;
 import zeytin.testviewer;
 import zeytin.engine_view;
 import zeytin.variant.list;
+import zeytin.variant.metadata;
+import zeytin.metadata.viewer;
 import zeytin.entity.list;
 import zeytin.entity.registry;
 import zeytin.windows.level;
@@ -43,11 +45,15 @@ int main(int argc, char* argv[])
         EntityRegistry::get().set_entity_list(entity_list);  
 
         VariantList variant_list;
-        EntityRegistry::get().set_variant_list(variant_list);  
+        EntityRegistry::get().set_variant_list(variant_list);
+        
+        // Load variant metadata (annotations)
+        VariantMetadata::get().load_from_component_files("../shared_resources/components");
 
         Hierarchy hierarchy(variant_list.get_variants(), &entity_list);
         TestViewer test_viewer;
         EngineView engine_view;
+        MetadataViewer metadata_viewer;
 
         LevelWindow::get().set_entity_list(&entity_list);  
 
@@ -72,9 +78,13 @@ int main(int argc, char* argv[])
         window_manager.add_window("Test Viewer",
             [&test_viewer]() {
                 test_viewer.render();
-            },
-            false);
-
+            });
+        
+        window_manager.add_window("Metadata Viewer",
+            [&metadata_viewer]() {
+                metadata_viewer.render();
+            });
+        
         window_manager.add_window("Engine View",
             [&engine_view]() {
                 engine_view.render();
@@ -87,8 +97,7 @@ int main(int argc, char* argv[])
         window_manager.add_window("Levels",
             []() {
                 LevelWindow::get().render();
-            },
-            false);
+            });
 
         Inspector inspector(variant_list.get_variants());
 
@@ -96,6 +105,9 @@ int main(int argc, char* argv[])
             [&inspector]() {
                 inspector.render();
             });
+        
+        // Load saved window states after all windows are added
+        window_manager.load_window_config();
 
         while (!WindowShouldClose())
         {
