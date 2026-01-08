@@ -47,3 +47,4 @@ editor/build
 editor/bin
 shared_resources/config
 engine/preparser
+editor/windows.json
