@@ -41,17 +41,19 @@ std::vector<PropertyAttr> parse_attr_from_annotation(const std::string_view anno
 	return_value.reserve(comma_seperated.size());
 
     for (const auto& attr_str : comma_seperated) {
-		size_t equal_sign = attr_str.find('=');
-		if(equal_sign == std::string::npos) {
-			return_value.push_back(attr_str);
-		}
-		else {
-			std::string key = attr_str.substr(0, equal_sign);
-			std::string value = attr_str.substr(equal_sign + 1);
-			std::pair<std::string, std::string> pair = {key, value};
-			return_value.push_back(pair);
-		}
+	if (attr_str.empty()) continue;  // Skip empty strings
+	
+	size_t equal_sign = attr_str.find('=');
+	if(equal_sign == std::string::npos) {
+		return_value.push_back(attr_str);
 	}
+	else {
+		std::string key = attr_str.substr(0, equal_sign);
+		std::string value = attr_str.substr(equal_sign + 1);
+		std::pair<std::string, std::string> pair = {key, value};
+		return_value.push_back(pair);
+	}
+}
 
 	return return_value;
 }
