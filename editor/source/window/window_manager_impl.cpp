@@ -1,14 +1,20 @@
 module;
 
 #include "imgui.h"
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/prettywriter.h"
 
 #include <filesystem>
 #include <unordered_map>
 #include <vector>
 #include <functional>
+#include <fstream>
 
 module zeytin.window;
 import zeytin.resource;
+import zeytin.logger;
 
 struct WindowManager::Impl {
     struct WindowInfo {
@@ -21,6 +27,56 @@ struct WindowManager::Impl {
     std::vector<WindowInfo> windows;
     std::vector<std::function<void()>> main_menu_components;
     std::string ini_filename;
+    std::filesystem::path window_config_path;
+    
+    void load_window_states() {
+        if (!std::filesystem::exists(window_config_path)) {
+            return;
+        }
+        
+        std::ifstream file(window_config_path);
+        if (!file.is_open()) {
+            return;
+        }
+        
+        std::string json_str((std::istreambuf_iterator<char>(file)),
+                             std::istreambuf_iterator<char>());
+        file.close();
+        
+        rapidjson::Document doc;
+        doc.Parse(json_str.c_str());
+        
+        if (doc.HasParseError() || !doc.IsObject()) {
+            return;
+        }
+        
+        for (auto& window : windows) {
+            if (doc.HasMember(window.name.c_str())) {
+                window.is_open = doc[window.name.c_str()].GetBool();
+            }
+        }
+    }
+    
+    void save_window_states() {
+        rapidjson::Document doc;
+        doc.SetObject();
+        auto& allocator = doc.GetAllocator();
+        
+        for (const auto& window : windows) {
+            rapidjson::Value key(window.name.c_str(), allocator);
+            doc.AddMember(key, window.is_open, allocator);
+        }
+        
+        rapidjson::StringBuffer buffer;
+        rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
+        doc.Accept(writer);
+        
+        std::ofstream file(window_config_path);
+        if (file.is_open()) {
+            file << buffer.GetString();
+            file.close();
+        }
+    }
 
     void create_dockspace() {
         ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -89,6 +145,9 @@ struct WindowManager::Impl {
 WindowManager::WindowManager() : m_impl(std::make_unique<Impl>()) {}
 
 WindowManager::~WindowManager() {
+    // Save window states
+    m_impl->save_window_states();
+    
     // Disable ImGui ini saving before our ini_filename string is destroyed
     ImGuiIO& io = ImGui::GetIO();
     io.IniFilename = nullptr;
@@ -102,8 +161,14 @@ void WindowManager::init() {
     std::filesystem::path imgui_config_path = config_path / "imgui.ini";
 
     m_impl->ini_filename = imgui_config_path.string();
+    m_impl->window_config_path = config_path / "windows.json";
+    
     io.IniFilename = m_impl->ini_filename.c_str();
     io.IniSavingRate = 5.0f;
+}
+
+void WindowManager::load_window_config() {
+    m_impl->load_window_states();
 }
 
 void WindowManager::render() {
@@ -113,7 +178,7 @@ void WindowManager::render() {
     for (auto& window : m_impl->windows) {
         if (!window.is_open)
             continue;
-
+            
         if (ImGui::Begin(window.name.c_str(), &window.is_open)) {
             if (window.render_func) {
                 window.render_func();
@@ -125,13 +190,14 @@ void WindowManager::render() {
 
 void WindowManager::add_window(const std::string& name,
                                std::function<void()> render_func,
-                               bool default_open,
                                const std::string& menu_path) {
+    // Check if window state exists in imgui.ini, otherwise default to true
+    // ImGui will handle the actual state, we just need a variable for the checkbox
     m_impl->windows.push_back({
         .name = name,
         .menu_path = menu_path,
         .render_func = render_func,
-        .is_open = default_open
+        .is_open = true  // Just a placeholder, ImGui::Begin controls actual visibility
     });
 }
 
