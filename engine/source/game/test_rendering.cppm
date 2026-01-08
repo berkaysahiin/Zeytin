@@ -48,7 +48,14 @@ public:
     bool visible = true;
 
     PROPERTY()
-    bool follow_mouse = false;  
+    bool follow_mouse = false;
+    
+    // Test multiple annotations
+    PROPERTY(SAVE, GROUP="Debug")
+    float internal_timer = 0.0f;
+    
+    PROPERTY(SAVE, READONLY, MIN=0, MAX=1000)
+    int frame_count = 0;
 
     void on_update() override;
 };
