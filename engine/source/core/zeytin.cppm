@@ -60,7 +60,6 @@ public:
 
     void update_components();
     void play_start_components();
-    void play_late_start_components();
     void play_update_components();
     void play_late_update_components();
 

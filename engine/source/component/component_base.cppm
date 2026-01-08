@@ -10,7 +10,6 @@ export struct Component
 {
     virtual void on_init() {}
     virtual void on_play_start() {}
-    virtual void on_play_late_start() {}
     virtual void on_update() {}
     virtual void on_play_update() {}
     virtual void on_play_late_update() {}

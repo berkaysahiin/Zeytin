@@ -184,7 +184,6 @@ void Zeytin::run_frame() {
     if (m_state.play_mode && !m_state.pause_play_mode) {
         clean_dead_variants();
         play_start_components();
-        play_late_start_components();
         play_update_components();
         play_late_update_components();
     }
@@ -544,35 +543,6 @@ void Zeytin::play_start_components() {
                 ZPROFILE_VALUE(pair.first);
                 
                 base.on_play_start();
-            }
-        }
-    }
-}
-
-void Zeytin::play_late_start_components() {
-    ZPROFILE_ZONE_NAMED("Zeytin::play_late_start_variants()");
-
-    if (m_state.late_started) {
-        return;
-    }
-    
-    m_state.late_started = true;
-
-    for (auto& pair : m_storage) {   
-        for (auto& variant : pair.second) {
-            Component& base = variant.get_value<Component&>();
-            
-            if (base.is_dead) {
-                continue;
-            }
-            
-            {
-                ZPROFILE_ZONE_NAMED("Component::on_play_late_start()");
-                ZPROFILE_TEXT(base.get_type().get_name().to_string().c_str(),
-                              base.get_type().get_name().to_string().size());
-                ZPROFILE_VALUE(pair.first);
-                
-                base.on_play_late_start();
             }
         }
     }
