@@ -21,6 +21,7 @@ import zeytin.entity.document;
 import zeytin.command.component;  
 import zeytin.logger;
 import zeytin.entity.registry;
+import zeytin.variant.metadata;
 
 struct Inspector::Impl {
     std::vector<VariantDocument>& variants;
@@ -46,7 +47,6 @@ struct Inspector::Impl {
                             const std::string& key, const std::string& current_path);
 
     void render_add_component_button(EntityDocument& entity, uint64_t entity_id);
-    void add_variant_to_entity(EntityDocument& entity, VariantDocument& variant);
 };
 
 Inspector::Inspector(std::vector<VariantDocument>& variants)
@@ -187,7 +187,12 @@ void Inspector::Impl::render_object(rapidjson::Document& document, rapidjson::Va
 void Inspector::Impl::render_property(rapidjson::Document& document, rapidjson::Value& value,
                                 uint64_t entity_id, const std::string& variant_type,
                                 const std::string& key, const std::string& current_path) {
-    std::string unique_id = std::to_string(entity_id) + "_" + variant_type + "_" + current_path;
+
+	// If we should render this property at all ? 
+	const bool is_hidden = VariantMetadata::get().has_annotation(variant_type, key, "HIDDEN");
+	if(is_hidden) return;
+
+    const std::string unique_id = std::to_string(entity_id) + "_" + variant_type + "_" + current_path;
 
     ImGui::AlignTextToFramePadding();
     ImGui::Text("%s", key.c_str());
@@ -399,24 +404,19 @@ void Inspector::Impl::render_add_component_button(EntityDocument& entity, uint64
                 continue;
             }
 
-            std::string variant_type = variant_json["type"].GetString();
+            const std::string variant_type = variant_json["type"].GetString();
+        	const bool already_exists = entity.has_component(variant_type);
 
-            if (ImGui::MenuItem(variant_type.c_str())) {
-                add_variant_to_entity(entity, variant_doc);
-            }
+        	if (already_exists) {
+            	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
+            	ImGui::MenuItem(variant_type.c_str(), nullptr, false, false);
+            	ImGui::PopStyleColor();
+        	} else if (ImGui::MenuItem(variant_type.c_str())) {
+            	auto command = std::make_unique<AddComponentCommand>(entity_id, variant_type);
+            	CommandManager::get().execute_command(std::move(command));
+        	}
         }
+
         ImGui::EndPopup();
     }
-}
-
-void Inspector::Impl::add_variant_to_entity(EntityDocument& entity, VariantDocument& variant) {
-    const rapidjson::Document& variant_doc = variant.get_document();
-
-    std::string component_type;
-    if (variant_doc.HasMember("type") && variant_doc["type"].IsString()) {
-        component_type = variant_doc["type"].GetString();
-    }
-
-    auto command = std::make_unique<AddComponentCommand>(entity.get_id(), component_type);
-    CommandManager::get().execute_command(std::move(command));
 }
