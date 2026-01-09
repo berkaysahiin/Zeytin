@@ -8,8 +8,10 @@ module;
 #include "zmq/zmq.hpp"
 
 export module zeytin.editor.communication;
+import zeytin.singleton;
 
-export class EditorCommunication {
+export class EditorCommunication : public Singleton<EditorCommunication> {
+	friend class Singleton<EditorCommunication>;
 public:
     EditorCommunication();
     ~EditorCommunication();
