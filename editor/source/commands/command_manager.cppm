@@ -25,6 +25,10 @@ public:
     std::optional<std::string> get_redo_description() const;
     
     void clear();
+    
+    size_t get_history_size() const;
+    size_t get_current_position() const;
+    std::optional<std::string> get_command_description(const size_t index) const;
 
 private:
     CommandManager();

@@ -133,3 +133,18 @@ void CommandManager::clear() {
     pImpl->command_history.clear();
     pImpl->current_position = 0;
 }
+
+size_t CommandManager::get_history_size() const {
+    return pImpl->command_history.size();
+}
+
+size_t CommandManager::get_current_position() const {
+    return pImpl->current_position;
+}
+
+std::optional<std::string> CommandManager::get_command_description(size_t index) const {
+    if (index >= pImpl->command_history.size()) {
+        return std::nullopt;
+    }
+    return pImpl->command_history[index]->get_description();
+}
