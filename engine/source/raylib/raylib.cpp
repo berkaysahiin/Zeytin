@@ -180,6 +180,7 @@ void clear_background(Color color) { ClearBackground(color); }
 
 void draw_line(int startX, int startY, int endX, int endY, Color color) { DrawLine(startX, startY, endX, endY, color); }
 void draw_line_v(Vector2 startPos, Vector2 endPos, Color color) { DrawLineV(startPos, endPos, color); }
+void draw_line_ex(Vector2 startPos, Vector2 endPos, float thick, Color color) { DrawLineEx(startPos, endPos, thick, color); }
 void draw_circle(int centerX, int centerY, float radius, Color color) { DrawCircle(centerX, centerY, radius, color); }
 void draw_circle_v(Vector2 center, float radius, Color color) { DrawCircleV(center, radius, color); }
 void draw_circle_lines(int centerX, int centerY, float radius, Color color) { DrawCircleLines(centerX, centerY, radius, color); }
