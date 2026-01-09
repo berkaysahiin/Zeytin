@@ -28,6 +28,7 @@ export enum class EditorEvent {
     Die,
     LogToEditor,
     WindowStateChanged,
+    EntitySelected,
 };
 
 export class EditorEventBus {

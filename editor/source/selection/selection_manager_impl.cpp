@@ -4,11 +4,15 @@ module;
 #include <vector>
 #include <memory>
 #include <optional>
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
 
 module zeytin.selection;
 import zeytin.entity.registry;
 import zeytin.logger;
 import zeytin.level;
+import zeytin.engine.event;
 
 struct SelectionManager::Impl {
 	//TODO: change this to EntityID or not ?
@@ -20,6 +24,27 @@ struct SelectionManager::Impl {
         for (auto& callback : callbacks) {
             callback();
         }
+        send_selection_to_engine();
+    }
+    
+    void send_selection_to_engine() {
+        rapidjson::Document msg;
+        msg.SetObject();
+        auto& alloc = msg.GetAllocator();
+        
+        msg.AddMember("type", "entity_selected", alloc);
+        
+        if (selected_entity) {
+            msg.AddMember("entity_id", selected_entity->get_id(), alloc);
+        } else {
+            msg.AddMember("entity_id", 0, alloc);
+        }
+        
+        rapidjson::StringBuffer buffer;
+        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+        msg.Accept(writer);
+        
+        EngineEventBus::get().publish<const std::string&>(EngineEvent::EntitySelectedEditor, buffer.GetString());
     }
 };
 
@@ -59,7 +84,7 @@ void SelectionManager::select_entity(const EntityID entity_id) {
 
 	auto entity_opt = EntityRegistry::get().find_entity(entity_id);
 
-	if(entity_opt) {
+	if(!entity_opt) {
 		log_error("Cannot find selected entity {}", entity_id);
 		return;
 	}

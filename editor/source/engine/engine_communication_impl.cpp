@@ -14,6 +14,11 @@ module zeytin.engine.communication;
 import zeytin.engine.event;
 import zeytin.engine.controls;
 import zeytin.logger;
+import zeytin.selection;
+import zeytin.entity.document;
+import zeytin.command.property;
+import zeytin.command.batch_property;
+import zeytin.command.manager;
 
 EngineCommunication::EngineCommunication()
     : m_running(false)
@@ -38,6 +43,13 @@ void EngineCommunication::register_event_handlers() {
 
     EngineEventBus::get().subscribe<const std::string&>(
         EngineEvent::EntityModifiedEditor, 
+        [this](const std::string& msg) {
+            send_message(msg);
+        }
+    );
+
+    EngineEventBus::get().subscribe<const std::string&>(
+        EngineEvent::EntitySelectedEditor, 
         [this](const std::string& msg) {
             send_message(msg);
         }
@@ -169,6 +181,51 @@ void EngineCommunication::raise_events() {
         }
         else if (type == "engine_shutdown") {
             EngineEventBus::get().publish<bool>(EngineEvent::EngineStopped, true);
+        }
+        else if (type == "entity_selected_from_engine") {
+            if (doc.HasMember("entity_id") && doc["entity_id"].IsUint64()) {
+                EntityID entity_id = doc["entity_id"].GetUint64();
+                SelectionManager::get().select_entity(entity_id);
+            }
+        }
+        else if (type == "property_change_command") {
+            if (doc.HasMember("entity_id") && doc.HasMember("variant_type") && 
+                doc.HasMember("key_path") && doc.HasMember("old_value") && doc.HasMember("new_value")) {
+                
+                PropertyLocation location;
+                location.entity_id = doc["entity_id"].GetUint64();
+                location.variant_type = doc["variant_type"].GetString();
+                location.key_path = doc["key_path"].GetString();
+                
+                PropertyValue old_value = doc["old_value"].GetFloat();
+                PropertyValue new_value = doc["new_value"].GetFloat();
+                
+                auto command = std::make_unique<PropertyChangeCommand>(location, old_value, new_value);
+                CommandManager::get().execute_command(std::move(command));
+            }
+        }
+        else if (type == "batch_property_change_command") {
+            if (doc.HasMember("entity_id") && doc.HasMember("variant_type") && doc.HasMember("changes")) {
+                uint64_t entity_id = doc["entity_id"].GetUint64();
+                std::string variant_type = doc["variant_type"].GetString();
+                
+                std::vector<PropertyChange> changes;
+                const rapidjson::Value& changes_array = doc["changes"];
+                
+                for (rapidjson::SizeType i = 0; i < changes_array.Size(); i++) {
+                    const rapidjson::Value& change = changes_array[i];
+                    if (change.HasMember("key_path") && change.HasMember("old_value") && change.HasMember("new_value")) {
+                        PropertyChange pc;
+                        pc.key_path = change["key_path"].GetString();
+                        pc.old_value = change["old_value"].GetFloat();
+                        pc.new_value = change["new_value"].GetFloat();
+                        changes.push_back(pc);
+                    }
+                }
+                
+                auto command = std::make_unique<BatchPropertyChangeCommand>(entity_id, variant_type, changes);
+                CommandManager::get().execute_command(std::move(command));
+            }
         }
         else if(type == "log_message") {
             if(doc.HasMember("level") && doc.HasMember("message")) {

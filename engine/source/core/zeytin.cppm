@@ -91,6 +91,10 @@ public:
     void handle_entity_variant_removed(const rapidjson::Document& msg);
 	void handle_entity_added(const rapidjson::Document& msg);
     void handle_entity_removed(const rapidjson::Document& msg);
+    void handle_entity_selected(const rapidjson::Document& msg);
+    
+    // Editor gizmos
+    inline uint64_t get_selected_entity() const { return m_selected_entity; }
 #endif
 
 private:
@@ -120,5 +124,6 @@ private:
 #ifdef EDITOR_MODE
     std::unique_ptr<EditorCommunication> m_editor_communication;
     SharedTextureWriter m_shared_texture_writer;
+    uint64_t m_selected_entity = 0;
 #endif
 };

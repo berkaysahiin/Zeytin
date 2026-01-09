@@ -675,6 +675,13 @@ void Zeytin::subscribe_editor_events() {
             }
         }
     );
+
+    EditorEventBus::get().subscribe<const rapidjson::Document&>(
+        EditorEvent::EntitySelected,
+        [this](const rapidjson::Document& msg) {
+            handle_entity_selected(msg);
+        }
+    );
 }
 
 void Zeytin::handle_entity_property_changed(const rapidjson::Document& doc) {
@@ -947,6 +954,17 @@ void Zeytin::sync_editor() {
             EditorEventBus::get().publish<std::string>(EditorEvent::SyncEditor, scene);
         }
     }
+}
+
+void Zeytin::handle_entity_selected(const rapidjson::Document& msg) {
+    if (msg.HasParseError() || !msg.HasMember("entity_id")) {
+        log_error("Invalid entity selection message");
+        m_selected_entity = 0;
+        return;
+    }
+
+    m_selected_entity = msg["entity_id"].GetUint64();
+    log_info("Entity selected: {}", m_selected_entity);
 }
 
 #endif // EDITOR_MODE

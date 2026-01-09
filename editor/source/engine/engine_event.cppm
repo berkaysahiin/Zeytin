@@ -16,6 +16,7 @@ export enum class EngineEvent {
     KillEngine,
     EngineStopped,
     EntityModifiedEditor,
+    EntitySelectedEditor,
     EnterPlayMode,
     PausePlayMode,
     UnPausePlayMode,

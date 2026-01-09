@@ -199,6 +199,9 @@ void EditorCommunication::raise_events() {
         else if(type == "window_state") {
             EditorEventBus::get().publish<const rapidjson::Document&>(EditorEvent::WindowStateChanged, doc);
         }
+        else if(type == "entity_selected") {
+            EditorEventBus::get().publish<const rapidjson::Document&>(EditorEvent::EntitySelected, doc);
+        }
         else {
             //log_warning() << "Unknown message type received from editor" << std::endl;
         }
