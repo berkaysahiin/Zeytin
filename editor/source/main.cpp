@@ -20,6 +20,7 @@ import zeytin.entity.registry;
 import zeytin.windows.level;
 import zeytin.inspector;
 import zeytin.command.keyboardlistener;
+import zeytin.command_history;
 
 int main(int argc, char* argv[])
 {
@@ -54,6 +55,7 @@ int main(int argc, char* argv[])
         TestViewer test_viewer;
         EngineView engine_view;
         MetadataViewer metadata_viewer;
+        CommandHistory command_history;
 
         LevelWindow::get().set_entity_list(&entity_list);  
 
@@ -104,6 +106,11 @@ int main(int argc, char* argv[])
         window_manager.add_window("Inspector",
             [&inspector]() {
                 inspector.render();
+            });
+        
+        window_manager.add_window("Command History",
+            [&command_history]() {
+                command_history.render();
             });
         
         // Load saved window states after all windows are added
