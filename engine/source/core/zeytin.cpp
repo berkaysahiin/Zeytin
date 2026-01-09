@@ -27,6 +27,10 @@ import zeytin.raylib;
 import zeytin.editor.communication;
 import zeytin.shared_texture;
 
+#ifdef EDITOR_MODE
+import zeytin.manipulator.manager;
+#endif
+
 Zeytin::Zeytin() {
     initialize();
 }
@@ -64,15 +68,18 @@ void Zeytin::initialize_editor_communication() {
     m_editor_communication = std::make_unique<EditorCommunication>();
     subscribe_editor_events();
 
+    // Initialize manipulator manager singleton
+    ManipulatorManager::get().initialize();
+
     // init shared texture for editor viewport
     if (!m_shared_texture_writer.initialize()) {
         log_error("Failed to initialize shared texture writer");
     }
-    
+
     // wait for editor connection to be established
     while (!m_editor_communication->is_connection_confirmed() || !m_state.scene_ready) {
         m_editor_communication->raise_events();
-        
+
         // black screen while waiting for connection
         begin_drawing();
         clear_background(BLACK);
