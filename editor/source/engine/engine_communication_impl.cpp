@@ -19,6 +19,8 @@ import zeytin.entity.document;
 import zeytin.command.property;
 import zeytin.command.batch_property;
 import zeytin.command.manager;
+import zeytin.common.message;
+import zeytin.common.message.entity_selected;
 
 EngineCommunication::EngineCommunication()
     : m_running(false)
@@ -182,10 +184,10 @@ void EngineCommunication::raise_events() {
         else if (type == "engine_shutdown") {
             EngineEventBus::get().publish<bool>(EngineEvent::EngineStopped, true);
         }
-        else if (type == "entity_selected_from_engine") {
-            if (doc.HasMember("entity_id") && doc["entity_id"].IsUint64()) {
-                EntityID entity_id = doc["entity_id"].GetUint64();
-                SelectionManager::get().select_entity(entity_id);
+        else if (type == EntitySelectedMessage{}.get_type()) {
+            EntitySelectedMessage message;
+            if (message.from_json(doc)) {
+                SelectionManager::get().select_entity(message.id);
             }
         }
         else if (type == "property_change_command") {
