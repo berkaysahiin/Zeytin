@@ -8,6 +8,7 @@ module zeytin.manipulator.manager;
 import zeytin.manipulator;
 import zeytin.manipulator.translate;
 import zeytin.manipulator.rotate;
+import zeytin.manipulator.scale;
 import zeytin.game.transform;
 import zeytin.raylib;
 import zeytin.logger;
@@ -34,7 +35,7 @@ void ManipulatorManager::initialize() {
 
     register_manipulator(ManipulatorType::Translate, std::make_unique<TranslateManipulator>());
     register_manipulator(ManipulatorType::Rotate, std::make_unique<RotateManipulator>());
-    // future: register_manipulator(ManipulatorType::Scale, std::make_unique<ScaleManipulator>());
+    register_manipulator(ManipulatorType::Scale, std::make_unique<ScaleManipulator>());
 
     set_active(ManipulatorType::Translate);
     m_impl->initialized = true;
@@ -84,7 +85,7 @@ void ManipulatorManager::handle_keyboard_shortcuts() {
     } else if (is_key_pressed(KEY_E)) {
         set_active(ManipulatorType::Rotate);
     } else if (is_key_pressed(KEY_R)) {
-        //set_active(ManipulatorType::Scale);
+        set_active(ManipulatorType::Scale);
     }
 }
 

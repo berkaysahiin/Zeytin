@@ -44,17 +44,22 @@ void CCollider::draw_bounds() const {
 
     const CTransform& transform = transform_opt->get();
 
-    const float pos_x = transform.position_x + offset_x;
-    const float pos_y = transform.position_y + offset_y;
+    const float scaled_width = std::abs(width * transform.scale_x);
+    const float scaled_height = std::abs(height * transform.scale_y);
+    const float scaled_offset_x = offset_x * transform.scale_x;
+    const float scaled_offset_y = offset_y * transform.scale_y;
+
+    const float pos_x = transform.position_x + scaled_offset_x;
+    const float pos_y = transform.position_y + scaled_offset_y;
 
     const Rectangle rec = {
-        pos_x,           
-        pos_y,          
-        width,     
-        height           
+        pos_x,
+        pos_y,
+        scaled_width,
+        scaled_height
     };
 
-    Vector2 origin = { width / 2.0f, height / 2.0f }; // Center the rectangle
+    Vector2 origin = { scaled_width / 2.0f, scaled_height / 2.0f }; // Center the rectangle
 
 #ifdef EDITOR_MODE
     // In editor mode, draw with green in edit mode, yellow in play mode
@@ -80,8 +85,13 @@ bool CCollider::is_point_inside(float px, float py) const {
 
     const CTransform& transform = transform_opt->get();
 
-    const float pos_x = transform.position_x + offset_x;
-    const float pos_y = transform.position_y + offset_y;
+    const float scaled_width = std::abs(width * transform.scale_x);
+    const float scaled_height = std::abs(height * transform.scale_y);
+    const float scaled_offset_x = offset_x * transform.scale_x;
+    const float scaled_offset_y = offset_y * transform.scale_y;
+
+    const float pos_x = transform.position_x + scaled_offset_x;
+    const float pos_y = transform.position_y + scaled_offset_y;
 
     const float rotation_rad = -transform.rotation * (3.14159265358979323846f / 180.0f);
     const float cos_r = cosf(rotation_rad);
@@ -93,8 +103,8 @@ bool CCollider::is_point_inside(float px, float py) const {
     const float rotated_x = local_x * cos_r - local_y * sin_r;
     const float rotated_y = local_x * sin_r + local_y * cos_r;
 
-    const float half_width = width / 2.0f;
-    const float half_height = height / 2.0f;
+    const float half_width = scaled_width / 2.0f;
+    const float half_height = scaled_height / 2.0f;
 
     return rotated_x >= -half_width && rotated_x <= half_width &&
            rotated_y >= -half_height && rotated_y <= half_height;
