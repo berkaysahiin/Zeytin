@@ -19,17 +19,25 @@ import zeytin.entity.document;
 import zeytin.command.property;
 import zeytin.command.batch_property;
 import zeytin.command.manager;
+
 import zeytin.common.message;
-import zeytin.common.message.engine_shutdown;
-import zeytin.common.message.engine_started;
-import zeytin.common.message.entity_selected;
 import zeytin.common.message_registry;
+import zeytin.common.message.engine_to_editor.batch_property_change_command;
+import zeytin.common.message.engine_to_editor.engine_shutdown;
+import zeytin.common.message.engine_to_editor.engine_started;
+import zeytin.common.message.engine_to_editor.entity_selected;
+import zeytin.common.message.engine_to_editor.log_message;
+import zeytin.common.message.engine_to_editor.property_change_command;
+import zeytin.common.message.engine_to_editor.scene;
 
 void EngineCommunication::register_message_handlers() {
     auto& registry = MessageRegistry::get();
 
-    registry.register_handler("scene", [](const rapidjson::Document&, const std::string& raw) {
-        EngineEventBus::get().publish<std::string>(EngineEvent::SyncEditor, raw);
+    registry.register_handler("scene", [](const rapidjson::Document& doc, const std::string&) {
+        SceneMessage message;
+        if (message.from_json(doc)) {
+            EngineEventBus::get().publish<std::string>(EngineEvent::SyncEditor, message.scene_json);
+        }
     });
     registry.register_handler(EngineStartedMessage{}.get_type(), [this](const rapidjson::Document& doc, const std::string&) {
         EngineStartedMessage message;
@@ -51,59 +59,49 @@ void EngineCommunication::register_message_handlers() {
         }
     });
     registry.register_handler("property_change_command", [](const rapidjson::Document& doc, const std::string&) {
-        if (doc.HasMember("entity_id") && doc.HasMember("variant_type") &&
-            doc.HasMember("key_path") && doc.HasMember("old_value") && doc.HasMember("new_value")) {
+        PropertyChangeCommandMessage message;
+        if (message.from_json(doc)) {
             PropertyLocation location;
-            location.entity_id = doc["entity_id"].GetUint64();
-            location.variant_type = doc["variant_type"].GetString();
-            location.key_path = doc["key_path"].GetString();
+            location.entity_id = message.entity_id;
+            location.variant_type = message.variant_type;
+            location.key_path = message.key_path;
 
-            PropertyValue old_value = doc["old_value"].GetFloat();
-            PropertyValue new_value = doc["new_value"].GetFloat();
+            PropertyValue old_value = message.old_value;
+            PropertyValue new_value = message.new_value;
 
             auto command = std::make_unique<PropertyChangeCommand>(location, old_value, new_value);
             CommandManager::get().execute_command(std::move(command));
         }
     });
     registry.register_handler("batch_property_change_command", [](const rapidjson::Document& doc, const std::string&) {
-        if (doc.HasMember("entity_id") && doc.HasMember("variant_type") && doc.HasMember("changes")) {
-            uint64_t entity_id = doc["entity_id"].GetUint64();
-            std::string variant_type = doc["variant_type"].GetString();
-
+        BatchPropertyChangeCommandMessage message;
+        if (message.from_json(doc)) {
             std::vector<PropertyChange> changes;
-            const rapidjson::Value& changes_array = doc["changes"];
+            changes.reserve(message.changes.size());
 
-            for (rapidjson::SizeType i = 0; i < changes_array.Size(); i++) {
-                const rapidjson::Value& change = changes_array[i];
-                if (change.HasMember("key_path") && change.HasMember("old_value") && change.HasMember("new_value")) {
-                    PropertyChange pc;
-                    pc.key_path = change["key_path"].GetString();
-                    pc.old_value = change["old_value"].GetFloat();
-                    pc.new_value = change["new_value"].GetFloat();
-                    changes.push_back(pc);
-                }
+            for (const auto& change : message.changes) {
+                PropertyChange pc;
+                pc.key_path = change.key_path;
+                pc.old_value = change.old_value;
+                pc.new_value = change.new_value;
+                changes.push_back(pc);
             }
 
-            auto command = std::make_unique<BatchPropertyChangeCommand>(entity_id, variant_type, changes);
+            auto command = std::make_unique<BatchPropertyChangeCommand>(message.entity_id, message.variant_type, changes);
             CommandManager::get().execute_command(std::move(command));
         }
     });
     registry.register_handler("log_message", [](const rapidjson::Document& doc, const std::string&) {
-        if (doc.HasMember("level") && doc.HasMember("message")) {
-            assert(doc["level"].IsString());
-            assert(doc["message"].IsString());
-
-            std::string level = doc["level"].GetString();
-            std::string msg = doc["message"].GetString();
-
-            if (level == "INFO") {
-                log_info("[ENGINE] {}", msg);
-            } else if (level == "TRACE") {
-                log_trace("[ENGINE] {}", msg);
-            } else if (level == "WARNING") {
-                log_warning("[ENGINE] {}", msg);
-            } else if (level == "ERROR") {
-                log_error("[ENGINE] {}", msg);
+        LogMessage message;
+        if (message.from_json(doc)) {
+            if (message.level == "INFO") {
+                log_info("[ENGINE] {}", message.message);
+            } else if (message.level == "TRACE") {
+                log_trace("[ENGINE] {}", message.message);
+            } else if (message.level == "WARNING") {
+                log_warning("[ENGINE] {}", message.message);
+            } else if (message.level == "ERROR") {
+                log_error("[ENGINE] {}", message.message);
             }
         }
     });
