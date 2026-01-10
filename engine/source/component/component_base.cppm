@@ -27,7 +27,7 @@ export struct Component
     uint64_t get_id() { return entity_id; }
     const uint64_t get_id() const { return entity_id; }
 
-    EntityID entity_id;
+    EntityID entity_id = 0;
     bool is_dead = false;
     bool post_inited = false;
 };
