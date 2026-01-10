@@ -151,10 +151,10 @@ void Zeytin::run_frame() {
 					m_current_level_name = m_pending_level_name;  
                     //log_info() << "Successfully loaded level: " << m_pending_level_name << std::endl;
                 } else {
-                    //log_error() << "Failed to deserialize level: " << m_pending_level_name << std::endl;
+                    log_error("Failed to deserialize level: {}", m_pending_level_name);
                 }
             } else {
-                //log_error() << "Failed to load level: " << m_pending_level_name << std::endl;
+                log_error("Failed to load level: {}", m_pending_level_name);
             }
             
             m_pending_level_name.clear();
@@ -175,7 +175,7 @@ void Zeytin::run_frame() {
     if (!m_current_level_name.empty()) {
         request_level_load(m_current_level_name);
     } else {
-        log_error() << "No level to reload" << std::endl;
+        //log_error() << "No level to reload" << std::endl;
     }
 #endif
     m_state.reload_next_frame = false;
@@ -195,14 +195,19 @@ void Zeytin::run_frame() {
         play_late_update_components();
     }
 
+	// call to manipulator
+	// TODO: come up with a callback register system ? instead of putting here ?
+	ManipulatorManager::get().handle_keyboard_shortcuts();
+	ManipulatorManager::get().handle_selected(m_selected_entity);
+
     end_mode2d();
     end_texture_mode();
 
 #ifdef EDITOR_MODE
-    // Write render texture to shared memory for editor viewport
+    // write render texture to shared memory for editor viewport
     if (m_shared_texture_writer.is_initialized()) {
         Image image = LoadImageFromTexture(m_render_texture.texture);
-        // Flip vertically since OpenGL textures are upside down
+        // flip vertically since OpenGL textures are upside down
         ImageFlipVertical(&image);
         m_shared_texture_writer.write_pixels(
             static_cast<const unsigned char*>(image.data),
@@ -224,11 +229,6 @@ ComponentList& Zeytin::get_components(const EntityID& entity) {
 }
 
 void Zeytin::remove_entity(EntityID id) {
-    //for(rttr::variant& var : get_components(id)) {
-    //    var.get_value<Component&>().is_dead = true;
-    //}
-
-	// Lets try full deletion instead of deferred.
 	m_storage.erase(id);
 }
 
