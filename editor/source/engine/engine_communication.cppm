@@ -22,6 +22,7 @@ public:
 
 private:
     void register_event_handlers();
+    void register_message_handlers();
     void receive_messages();
     void event_processing_loop();
     bool send_simple_message(const std::string& type, const std::string& key = "", bool value = false);

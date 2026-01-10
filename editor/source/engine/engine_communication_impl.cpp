@@ -23,6 +23,91 @@ import zeytin.common.message;
 import zeytin.common.message.engine_shutdown;
 import zeytin.common.message.engine_started;
 import zeytin.common.message.entity_selected;
+import zeytin.common.message_registry;
+
+void EngineCommunication::register_message_handlers() {
+    auto& registry = MessageRegistry::get();
+
+    registry.register_handler("scene", [](const rapidjson::Document&, const std::string& raw) {
+        EngineEventBus::get().publish<std::string>(EngineEvent::SyncEditor, raw);
+    });
+    registry.register_handler(EngineStartedMessage{}.get_type(), [this](const rapidjson::Document& doc, const std::string&) {
+        EngineStartedMessage message;
+        if (message.from_json(doc)) {
+            send_simple_message("engine_start_confirmed");
+            EngineEventBus::get().publish<bool>(EngineEvent::EngineStarted, true);
+        }
+    });
+    registry.register_handler(EngineShutdownMessage{}.get_type(), [](const rapidjson::Document& doc, const std::string&) {
+        EngineShutdownMessage message;
+        if (message.from_json(doc)) {
+            EngineEventBus::get().publish<bool>(EngineEvent::EngineStopped, true);
+        }
+    });
+    registry.register_handler(EntitySelectedMessage{}.get_type(), [](const rapidjson::Document& doc, const std::string&) {
+        EntitySelectedMessage message;
+        if (message.from_json(doc)) {
+            SelectionManager::get().select_entity(message.id);
+        }
+    });
+    registry.register_handler("property_change_command", [](const rapidjson::Document& doc, const std::string&) {
+        if (doc.HasMember("entity_id") && doc.HasMember("variant_type") &&
+            doc.HasMember("key_path") && doc.HasMember("old_value") && doc.HasMember("new_value")) {
+            PropertyLocation location;
+            location.entity_id = doc["entity_id"].GetUint64();
+            location.variant_type = doc["variant_type"].GetString();
+            location.key_path = doc["key_path"].GetString();
+
+            PropertyValue old_value = doc["old_value"].GetFloat();
+            PropertyValue new_value = doc["new_value"].GetFloat();
+
+            auto command = std::make_unique<PropertyChangeCommand>(location, old_value, new_value);
+            CommandManager::get().execute_command(std::move(command));
+        }
+    });
+    registry.register_handler("batch_property_change_command", [](const rapidjson::Document& doc, const std::string&) {
+        if (doc.HasMember("entity_id") && doc.HasMember("variant_type") && doc.HasMember("changes")) {
+            uint64_t entity_id = doc["entity_id"].GetUint64();
+            std::string variant_type = doc["variant_type"].GetString();
+
+            std::vector<PropertyChange> changes;
+            const rapidjson::Value& changes_array = doc["changes"];
+
+            for (rapidjson::SizeType i = 0; i < changes_array.Size(); i++) {
+                const rapidjson::Value& change = changes_array[i];
+                if (change.HasMember("key_path") && change.HasMember("old_value") && change.HasMember("new_value")) {
+                    PropertyChange pc;
+                    pc.key_path = change["key_path"].GetString();
+                    pc.old_value = change["old_value"].GetFloat();
+                    pc.new_value = change["new_value"].GetFloat();
+                    changes.push_back(pc);
+                }
+            }
+
+            auto command = std::make_unique<BatchPropertyChangeCommand>(entity_id, variant_type, changes);
+            CommandManager::get().execute_command(std::move(command));
+        }
+    });
+    registry.register_handler("log_message", [](const rapidjson::Document& doc, const std::string&) {
+        if (doc.HasMember("level") && doc.HasMember("message")) {
+            assert(doc["level"].IsString());
+            assert(doc["message"].IsString());
+
+            std::string level = doc["level"].GetString();
+            std::string msg = doc["message"].GetString();
+
+            if (level == "INFO") {
+                log_info("[ENGINE] {}", msg);
+            } else if (level == "TRACE") {
+                log_trace("[ENGINE] {}", msg);
+            } else if (level == "WARNING") {
+                log_warning("[ENGINE] {}", msg);
+            } else if (level == "ERROR") {
+                log_error("[ENGINE] {}", msg);
+            }
+        }
+    });
+}
 
 EngineCommunication::EngineCommunication()
     : m_running(false)
@@ -33,6 +118,7 @@ EngineCommunication::EngineCommunication()
 {
     initialize();
     register_event_handlers();
+    register_message_handlers();
 }
 
 EngineCommunication::~EngineCommunication() {
@@ -170,97 +256,8 @@ void EngineCommunication::raise_events() {
             continue;
         }
 
-        const std::string type = doc["type"].GetString();
-
-        if(type.empty()) {
-            continue;
-        }
-
-        if (type == "scene") {
-            EngineEventBus::get().publish<std::string>(EngineEvent::SyncEditor, msg);
-        }
-        else if (type == EngineStartedMessage{}.get_type()) {
-            EngineStartedMessage message;
-            if (message.from_json(doc)) {
-                send_simple_message("engine_start_confirmed");
-                EngineEventBus::get().publish<bool>(EngineEvent::EngineStarted, true);
-            }
-        }
-        else if (type == EngineShutdownMessage{}.get_type()) {
-            EngineShutdownMessage message;
-            if (message.from_json(doc)) {
-                EngineEventBus::get().publish<bool>(EngineEvent::EngineStopped, true);
-            }
-        }
-        else if (type == EntitySelectedMessage{}.get_type()) {
-            EntitySelectedMessage message;
-            if (message.from_json(doc)) {
-                SelectionManager::get().select_entity(message.id);
-            }
-        }
-        else if (type == "property_change_command") {
-            if (doc.HasMember("entity_id") && doc.HasMember("variant_type") && 
-                doc.HasMember("key_path") && doc.HasMember("old_value") && doc.HasMember("new_value")) {
-                
-                PropertyLocation location;
-                location.entity_id = doc["entity_id"].GetUint64();
-                location.variant_type = doc["variant_type"].GetString();
-                location.key_path = doc["key_path"].GetString();
-                
-                PropertyValue old_value = doc["old_value"].GetFloat();
-                PropertyValue new_value = doc["new_value"].GetFloat();
-                
-                auto command = std::make_unique<PropertyChangeCommand>(location, old_value, new_value);
-                CommandManager::get().execute_command(std::move(command));
-            }
-        }
-        else if (type == "batch_property_change_command") {
-            if (doc.HasMember("entity_id") && doc.HasMember("variant_type") && doc.HasMember("changes")) {
-                uint64_t entity_id = doc["entity_id"].GetUint64();
-                std::string variant_type = doc["variant_type"].GetString();
-                
-                std::vector<PropertyChange> changes;
-                const rapidjson::Value& changes_array = doc["changes"];
-                
-                for (rapidjson::SizeType i = 0; i < changes_array.Size(); i++) {
-                    const rapidjson::Value& change = changes_array[i];
-                    if (change.HasMember("key_path") && change.HasMember("old_value") && change.HasMember("new_value")) {
-                        PropertyChange pc;
-                        pc.key_path = change["key_path"].GetString();
-                        pc.old_value = change["old_value"].GetFloat();
-                        pc.new_value = change["new_value"].GetFloat();
-                        changes.push_back(pc);
-                    }
-                }
-                
-                auto command = std::make_unique<BatchPropertyChangeCommand>(entity_id, variant_type, changes);
-                CommandManager::get().execute_command(std::move(command));
-            }
-        }
-        else if(type == "log_message") {
-            if(doc.HasMember("level") && doc.HasMember("message")) {
-                assert(doc["level"].IsString());
-                assert(doc["message"].IsString());
-
-                std::string level = doc["level"].GetString();
-                std::string msg = doc["message"].GetString();
-
-                if(level == "INFO") {
-					log_info("[ENGINE] {}", msg);
-                }
-                else if(level == "TRACE") {
-					log_trace("[ENGINE] {}", msg);
-                }
-                else if(level == "WARNING") {
-					log_warning("[ENGINE] {}", msg);
-                }
-                else if(level == "ERROR") {
-					log_error("[ENGINE] {}", msg);
-                }
-            }
-        }
-        else {
-            //log_warning() << "Unknown message received from engine: " << type << std::endl;
+        if (!MessageRegistry::get().dispatch(doc, msg)) {
+            //log_warning() << "Unknown message received from engine" << std::endl;
         }
 
         messages.pop();

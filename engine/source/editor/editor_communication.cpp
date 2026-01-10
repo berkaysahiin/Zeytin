@@ -11,8 +11,62 @@ module;
 module zeytin.editor.communication;
 import zeytin.common.message.engine_started;
 import zeytin.common.message.engine_shutdown;
+import zeytin.common.message_registry;
 import zeytin.editor.event;
 import zeytin.logger;
+
+namespace {
+    void register_message_handlers() {
+        auto& registry = MessageRegistry::get();
+
+        registry.register_handler("entity_property_changed", [](const rapidjson::Document& doc, const std::string&) {
+            EditorEventBus::get().publish<const rapidjson::Document&>(EditorEvent::EntityPropertyChanged, doc);
+        });
+        registry.register_handler("entity_variant_added", [](const rapidjson::Document& doc, const std::string&) {
+            EditorEventBus::get().publish<const rapidjson::Document&>(EditorEvent::EntityVariantAdded, doc);
+        });
+        registry.register_handler("entity_variant_removed", [](const rapidjson::Document& doc, const std::string&) {
+            EditorEventBus::get().publish<const rapidjson::Document&>(EditorEvent::EntityVariantRemoved, doc);
+        });
+        registry.register_handler("entity_added", [](const rapidjson::Document& doc, const std::string&) {
+            EditorEventBus::get().publish<const rapidjson::Document&>(EditorEvent::EntityAdded, doc);
+        });
+        registry.register_handler("entity_removed", [](const rapidjson::Document& doc, const std::string&) {
+            EditorEventBus::get().publish<const rapidjson::Document&>(EditorEvent::EntityRemoved, doc);
+        });
+        registry.register_handler("enter_play_mode", [](const rapidjson::Document& doc, const std::string&) {
+            bool is_paused = doc.HasMember("is_paused") && doc["is_paused"].IsBool() ? doc["is_paused"].GetBool() : false;
+            EditorEventBus::get().publish<bool>(EditorEvent::EnterPlayMode, is_paused);
+        });
+        registry.register_handler("exit_play_mode", [](const rapidjson::Document&, const std::string&) {
+            EditorEventBus::get().publish<bool>(EditorEvent::ExitPlayMode, false);
+        });
+        registry.register_handler("pause_play_mode", [](const rapidjson::Document&, const std::string&) {
+            EditorEventBus::get().publish<bool>(EditorEvent::PausePlayMode, true);
+        });
+        registry.register_handler("unpause_play_mode", [](const rapidjson::Document&, const std::string&) {
+            EditorEventBus::get().publish<bool>(EditorEvent::UnPausePlayMode, true);
+        });
+        registry.register_handler("engine_start_confirmed", [](const rapidjson::Document&, const std::string&) {
+            EditorEventBus::get().publish<bool>(EditorEvent::EngineStartConfirmed, true);
+        });
+        registry.register_handler("scene", [](const rapidjson::Document&, const std::string& raw) {
+            log_info("Scene has been received by the engine");
+            std::cout << "Scene is received" << std::endl;
+            std::cout << raw << std::endl;
+            EditorEventBus::get().publish<const std::string&>(EditorEvent::Scene, raw);
+        });
+        registry.register_handler("die", [](const rapidjson::Document&, const std::string&) {
+            EditorEventBus::get().publish<bool>(EditorEvent::Die, true);
+        });
+        registry.register_handler("window_state", [](const rapidjson::Document& doc, const std::string&) {
+            EditorEventBus::get().publish<const rapidjson::Document&>(EditorEvent::WindowStateChanged, doc);
+        });
+        registry.register_handler("entity_selected", [](const rapidjson::Document& doc, const std::string&) {
+            EditorEventBus::get().publish<const rapidjson::Document&>(EditorEvent::EntitySelected, doc);
+        });
+    }
+}
 
 EditorCommunication::EditorCommunication()
     : m_running(false)
@@ -23,6 +77,7 @@ EditorCommunication::EditorCommunication()
 
     initialize();
     start_connection_attempts();
+    register_message_handlers();
 
     EditorEventBus::get().subscribe<std::string>(EditorEvent::SyncEditor, [this](std::string json) {
             send_message(json);
@@ -138,55 +193,7 @@ void EditorCommunication::raise_events() {
             continue;
         }
         
-        const std::string& type = doc["type"].GetString();
-        
-        if (type == "entity_property_changed") {
-            EditorEventBus::get().publish<const rapidjson::Document&>(EditorEvent::EntityPropertyChanged, doc);
-        }
-        else if (type == "entity_variant_added") {
-            EditorEventBus::get().publish<const rapidjson::Document&>(EditorEvent::EntityVariantAdded, doc);
-        }
-        else if (type == "entity_variant_removed") {
-            EditorEventBus::get().publish<const rapidjson::Document&>(EditorEvent::EntityVariantRemoved, doc);
-        }
-		else if (type == "entity_added") {  // ADD THIS
-            EditorEventBus::get().publish<const rapidjson::Document&>(EditorEvent::EntityAdded, doc);
-        }
-        else if (type == "entity_removed") {
-            EditorEventBus::get().publish<const rapidjson::Document&>(EditorEvent::EntityRemoved, doc);
-        }
-        else if (type == "enter_play_mode") {
-            bool is_paused = doc["is_paused"].GetBool();
-            EditorEventBus::get().publish<bool>(EditorEvent::EnterPlayMode, is_paused);
-        }
-        else if (type == "exit_play_mode") {
-            EditorEventBus::get().publish<bool>(EditorEvent::ExitPlayMode, false);
-        }
-        else if (type == "pause_play_mode") {
-            EditorEventBus::get().publish<bool>(EditorEvent::PausePlayMode, true);
-        }
-        else if (type == "unpause_play_mode") {
-            EditorEventBus::get().publish<bool>(EditorEvent::UnPausePlayMode, true);
-        }
-        else if (type == "engine_start_confirmed") {
-            EditorEventBus::get().publish<bool>(EditorEvent::EngineStartConfirmed, true);
-        }
-        else if (type == "scene") {
-			log_info("Scene has been received by the engine");
-            std::cout << "Scene is received" << std::endl;
-			std::cout << msg << std::endl;
-            EditorEventBus::get().publish<const std::string&>(EditorEvent::Scene, msg);
-        }
-        else if(type == "die") {
-            EditorEventBus::get().publish<bool>(EditorEvent::Die, true);
-        }
-        else if(type == "window_state") {
-            EditorEventBus::get().publish<const rapidjson::Document&>(EditorEvent::WindowStateChanged, doc);
-        }
-        else if(type == "entity_selected") {
-            EditorEventBus::get().publish<const rapidjson::Document&>(EditorEvent::EntitySelected, doc);
-        }
-        else {
+        if (!MessageRegistry::get().dispatch(doc, msg)) {
             //log_warning() << "Unknown message type received from editor" << std::endl;
         }
         
