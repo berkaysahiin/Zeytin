@@ -27,7 +27,7 @@ void CCollider::on_update() {
                 const EntityID id = get_id();
                 if (id != 0) {
 					// editor will sync this info back to the engine
-                    send_to_editor(EntitySelectedMessage{id});
+                    send_message_to_editor<EntitySelectedMessage>(id);
                 }
             }
         }

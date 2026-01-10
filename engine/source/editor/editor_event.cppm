@@ -24,9 +24,7 @@ export enum class EditorEvent {
     PausePlayMode,
     UnPausePlayMode,
     ExitPlayMode,
-    SyncEditor,
     Die,
-    LogToEditor,
     WindowStateChanged,
     EntitySelected,
 };

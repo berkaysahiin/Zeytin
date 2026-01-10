@@ -5,12 +5,11 @@ module;
 #include <thread>
 
 #include "rapidjson/document.h"
-#include "rapidjson/writer.h"
 #include "zmq/zmq.hpp"
 
 module zeytin.editor.communication;
-import zeytin.common.message.engine_started;
-import zeytin.common.message.engine_shutdown;
+import zeytin.common.message.engine_to_editor.engine_started;
+import zeytin.common.message.engine_to_editor.engine_shutdown;
 import zeytin.common.message_registry;
 import zeytin.editor.event;
 import zeytin.logger;
@@ -52,8 +51,6 @@ namespace {
         });
         registry.register_handler("scene", [](const rapidjson::Document&, const std::string& raw) {
             log_info("Scene has been received by the engine");
-            std::cout << "Scene is received" << std::endl;
-            std::cout << raw << std::endl;
             EditorEventBus::get().publish<const std::string&>(EditorEvent::Scene, raw);
         });
         registry.register_handler("die", [](const rapidjson::Document&, const std::string&) {
@@ -78,14 +75,6 @@ EditorCommunication::EditorCommunication()
     initialize();
     start_connection_attempts();
     register_message_handlers();
-
-    EditorEventBus::get().subscribe<std::string>(EditorEvent::SyncEditor, [this](std::string json) {
-            send_message(json);
-    });
-
-    EditorEventBus::get().subscribe<const std::string&>(EditorEvent::LogToEditor, [this](const auto& json) {
-            send_message(json);
-    });
 }
 
 EditorCommunication::~EditorCommunication() {
@@ -164,7 +153,7 @@ void EditorCommunication::shutdown() {
 
 bool EditorCommunication::send_message(const std::string& message) {
     if (!m_initialized) {
-        //log_warning() << "EditorCommunication not initialized" << std::endl;
+        log_warning("EditorCommunication not initialized");
         return false;
     }
     
@@ -194,7 +183,7 @@ void EditorCommunication::raise_events() {
         }
         
         if (!MessageRegistry::get().dispatch(doc, msg)) {
-            //log_warning() << "Unknown message type received from editor" << std::endl;
+            log_warning("Unknown message type received from editor");
         }
         
         m_message_queue.pop();
@@ -225,7 +214,7 @@ void EditorCommunication::receive_messages() {
             }
         }
         catch (const zmq::error_t& e) {
-            //log_error() << "Error receiving message: " << e.what() << std::endl;
+            log_error("Error receiving message: {}", e.what());
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }

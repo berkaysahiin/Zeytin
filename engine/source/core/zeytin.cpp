@@ -19,6 +19,7 @@ module zeytin.zeytin;
 import zeytin.level;
 import zeytin.resource;
 import zeytin.logger;
+import zeytin.common.message.engine_to_editor.scene;
 import zeytin.json;
 import zeytin.component;
 import zeytin.guid;
@@ -26,6 +27,7 @@ import zeytin.property;
 import zeytin.raylib;
 import zeytin.editor.communication;
 import zeytin.shared_texture;
+import zeytin.editor.message;
 
 #ifdef EDITOR_MODE
 import zeytin.manipulator.manager;
@@ -936,7 +938,7 @@ void Zeytin::exit_play_mode() {
 void Zeytin::initial_sync_editor() {
     const std::string scene = serialize_scene();
     if (!scene.empty()) {
-        EditorEventBus::get().publish<std::string>(EditorEvent::SyncEditor, scene);
+		send_message_to_editor<SceneMessage>(scene);
         log_info("Initial scene sync with editor");
     } else {
         log_error("Failed to serialize scene for initial sync");
@@ -954,7 +956,7 @@ void Zeytin::sync_editor() {
         
         std::string scene = serialize_scene();
         if (!scene.empty()) {
-            EditorEventBus::get().publish<std::string>(EditorEvent::SyncEditor, scene);
+			send_message_to_editor<SceneMessage>(scene);
         }
     }
 }

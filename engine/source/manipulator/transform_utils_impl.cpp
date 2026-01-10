@@ -1,14 +1,14 @@
 module;
 
-#include "rapidjson/document.h"
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
 #include <cstdint>
 #include <string>
 #include <vector>
 
 module zeytin.manipulator.transform_utils;
+import zeytin.common.message.engine_to_editor.property_change_command;
+import zeytin.common.message.engine_to_editor.batch_property_change_command;
 import zeytin.logger;
+import zeytin.editor.message;
 
 #ifdef EDITOR_MODE
 import zeytin.editor.event;
@@ -25,26 +25,8 @@ void send_property_change_command(
     float new_value
 ) {
 #ifdef EDITOR_MODE
-    rapidjson::Document msg;
-    msg.SetObject();
-    auto& alloc = msg.GetAllocator();
-
-    msg.AddMember("type", "property_change_command", alloc);
-    msg.AddMember("entity_id", entity_id, alloc);
-    msg.AddMember("variant_type", "CTransform", alloc);
-
-    rapidjson::Value prop_name(property_name, alloc);
-    msg.AddMember("key_path", prop_name, alloc);
-    msg.AddMember("old_value", old_value, alloc);
-    msg.AddMember("new_value", new_value, alloc);
-
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    msg.Accept(writer);
-
-    EditorEventBus::get().publish<std::string>(EditorEvent::SyncEditor, buffer.GetString());
-
-    log_info("Sent property change command: {} = {} -> {}", property_name, old_value, new_value);
+	send_message_to_editor<PropertyChangeCommandMessage>(entity_id, "CTransform", property_name, old_value, new_value);
+    log_trace("Sent property change command: {} = {} -> {}", property_name, old_value, new_value);
 #endif
 }
 
@@ -57,35 +39,19 @@ void send_batch_property_change_command(
         return;
     }
 
-    rapidjson::Document msg;
-    msg.SetObject();
-    auto& alloc = msg.GetAllocator();
-
-    msg.AddMember("type", "batch_property_change_command", alloc);
-    msg.AddMember("entity_id", entity_id, alloc);
-    msg.AddMember("variant_type", "CTransform", alloc);
-
-    // create changes array
-    rapidjson::Value changes_array(rapidjson::kArrayType);
+    std::vector<PropertyChangeEntry> entries;
+    entries.reserve(changes.size());
 
     for (const auto& prop_change : changes) {
-        rapidjson::Value change(rapidjson::kObjectType);
-        rapidjson::Value key_path(prop_change.key_path.c_str(), alloc);
-        change.AddMember("key_path", key_path, alloc);
-        change.AddMember("old_value", prop_change.old_value, alloc);
-        change.AddMember("new_value", prop_change.new_value, alloc);
-        changes_array.PushBack(change, alloc);
+        PropertyChangeEntry entry;
+        entry.key_path = prop_change.key_path;
+        entry.old_value = prop_change.old_value;
+        entry.new_value = prop_change.new_value;
+        entries.push_back(std::move(entry));
     }
 
-    msg.AddMember("changes", changes_array, alloc);
-
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    msg.Accept(writer);
-
-    EditorEventBus::get().publish<std::string>(EditorEvent::SyncEditor, buffer.GetString());
-
-    log_info("Sent batch property change command with {} changes", changes.size());
+	send_message_to_editor<BatchPropertyChangeCommandMessage>(entity_id, "CTransform", std::move(entries));
+    log_trace("Sent batch property change command with {} changes", changes.size());
 #endif
 }
 
