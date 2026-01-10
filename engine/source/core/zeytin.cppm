@@ -122,7 +122,6 @@ private:
 	std::string m_current_level_name;  
 
 #ifdef EDITOR_MODE
-    std::unique_ptr<EditorCommunication> m_editor_communication;
     SharedTextureWriter m_shared_texture_writer;
     uint64_t m_selected_entity = 0;
 #endif

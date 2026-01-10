@@ -65,7 +65,7 @@ void Zeytin::initialize_camera() {
 
 #ifdef EDITOR_MODE
 void Zeytin::initialize_editor_communication() {
-    m_editor_communication = std::make_unique<EditorCommunication>();
+    auto& editor_communication = EditorCommunication::get();
     subscribe_editor_events();
 
     // Initialize manipulator manager singleton
@@ -77,8 +77,8 @@ void Zeytin::initialize_editor_communication() {
     }
 
     // wait for editor connection to be established
-    while (!m_editor_communication->is_connection_confirmed() || !m_state.scene_ready) {
-        m_editor_communication->raise_events();
+    while (!editor_communication.is_connection_confirmed() || !m_state.scene_ready) {
+        editor_communication.raise_events();
 
         // black screen while waiting for connection
         begin_drawing();
@@ -109,12 +109,10 @@ void Zeytin::shutdown() {
 
 #ifdef EDITOR_MODE
     if (m_state.play_mode) {
-        exit_play_mode();  
+        exit_play_mode();
     }
 
-    if (m_editor_communication) {
-        m_editor_communication.reset();
-    }
+    EditorCommunication::get().shutdown();
 #endif
 
     if (m_render_texture.id != 0) {
@@ -133,9 +131,7 @@ void Zeytin::run_frame() {
     ZPROFILE_FUNCTION();
     
 #ifdef EDITOR_MODE
-    if (m_editor_communication) {
-        m_editor_communication->raise_events();
-    }
+    EditorCommunication::get().raise_events();
 #endif
 
 	if(m_state.load_level_next_frame) {
