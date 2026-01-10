@@ -3,7 +3,10 @@ project(ZeytinEngine CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+add_subdirectory("../common" "${CMAKE_CURRENT_BINARY_DIR}/common")
 
 set(ENGINE_CONFIG "weditor" CACHE STRING "Build configuration: weditor or standalone")
 set_property(CACHE ENGINE_CONFIG PROPERTY STRINGS weditor standalone)
@@ -22,6 +25,8 @@ target_sources(ZeytinEngine_${ENGINE_CONFIG}
     FILE_SET all_my_modules TYPE CXX_MODULES FILES
     ${MODULE_SOURCES}
 )
+
+target_link_libraries(ZeytinEngine_${ENGINE_CONFIG} PRIVATE ZeytinCommon)
 
 target_include_directories(ZeytinEngine_${ENGINE_CONFIG} PRIVATE
     include
