@@ -1,0 +1,16 @@
+{
+    "entity_id": 12456051632946970016,
+    "variants": [
+        {
+            "type": "CCollider",
+            "value": {
+                "width": 100.0,
+                "height": 100.0,
+                "offset_x": 0.0,
+                "offset_y": 0.0,
+                "show_bounds": true,
+                "entity_id": 12456051632946970016
+            }
+        }
+    ]
+}

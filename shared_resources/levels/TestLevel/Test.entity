@@ -2,21 +2,25 @@
     "entity_id": 18242669093304890194,
     "variants": [
         {
-            "annotations": {
-                "_x": {
-                    "HIDDEN": true,
-                    "SAVE": true
-                },
-                "_y": {
-                    "HIDDEN": true
-                }
-            },
-            "type": "Position",
+            "type": "CTransform",
             "value": {
-                "_x": 0.0,
-                "_y": 0.0,
-                "x": 31.0,
-                "y": 32.0
+                "position_x": 631.2991943359375,
+                "position_y": 195.94114685058594,
+                "rotation": 3.973602294921875,
+                "scale_x": 1.0,
+                "scale_y": 1.0,
+                "entity_id": 18242669093304890194
+            }
+        },
+        {
+            "type": "CCollider",
+            "value": {
+                "width": 100.0,
+                "height": 100.0,
+                "offset_x": 0.0,
+                "offset_y": 0.0,
+                "show_bounds": true,
+                "entity_id": 18242669093304890194
             }
         }
     ]
