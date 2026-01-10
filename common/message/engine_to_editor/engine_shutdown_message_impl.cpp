@@ -6,7 +6,7 @@ module;
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
 
-module zeytin.common.message.engine_shutdown;
+module zeytin.common.message.engine_to_editor.engine_shutdown;
 
 std::string EngineShutdownMessage::get_type() const {
     return "engine_shutdown";

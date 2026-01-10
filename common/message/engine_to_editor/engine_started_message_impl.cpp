@@ -6,7 +6,7 @@ module;
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
 
-module zeytin.common.message.engine_started;
+module zeytin.common.message.engine_to_editor.engine_started;
 
 std::string EngineStartedMessage::get_type() const {
     return "engine_started";

@@ -6,7 +6,7 @@ module;
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/writer.h"
 
-module zeytin.common.message.entity_selected;
+module zeytin.common.message.engine_to_editor.entity_selected;
 
 std::string EntitySelectedMessage::get_type() const {
     return "entity_selected_from_engine";

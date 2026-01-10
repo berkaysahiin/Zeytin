@@ -5,7 +5,7 @@ module;
 
 #include "rapidjson/document.h"
 
-export module zeytin.common.message.entity_selected;
+export module zeytin.common.message.engine_to_editor.entity_selected;
 
 import zeytin.common.message;
 

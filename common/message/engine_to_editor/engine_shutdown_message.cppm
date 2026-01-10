@@ -3,7 +3,7 @@ module;
 #include <string>
 #include "rapidjson/document.h"
 
-export module zeytin.common.message.engine_shutdown;
+export module zeytin.common.message.engine_to_editor.engine_shutdown;
 
 import zeytin.common.message;
 
