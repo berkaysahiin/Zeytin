@@ -1,9 +1,6 @@
 module;
 
 #include "raylib.h"
-#include "rapidjson/document.h"
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
 #include <cmath>
 
 module zeytin.game.collider;
@@ -11,10 +8,9 @@ import zeytin.raylib;
 import zeytin.zeytin;
 import zeytin.game.transform;
 import zeytin.query;
-
-#ifdef EDITOR_MODE
-import zeytin.editor.event;
-#endif
+import zeytin.manipulator.manager;
+import zeytin.editor.message;
+import zeytin.entity;
 
 void CCollider::on_update() {
     if (show_bounds) {
@@ -22,26 +18,17 @@ void CCollider::on_update() {
     }
 
 #ifdef EDITOR_MODE
-    // In editor mode (not play mode), check for click to select entity
     if (!Zeytin::get().is_play_mode()) {
         if (is_mouse_button_pressed(MOUSE_BUTTON_LEFT)) {
-            Vector2 mouse_pos = get_mouse_position();
-            Vector2 world_mouse = get_screen_to_world2d(mouse_pos, Zeytin::get().get_camera());
+            const Vector2 mouse_pos = get_mouse_position();
+            const Vector2 world_mouse = get_screen_to_world2d(mouse_pos, Zeytin::get().get_camera());
 
             if (is_point_inside(world_mouse.x, world_mouse.y)) {
-                // Send entity selected event to editor
-                rapidjson::Document msg;
-                msg.SetObject();
-                auto& alloc = msg.GetAllocator();
-
-                msg.AddMember("type", "entity_selected_from_engine", alloc);
-                msg.AddMember("entity_id", get_id(), alloc);
-
-                rapidjson::StringBuffer buffer;
-                rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-                msg.Accept(writer);
-
-                EditorEventBus::get().publish<std::string>(EditorEvent::SyncEditor, buffer.GetString());
+                const EntityID id = get_id();
+                if (id != 0) {
+					// editor will sync this info back to the engine
+                    send_to_editor(EntitySelectedMessage{id});
+                }
             }
         }
     }
