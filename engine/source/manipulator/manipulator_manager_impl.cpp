@@ -8,8 +8,11 @@ module zeytin.manipulator.manager;
 import zeytin.manipulator;
 import zeytin.manipulator.translate;
 import zeytin.manipulator.rotate;
+import zeytin.game.transform;
 import zeytin.raylib;
 import zeytin.logger;
+import zeytin.zeytin;
+import zeytin.query;
 
 struct ManipulatorManager::Impl {
     std::unordered_map<ManipulatorType, std::unique_ptr<IManipulator>> manipulators;
@@ -85,11 +88,17 @@ void ManipulatorManager::handle_keyboard_shortcuts() {
     }
 }
 
-void ManipulatorManager::update_selected(EntityID selected_entity_id, Context& ctx) {
-    // only update if this entity is selected
-    if (ctx.entity_id != selected_entity_id) {
-        return;
-    }
+void ManipulatorManager::handle_selected(const EntityID selected_entity_id) {
+	auto ctransform_opt = Query::try_get<CTransform>(selected_entity_id);
+
+	if(!ctransform_opt) return;
+
+	Context ctx {
+		.entity_id = selected_entity_id,
+		.camera = Zeytin::get().get_camera(),
+		.is_play_mode = Zeytin::get().is_play_mode(),
+		.transform = Query::get<CTransform>(selected_entity_id)
+	};
 
     auto it = m_impl->manipulators.find(m_impl->active_type);
     if (it != m_impl->manipulators.end()) {
