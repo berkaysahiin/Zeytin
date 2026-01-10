@@ -20,6 +20,8 @@ import zeytin.command.property;
 import zeytin.command.batch_property;
 import zeytin.command.manager;
 import zeytin.common.message;
+import zeytin.common.message.engine_shutdown;
+import zeytin.common.message.engine_started;
 import zeytin.common.message.entity_selected;
 
 EngineCommunication::EngineCommunication()
@@ -177,12 +179,18 @@ void EngineCommunication::raise_events() {
         if (type == "scene") {
             EngineEventBus::get().publish<std::string>(EngineEvent::SyncEditor, msg);
         }
-        else if (type == "engine_started") {
-            send_simple_message("engine_start_confirmed");
-            EngineEventBus::get().publish<bool>(EngineEvent::EngineStarted, true);
+        else if (type == EngineStartedMessage{}.get_type()) {
+            EngineStartedMessage message;
+            if (message.from_json(doc)) {
+                send_simple_message("engine_start_confirmed");
+                EngineEventBus::get().publish<bool>(EngineEvent::EngineStarted, true);
+            }
         }
-        else if (type == "engine_shutdown") {
-            EngineEventBus::get().publish<bool>(EngineEvent::EngineStopped, true);
+        else if (type == EngineShutdownMessage{}.get_type()) {
+            EngineShutdownMessage message;
+            if (message.from_json(doc)) {
+                EngineEventBus::get().publish<bool>(EngineEvent::EngineStopped, true);
+            }
         }
         else if (type == EntitySelectedMessage{}.get_type()) {
             EntitySelectedMessage message;

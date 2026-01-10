@@ -9,6 +9,8 @@ module;
 #include "zmq/zmq.hpp"
 
 module zeytin.editor.communication;
+import zeytin.common.message.engine_started;
+import zeytin.common.message.engine_shutdown;
 import zeytin.editor.event;
 import zeytin.logger;
 
@@ -83,29 +85,11 @@ void EditorCommunication::start_connection_attempts() {
 }
 
 void EditorCommunication::send_started_message() {
-    rapidjson::Document msg;
-    msg.SetObject();
-
-    msg.AddMember("type", "engine_started", msg.GetAllocator());
-
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    msg.Accept(writer);
-
-    send_message(buffer.GetString());
+    send_message(EngineStartedMessage{}.as_json());
 }
 
 void EditorCommunication::send_shutdown_message() {
-    rapidjson::Document msg;
-    msg.SetObject();
-
-    msg.AddMember("type", "engine_shutdown", msg.GetAllocator());
-
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    msg.Accept(writer);
-
-    send_message(buffer.GetString());
+    send_message(EngineShutdownMessage{}.as_json());
 }
 
 void EditorCommunication::shutdown() {
