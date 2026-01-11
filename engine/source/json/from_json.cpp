@@ -271,11 +271,14 @@ rttr::variant from(EntityID entity_id, const std::filesystem::path& json_path)
 namespace rttr_json {
 
 EntityID deserialize_entity(const std::string& entity_json, EntityID& entity, std::vector<rttr::variant>& variants) {
+	log_trace("deserialize_entity: {}", entity_json);
+
     Document document;
     document.Parse(entity_json.c_str());
-    assert(!document.HasParseError());
 
-    assert(document.HasMember("entity_id") && document["entity_id"].GetUint64());
+    assert(!document.HasParseError());
+    assert(document.HasMember("entity_id") && document["entity_id"].IsUint64());
+
     auto entity_id = document["entity_id"].GetUint64();
     entity = entity_id;
 
