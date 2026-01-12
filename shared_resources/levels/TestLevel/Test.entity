@@ -1,35 +1,47 @@
 {
-    "entity_id": 18242669093304890194,
+    "entity_id": 10111429819265244580,
     "variants": [
         {
-            "type": "CTransform",
+            "type": "TestRendering",
             "value": {
-                "position_x": 776.9942626953125,
-                "position_y": 782.0936279296875,
-                "rotation": 342.62725830078125,
-                "scale_x": 1.0,
-                "scale_y": 1.0,
-                "entity_id": 18242669093304890194
-            }
-        },
-        {
-            "type": "CCollider",
-            "value": {
+                "position_x": 1199.535888671875,
+                "position_y": 844.9617919921875,
                 "width": 100.0,
                 "height": 100.0,
-                "offset_x": 0.0,
-                "offset_y": 25.200000762939453,
-                "show_bounds": true,
-                "entity_id": 18242669093304890194
+                "move_speed": 200.0,
+                "base_color_r": 0.20000000298023224,
+                "base_color_g": 0.6000000238418579,
+                "base_color_b": 1.0,
+                "color_a": 1.0,
+                "is_filled": true,
+                "border_thickness": 2.0,
+                "label": "Input Test",
+                "visible": true,
+                "follow_mouse": false,
+                "internal_timer": 0.0,
+                "frame_count": 0,
+                "entity_id": 10111429819265244580
             }
         },
         {
-            "type": "Position",
             "value": {
-                "x": 31.0,
-                "y": 32.0,
-                "entity_id": 18242669093304890194
-            }
+                "height": 100.0,
+                "offset_x": 0.0,
+                "offset_y": 0.0,
+                "show_bounds": true,
+                "width": 100.0
+            },
+            "type": "CCollider"
+        },
+        {
+            "value": {
+                "position_x": 709.1239013671875,
+                "position_y": 475.6495361328125,
+                "rotation": 0.0,
+                "scale_x": 1.0,
+                "scale_y": 1.0
+            },
+            "type": "CTransform"
         }
     ]
 }
