@@ -48,3 +48,4 @@ editor/bin
 shared_resources/config
 engine/preparser
 editor/windows.json
+engine/engine_gdb.log
