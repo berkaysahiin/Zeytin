@@ -7,6 +7,8 @@ module;
 #include "rlImGui.h"
 
 module zeytin.engine_view;
+import zeytin.engine.event;
+
 
 EngineView::EngineView() {
     // allocate pixel buffer for max texture size
@@ -295,6 +297,9 @@ void EngineView::on_engine_stopped() {
 
     // reinitialize input writer for next connection
     m_input_writer.initialize();
+
+	// raise the event
+    EngineEventBus::get().publish<bool>(EngineEvent::EngineStopped, true);
 }
 
 void EngineView::clear_texture() {
