@@ -22,6 +22,7 @@ import zeytin.command.component;
 import zeytin.logger;
 import zeytin.entity.registry;
 import zeytin.variant.metadata;
+import zeytin.inspector.utils;
 
 struct Inspector::Impl {
     std::vector<VariantDocument>& variants;
@@ -195,26 +196,27 @@ void Inspector::Impl::render_property(rapidjson::Document& document, rapidjson::
 	const bool is_readonly = VariantMetadata::get().has_annotation(variant_type, key, "READONLY");
 	const auto tooltip = VariantMetadata::get().get_annotation(variant_type, key, "TOOLTIP");
 	const bool has_tooltip = tooltip.has_value() && !tooltip->empty();
+	const auto min_annotation = VariantMetadata::get().get_annotation(variant_type, key, "MIN");
+	const auto max_annotation = VariantMetadata::get().get_annotation(variant_type, key, "MAX");
 
     const std::string unique_id = std::to_string(entity_id) + "_" + variant_type + "_" + current_path;
 
-    auto show_tooltip = [&tooltip, has_tooltip]() {
-        if (has_tooltip && ImGui::IsItemHovered()) {
-            ImGui::SetTooltip("%s", tooltip->c_str());
-        }
-    };
 
     ImGui::AlignTextToFramePadding();
     ImGui::Text("%s", key.c_str());
-    show_tooltip();
+    show_tooltip_if_hovered(tooltip);
     ImGui::SameLine(150.0f);
     ImGui::PushItemWidth(-1);
 
+
     if (value.IsInt()) {
         int int_value = value.GetInt();
+        const IntBounds bounds = make_int_bounds(min_annotation, max_annotation);
 
         ImGui::BeginDisabled(is_readonly);
-        bool edited = ImGui::DragInt(("##" + unique_id).c_str(), &int_value);
+        bool edited = ImGui::DragInt(("##" + unique_id).c_str(), &int_value, 1.0f,
+                                     bounds.use ? bounds.min : 0,
+                                     bounds.use ? bounds.max : 0);
         bool activated = ImGui::IsItemActivated();
         bool deactivated = ImGui::IsItemDeactivatedAfterEdit();
         ImGui::EndDisabled();
@@ -264,9 +266,13 @@ void Inspector::Impl::render_property(rapidjson::Document& document, rapidjson::
     else if (value.IsFloat() || value.IsDouble()) {
         float float_value = value.IsDouble() ? 
             static_cast<float>(value.GetDouble()) : value.GetFloat();
+        const FloatBounds bounds = make_float_bounds(min_annotation, max_annotation);
 
         ImGui::BeginDisabled(is_readonly);
-        bool edited = ImGui::DragFloat(("##" + unique_id).c_str(), &float_value, 0.1f, 0.0f, 0.0f, "%.3f");
+        bool edited = ImGui::DragFloat(("##" + unique_id).c_str(), &float_value, 0.1f,
+                                       bounds.use ? bounds.min : 0.0f,
+                                       bounds.use ? bounds.max : 0.0f,
+                                       "%.3f");
         bool activated = ImGui::IsItemActivated();
         bool deactivated = ImGui::IsItemDeactivatedAfterEdit();
         ImGui::EndDisabled();
