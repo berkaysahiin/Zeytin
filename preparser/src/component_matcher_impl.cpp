@@ -36,6 +36,7 @@ static PropertyType get_type(const clang::FieldDecl *Field);
 static void parse_property(const clang::FieldDecl *Field, PropertyInfo& property);
 static Result property_type_rules(const clang::FieldDecl *Field);
 static void collect_fields_recursive(const clang::CXXRecordDecl *Record, std::vector<const clang::FieldDecl*>& fields);
+static bool has_virtual_component_field(const clang::CXXRecordDecl *Record);
 
 void ComponentMatchCallback::run(const clang::ast_matchers::MatchFinder::MatchResult& Result) {
     const auto* Record = Result.Nodes.getNodeAs<clang::CXXRecordDecl>("component");
@@ -49,6 +50,11 @@ void ComponentMatchCallback::run(const clang::ast_matchers::MatchFinder::MatchRe
 	// Component to fill. Pushed to components vector if needs generation.
 	ComponentInfo component;
 	component.name = Record->getName().str();
+
+	if (has_virtual_component_field(Record)) {
+		log("Skipping virtual component... {}", component.name);
+		return;
+	}
 
 	const auto& SourceManager = Result.Context->getSourceManager();
     const auto Loc = Record->getLocation();
@@ -146,6 +152,31 @@ void ComponentMatchCallback::run(const clang::ast_matchers::MatchFinder::MatchRe
 
 END:
 	components.push_back(component);
+}
+
+static bool has_virtual_component_field(const clang::CXXRecordDecl *Record)
+{
+	if (!Record) {
+		return false;
+	}
+
+	for (const auto* field : Record->fields()) {
+		if (!field) {
+			continue;
+		}
+
+		if (field->getName() == "___virtual_component_tag") {
+			return true;
+		}
+
+		const auto type = field->getType().getCanonicalType().getUnqualifiedType();
+		const auto type_name = type.getAsString();
+		if (type_name == "VirtualComponentTag" || type_name == "struct VirtualComponentTag") {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 static void collect_fields_recursive(const clang::CXXRecordDecl *Record, std::vector<const clang::FieldDecl*>& fields)
