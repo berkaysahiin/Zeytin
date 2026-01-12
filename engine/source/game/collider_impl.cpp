@@ -67,6 +67,8 @@ void CCollider::draw_bounds() const {
         DrawRectanglePro(rec, origin, transform.rotation, GREEN);
         // Draw center point
         draw_circle_v({pos_x, pos_y}, 3.0f, GREEN);
+    } else if (Zeytin::get().is_paused_play_mode()) {
+        DrawRectanglePro(rec, origin, transform.rotation, ORANGE);
     } else {
         DrawRectanglePro(rec, origin, transform.rotation, YELLOW);
     }
