@@ -8,7 +8,9 @@ export module preparser.jsonexport;
 import preparser.types;
 import preparser.logger;
 
-static nlohmann::json property_value_to_json(const PropertyValue& value);
+using OrderedJson = nlohmann::ordered_json;
+
+static OrderedJson property_value_to_json(const PropertyValue& value);
 
 export void export_component(const ComponentInfo& component) {
 	if (!component.requires_data_generation) {
@@ -16,17 +18,17 @@ export void export_component(const ComponentInfo& component) {
 		return;
 	}
 
-    nlohmann::json j;
+    OrderedJson j;
     j["type"] = component.name;
 
-    nlohmann::json values = nlohmann::json::object();
-    nlohmann::json annotations_map = nlohmann::json::object();
+    OrderedJson values = OrderedJson::object();
+    OrderedJson annotations_map = OrderedJson::object();
     
     for (const auto& prop : component.properties) {
         // Add to old format
         values[prop.name] = property_value_to_json(prop.value);
         
-        nlohmann::json prop_annotations = nlohmann::json::object();
+        OrderedJson prop_annotations = OrderedJson::object();
         
         for (const auto& attr : prop.attrs) {
             if (std::holds_alternative<std::string>(attr)) {
@@ -65,8 +67,8 @@ export void export_components(const std::vector<ComponentInfo>& components) {
     }
 }
 
-static nlohmann::json property_value_to_json(const PropertyValue& value) {
-    return std::visit([]<typename T>(T&& v) -> nlohmann::json {
+static OrderedJson property_value_to_json(const PropertyValue& value) {
+    return std::visit([]<typename T>(T&& v) -> OrderedJson {
         return v;
     }, value);
 }
