@@ -11,6 +11,7 @@ import zeytin.logger;
 import zeytin.level;
 import zeytin.engine.message;
 import zeytin.common.message.editor_to_engine.entity_selected;
+import zeytin.engine.event;
 
 struct SelectionManager::Impl {
 	//TODO: change this to EntityID or not ?
@@ -39,6 +40,14 @@ SelectionManager::SelectionManager()
             clear_selection();
         });
     }
+
+	EngineEventBus::get().subscribe<bool>(
+        EngineEvent::EngineStarted,
+        [this](bool) {
+			pImpl->send_selection_to_engine();
+        }
+    );
+
 }
 
 SelectionManager::~SelectionManager() = default;
