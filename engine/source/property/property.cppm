@@ -3,6 +3,7 @@ module;
 #include <vector>
 #include <string>
 #include <sstream>
+#include <optional>
 
 #include "rttr/variant.h"
 
@@ -48,16 +49,42 @@ void update_property(rttr::variant& obj, const std::vector<std::string>& path_pa
 	}
 }
 
-export std::vector<std::string> split_path(const std::string& path) {
-	std::vector<std::string> path_parts;
-	std::string current_part;
-	std::istringstream path_stream(path);
+export std::optional<rttr::variant> get_property_value(rttr::variant& obj,
+                                                      const std::vector<std::string>& path_parts,
+                                                      const size_t path_index) {
+    if (path_index >= path_parts.size()) {
+        return std::nullopt;
+    }
 
-	while (std::getline(path_stream, current_part, '.')) {
-		path_parts.push_back(current_part);
-	}
+    const std::string& current_path = path_parts[path_index];
 
-	return path_parts;
+    for (auto& property : obj.get_type().get_properties()) {
+        if (property.get_name() != current_path) {
+            continue;
+        }
+
+        rttr::variant value = property.get_value(obj);
+        if (path_index == path_parts.size() - 1) {
+            return value;
+        }
+
+        return get_property_value(value, path_parts, path_index + 1);
+    }
+
+    return std::nullopt;
 }
+
+export std::vector<std::string> split_path(const std::string& path) {
+    std::vector<std::string> path_parts;
+    std::string current_part;
+    std::istringstream path_stream(path);
+
+    while (std::getline(path_stream, current_part, '.')) {
+        path_parts.push_back(current_part);
+    }
+
+    return path_parts;
+}
+
 
 

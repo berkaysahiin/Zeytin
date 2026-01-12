@@ -1,6 +1,7 @@
 module;
 
 #include "imgui.h"
+#include "rapidjson/document.h"
 
 #include <optional>
 #include <string>
@@ -95,4 +96,21 @@ export void show_tooltip_if_hovered(const std::optional<std::string>& tooltip) {
     if (ImGui::IsItemHovered()) {
         ImGui::SetTooltip("%s", tooltip->c_str());
     }
+}
+
+export std::optional<std::string> get_key_type_from_value(const rapidjson::Value& value) {
+    if (value.IsInt()) {
+        return "int";
+    }
+    if (value.IsFloat() || value.IsDouble()) {
+        return "float";
+    }
+    if (value.IsBool()) {
+        return "bool";
+    }
+    if (value.IsString()) {
+        return "string";
+    }
+
+    return std::nullopt;
 }

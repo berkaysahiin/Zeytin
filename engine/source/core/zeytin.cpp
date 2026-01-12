@@ -20,6 +20,7 @@ import zeytin.level;
 import zeytin.resource;
 import zeytin.logger;
 import zeytin.common.message.engine_to_editor.scene;
+import zeytin.common.message.engine_to_editor.tracked_property_value;
 import zeytin.json;
 import zeytin.component;
 import zeytin.guid;
@@ -687,6 +688,13 @@ void Zeytin::subscribe_editor_events() {
             handle_entity_selected(msg);
         }
     );
+
+    EditorEventBus::get().subscribe<const rapidjson::Document&>(
+        EditorEvent::TrackedPropertyRequest,
+        [this](const rapidjson::Document& msg) {
+            handle_tracked_property_request(msg);
+        }
+    );
 }
 
 void Zeytin::handle_entity_property_changed(const rapidjson::Document& doc) {
@@ -970,6 +978,87 @@ void Zeytin::handle_entity_selected(const rapidjson::Document& msg) {
 
     m_selected_entity = msg["entity_id"].GetUint64();
     log_info("Entity selected: {}", m_selected_entity);
+}
+
+void Zeytin::handle_tracked_property_request(const rapidjson::Document& msg) {
+    if (msg.HasParseError()) {
+        log_error("Invalid tracked property request");
+        return;
+    }
+
+    if (!msg.HasMember("entity_id") || !msg.HasMember("variant_type") || !msg.HasMember("key_type") ||
+        !msg.HasMember("key_path")) {
+        log_error("Tracked property request missing fields");
+        return;
+    }
+
+    const uint64_t entity_id = msg["entity_id"].GetUint64();
+    const std::string variant_type = msg["variant_type"].GetString();
+    const std::string key_type = msg["key_type"].GetString();
+    const std::string key_path = msg["key_path"].GetString();
+
+    auto& variants = get_components(entity_id);
+    for (auto& variant : variants) {
+        if (variant.get_type().get_name() != variant_type) {
+            continue;
+        }
+
+        const std::vector<std::string> path_parts = split_path(key_path);
+        if (path_parts.empty()) {
+            log_error("Tracked property request: empty key path");
+            return;
+        }
+
+        auto value_opt = get_property_value(variant, path_parts, 0);
+        if (!value_opt) {
+            log_error("Tracked property request: property '{}' not found", key_path);
+            return;
+        }
+
+        std::string value_str;
+        rttr::variant value = *value_opt;
+
+        if (key_type == "int") {
+            if (value.can_convert<int>()) {
+                value.convert<int>();
+                value_str = std::to_string(value.get_value<int>());
+            }
+        } else if (key_type == "float") {
+            if (value.can_convert<float>()) {
+                value.convert<float>();
+                value_str = std::to_string(value.get_value<float>());
+            }
+        } else if (key_type == "bool") {
+            if (value.can_convert<bool>()) {
+                value.convert<bool>();
+                value_str = value.get_value<bool>() ? "true" : "false";
+            }
+        } else if (key_type == "string") {
+            if (value.can_convert<std::string>()) {
+                value.convert<std::string>();
+                value_str = value.get_value<std::string>();
+            }
+        } else {
+            log_warning("Tracked property request: unsupported key type {}", key_type);
+            return;
+        }
+
+        if (value_str.empty() && key_type != "string") {
+            log_warning("Tracked property request: failed to serialize {}", key_path);
+            return;
+        }
+
+        send_message_to_editor<TrackedPropertyValueMessage>(
+            entity_id,
+            variant_type,
+            key_type,
+            key_path,
+            value_str
+        );
+        return;
+    }
+
+    log_error("Tracked property request: variant '{}' not found", variant_type);
 }
 
 #endif // EDITOR_MODE

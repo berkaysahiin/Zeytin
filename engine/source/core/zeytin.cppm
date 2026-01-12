@@ -92,6 +92,7 @@ public:
 	void handle_entity_added(const rapidjson::Document& msg);
     void handle_entity_removed(const rapidjson::Document& msg);
     void handle_entity_selected(const rapidjson::Document& msg);
+    void handle_tracked_property_request(const rapidjson::Document& msg);
     
     // Editor gizmos
     inline uint64_t get_selected_entity() const { return m_selected_entity; }

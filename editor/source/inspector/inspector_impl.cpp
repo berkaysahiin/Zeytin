@@ -23,6 +23,9 @@ import zeytin.logger;
 import zeytin.entity.registry;
 import zeytin.variant.metadata;
 import zeytin.inspector.utils;
+import zeytin.inspector.tracking;
+import zeytin.property.tracker;
+import zeytin.asset;
 
 struct Inspector::Impl {
     std::vector<VariantDocument>& variants;
@@ -58,6 +61,8 @@ Inspector::Inspector(std::vector<VariantDocument>& variants)
 Inspector::~Inspector() = default;
 
 void Inspector::render() {
+	PropertyTracker::get().update();
+
 	EntityDocument* entity = SelectionManager::get().get_selected_entity_unsafe();
 
 	if(entity == nullptr) {
@@ -195,16 +200,24 @@ void Inspector::Impl::render_property(rapidjson::Document& document, rapidjson::
 
 	const bool is_readonly = VariantMetadata::get().has_annotation(variant_type, key, "READONLY");
 	const auto tooltip = VariantMetadata::get().get_annotation(variant_type, key, "TOOLTIP");
-	const bool has_tooltip = tooltip.has_value() && !tooltip->empty();
 	const auto min_annotation = VariantMetadata::get().get_annotation(variant_type, key, "MIN");
 	const auto max_annotation = VariantMetadata::get().get_annotation(variant_type, key, "MAX");
+	const auto key_type = get_key_type_from_value(value);
 
     const std::string unique_id = std::to_string(entity_id) + "_" + variant_type + "_" + current_path;
 
 
+    const PropertyLocation location{entity_id, variant_type, current_path};
+    const bool is_tracked = is_property_tracked(location, key_type);
+
     ImGui::AlignTextToFramePadding();
+    push_tracked_label_style(is_tracked);
     ImGui::Text("%s", key.c_str());
+    pop_tracked_label_style(is_tracked);
     show_tooltip_if_hovered(tooltip);
+
+    render_property_tracking_menu("track_property_context_label##" + unique_id, location, key_type);
+
     ImGui::SameLine(150.0f);
     ImGui::PushItemWidth(-1);
 
@@ -213,6 +226,7 @@ void Inspector::Impl::render_property(rapidjson::Document& document, rapidjson::
         int int_value = value.GetInt();
         const IntBounds bounds = make_int_bounds(min_annotation, max_annotation);
 
+        push_tracked_value_style(is_tracked);
         ImGui::BeginDisabled(is_readonly);
         bool edited = ImGui::DragInt(("##" + unique_id).c_str(), &int_value, 1.0f,
                                      bounds.use ? bounds.min : 0,
@@ -220,6 +234,8 @@ void Inspector::Impl::render_property(rapidjson::Document& document, rapidjson::
         bool activated = ImGui::IsItemActivated();
         bool deactivated = ImGui::IsItemDeactivatedAfterEdit();
         ImGui::EndDisabled();
+        render_property_tracking_menu("track_property_context_value##" + unique_id, location, key_type);
+        pop_tracked_value_style(is_tracked);
 
         if (!is_readonly) {
             if (activated || edited || deactivated) {
@@ -268,6 +284,7 @@ void Inspector::Impl::render_property(rapidjson::Document& document, rapidjson::
             static_cast<float>(value.GetDouble()) : value.GetFloat();
         const FloatBounds bounds = make_float_bounds(min_annotation, max_annotation);
 
+        push_tracked_value_style(is_tracked);
         ImGui::BeginDisabled(is_readonly);
         bool edited = ImGui::DragFloat(("##" + unique_id).c_str(), &float_value, 0.1f,
                                        bounds.use ? bounds.min : 0.0f,
@@ -276,6 +293,8 @@ void Inspector::Impl::render_property(rapidjson::Document& document, rapidjson::
         bool activated = ImGui::IsItemActivated();
         bool deactivated = ImGui::IsItemDeactivatedAfterEdit();
         ImGui::EndDisabled();
+        render_property_tracking_menu("track_property_context_value##" + unique_id, location, key_type);
+        pop_tracked_value_style(is_tracked);
 
         if (!is_readonly) {
             if (activated || edited || deactivated) {
@@ -324,9 +343,12 @@ void Inspector::Impl::render_property(rapidjson::Document& document, rapidjson::
         bool bool_value = value.GetBool();
         bool old_value = bool_value;
 
+        push_tracked_value_style(is_tracked);
         ImGui::BeginDisabled(is_readonly);
         bool edited = ImGui::Checkbox(("##" + unique_id).c_str(), &bool_value);
         ImGui::EndDisabled();
+        render_property_tracking_menu("track_property_context_value##" + unique_id, location, key_type);
+        pop_tracked_value_style(is_tracked);
 
         if (!is_readonly && edited) {
             log_info("BOOL [{}]: changed from {} to {}", key, old_value, bool_value);
@@ -344,11 +366,14 @@ void Inspector::Impl::render_property(rapidjson::Document& document, rapidjson::
         strncpy(buffer, value.GetString(), sizeof(buffer) - 1);
         buffer[sizeof(buffer) - 1] = '\0';
 
+        push_tracked_value_style(is_tracked);
         ImGui::BeginDisabled(is_readonly);
         bool edited = ImGui::InputText(("##" + unique_id).c_str(), buffer, sizeof(buffer));
         bool activated = ImGui::IsItemActivated();
         bool deactivated = ImGui::IsItemDeactivatedAfterEdit();
         ImGui::EndDisabled();
+        render_property_tracking_menu("track_property_context_value##" + unique_id, location, key_type);
+        pop_tracked_value_style(is_tracked);
 
         if (!is_readonly) {
             if (activated || edited || deactivated) {

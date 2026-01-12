@@ -28,7 +28,9 @@ import zeytin.common.message.engine_to_editor.engine_started;
 import zeytin.common.message.engine_to_editor.entity_selected;
 import zeytin.common.message.engine_to_editor.log_message;
 import zeytin.common.message.engine_to_editor.property_change_command;
+import zeytin.common.message.engine_to_editor.tracked_property_value;
 import zeytin.common.message.engine_to_editor.scene;
+import zeytin.property.tracker;
 
 void EngineCommunication::register_message_handlers() {
     auto& registry = MessageRegistry::get();
@@ -103,6 +105,18 @@ void EngineCommunication::register_message_handlers() {
             } else if (message.level == "ERROR") {
                 log_error("[ENGINE] {}", message.message);
             }
+        }
+    });
+    registry.register_handler(TrackedPropertyValueMessage{}.get_type(), [](const rapidjson::Document& doc, const std::string&) {
+        TrackedPropertyValueMessage message;
+        if (message.from_json(doc)) {
+            PropertyTracker::get().handle_tracked_value(
+                message.entity_id,
+                message.variant_type,
+                message.key_type,
+                message.key_path,
+                message.value
+            );
         }
     });
 }

@@ -18,6 +18,7 @@ import zeytin.metadata.viewer;
 import zeytin.entity.list;
 import zeytin.entity.registry;
 import zeytin.windows.level;
+import zeytin.windows.property_tracker;
 import zeytin.inspector;
 import zeytin.command.keyboardlistener;
 import zeytin.command_history;
@@ -106,6 +107,11 @@ int main(int argc, char* argv[])
         window_manager.add_window("Inspector",
             [&inspector]() {
                 inspector.render();
+            });
+
+        window_manager.add_window("Property Tracker",
+            []() {
+                PropertyTrackerWindow::get().render();
             });
         
         window_manager.add_window("Command History",
