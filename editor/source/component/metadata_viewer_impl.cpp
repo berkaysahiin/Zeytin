@@ -40,7 +40,10 @@ void MetadataViewer::render_variant_list() {
     
     for (int i = 0; i < variants.size(); i++) {
         const auto& variant = variants[i];
-        
+        if (variant.is_dead()) {
+            continue;
+        }
+
         const bool is_selected = (m_selected_variant_index == i);
         if (ImGui::Selectable(variant.get_name().c_str(), is_selected)) {
             m_selected_variant_index = i;
@@ -62,8 +65,13 @@ void MetadataViewer::render_variant_details() {
         ImGui::TextDisabled("Select a component to view metadata");
         return;
     }
-    
+
     const auto& variant = variants[m_selected_variant_index];
+    if (variant.is_dead()) {
+        ImGui::TextDisabled("Selected component was removed");
+        return;
+    }
+
     const std::string& variant_name = variant.get_name();
     
     ImGui::Text("Component: %s", variant_name.c_str());
