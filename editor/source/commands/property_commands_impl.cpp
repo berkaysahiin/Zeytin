@@ -1,8 +1,5 @@
 module;
 
-#include "rapidjson/document.h"
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
 #include "rapidjson/pointer.h"
 
 #include <cassert>
@@ -15,7 +12,8 @@ module;
 
 module zeytin.command.property;
 import zeytin.selection;
-import zeytin.engine.event;
+import zeytin.engine.message;
+import zeytin.common.message.editor_to_engine.entity_property_changed;
 import zeytin.entity.document;
 import zeytin.logger;
 import zeytin.entity.registry;
@@ -131,29 +129,16 @@ bool PropertyChangeCommand::Impl::update_entity_document(const PropertyValue& va
 }
 
 void PropertyChangeCommand::Impl::notify_engine(const PropertyValue& value, const PropertyLocation& loc) {
-    // Build JSON message to notify the engine of the property change
-    rapidjson::Document msg;
-    msg.SetObject();
-    auto& alloc = msg.GetAllocator();
-
-    msg.AddMember("type", "entity_property_changed", alloc);
-    msg.AddMember("entity_id", loc.entity_id, alloc);
-    msg.AddMember("variant_type", rapidjson::Value(loc.variant_type.c_str(), alloc), alloc);
-    msg.AddMember("key_type", rapidjson::Value(get_key_type(value).c_str(), alloc), alloc);
-    msg.AddMember("key_path", rapidjson::Value(loc.key_path.c_str(), alloc), alloc);
-    msg.AddMember("value", rapidjson::Value(value_to_string(value).c_str(), alloc), alloc);
-
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    msg.Accept(writer);
-
-    // Send message to engine via event bus
-    EngineEventBus::get().publish<const std::string&>(
-        EngineEvent::EntityModifiedEditor, 
-        buffer.GetString()
+    const std::string value_str = value_to_string(value);
+    send_message_to_engine<EditorEntityPropertyChangedMessage>(
+        loc.entity_id,
+        loc.variant_type,
+        get_key_type(value),
+        loc.key_path,
+        value_str
     );
 
-	log_trace("Command send to engine");
+    log_trace("Command send to engine");
 }
 
 std::string PropertyChangeCommand::Impl::value_to_string(const PropertyValue& value) const {

@@ -112,7 +112,7 @@ EngineCommunication::EngineCommunication()
     , m_initialized(false)
     , m_context(1)
     , m_publisher(m_context, zmq::socket_type::pub)
-    , m_subscriber(m_context, zmq::socket_type::sub) 
+    , m_subscriber(m_context, zmq::socket_type::sub)
 {
     initialize();
     register_event_handlers();
@@ -124,66 +124,6 @@ EngineCommunication::~EngineCommunication() {
 }
 
 void EngineCommunication::register_event_handlers() {
-    EngineEventBus::get().subscribe<const std::string&>(EngineEvent::EngineSendScene,
-            [this](const auto& msg) {
-                send_message(msg);
-    });
-
-    EngineEventBus::get().subscribe<const std::string&>(
-        EngineEvent::EntityModifiedEditor, 
-        [this](const std::string& msg) {
-            send_message(msg);
-        }
-    );
-
-    EngineEventBus::get().subscribe<const std::string&>(
-        EngineEvent::EntitySelectedEditor, 
-        [this](const std::string& msg) {
-            send_message(msg);
-        }
-    );
-
-    EngineEventBus::get().subscribe<bool>(
-        EngineEvent::EnterPlayMode, 
-        [this](bool paused) {
-            send_simple_message("enter_play_mode", "is_paused", paused);
-        }
-    );
-
-    EngineEventBus::get().subscribe<bool>(
-        EngineEvent::ExitPlayMode, 
-        [this](bool) {
-            send_simple_message("exit_play_mode");
-        }
-    );
-
-    EngineEventBus::get().subscribe<bool>(
-        EngineEvent::PausePlayMode, 
-        [this](bool) {
-            send_simple_message("pause_play_mode");
-        }
-    );
-
-    EngineEventBus::get().subscribe<bool>(
-        EngineEvent::UnPausePlayMode, 
-        [this](bool) {
-            send_simple_message("unpause_play_mode");
-        }
-    );
-
-    EngineEventBus::get().subscribe<bool>(
-        EngineEvent::KillEngine, 
-        [this](bool) {
-            send_simple_message("die");
-        }
-    );
-
-    EngineEventBus::get().subscribe<const std::string&>(
-        EngineEvent::WindowStateChanged,
-        [this](const std::string& message) {
-            send_message(message);
-        }
-    );
 }
 
 bool EngineCommunication::initialize() {

@@ -40,7 +40,7 @@ int main(int argc, char* argv[])
     // wrap everything in a scope to ensure proper destruction order
     {
         EngineControls engine_controls;
-        EngineCommunication engine_communication;
+        EngineCommunication::get();
 
         EntityList entity_list;
         EntityRegistry::get().set_entity_list(entity_list);  

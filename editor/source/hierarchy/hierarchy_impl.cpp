@@ -2,14 +2,14 @@ module;
 
 #include "imgui.h"
 #include "rapidjson/document.h"
-#include "rapidjson/writer.h"
 
 #include <random>
 #include <algorithm>
 
 module zeytin.hierarchy;
 import zeytin.entity.list;
-import zeytin.engine.event;
+import zeytin.engine.message;
+import zeytin.common.message.editor_to_engine.entity_removed;
 import zeytin.selection;
 import zeytin.command.manager;
 import zeytin.command.component;
@@ -20,18 +20,7 @@ import zeytin.validation.entity;
 
 namespace {
     void notify_entity_removed(uint64_t entity_id) {
-        rapidjson::Document msg;
-        msg.SetObject();
-        auto& alloc = msg.GetAllocator();
-
-        msg.AddMember("type", "entity_removed", alloc);
-        msg.AddMember("entity_id", entity_id, alloc);
-
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        msg.Accept(writer);
-
-        EngineEventBus::get().publish<const std::string&>(EngineEvent::EntityModifiedEditor, buffer.GetString());
+        send_message_to_engine<EditorEntityRemovedMessage>(entity_id);
     }
 }
 

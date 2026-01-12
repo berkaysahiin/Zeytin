@@ -2,9 +2,6 @@ module;
 
 #include "imgui.h"
 
-#include "rapidjson/document.h"
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
 
 #include <filesystem>
 #include <fstream>
@@ -17,6 +14,13 @@ module;
 module zeytin.engine.controls;
 import zeytin.resource;
 import zeytin.engine.event;
+import zeytin.engine.message;
+import zeytin.common.message.editor_to_engine.enter_play_mode;
+import zeytin.common.message.editor_to_engine.exit_play_mode;
+import zeytin.common.message.editor_to_engine.pause_play_mode;
+import zeytin.common.message.editor_to_engine.unpause_play_mode;
+import zeytin.common.message.editor_to_engine.window_state;
+import zeytin.common.message.editor_to_engine.die;
 import zeytin.logger;
 
 EngineControls::EngineControls() 
@@ -165,8 +169,10 @@ void EngineControls::render_play_controls() {
             m_is_paused = !m_is_paused;
             if (m_is_paused) {
                 EngineEventBus::get().publish<bool>(EngineEvent::PausePlayMode, true);
+                send_message_to_engine<EditorPausePlayModeMessage>();
             } else {
                 EngineEventBus::get().publish<bool>(EngineEvent::UnPausePlayMode, true);
+                send_message_to_engine<EditorUnpausePlayModeMessage>();
             }
         }
         
@@ -330,30 +336,21 @@ void EngineControls::kill_engine() {
     m_is_paused = false;
     m_is_engine_starting = false;
 
-    EngineEventBus::get().publish<bool>(EngineEvent::KillEngine, true);
+    send_message_to_engine<EditorDieMessage>();
 }
 
 void EngineControls::enter_play_mode() {
     EngineEventBus::get().publish<bool>(EngineEvent::EnterPlayMode, m_is_paused);
+    send_message_to_engine<EditorEnterPlayModeMessage>(m_is_paused);
 }
 
 void EngineControls::exit_play_mode() {
     m_is_play_mode = false;
     m_is_paused = false;
     EngineEventBus::get().publish<bool>(EngineEvent::ExitPlayMode, true);
+    send_message_to_engine<EditorExitPlayModeMessage>();
 }
 
 void EngineControls::send_window_state(bool hidden) {
-    rapidjson::Document doc;
-    doc.SetObject();
-    auto& allocator = doc.GetAllocator();
-
-    doc.AddMember("type", "window_state", allocator);
-    doc.AddMember("hidden", hidden, allocator);
-
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    doc.Accept(writer);
-
-    EngineEventBus::get().publish<const std::string&>(EngineEvent::WindowStateChanged, buffer.GetString());
+    send_message_to_engine<EditorWindowStateMessage>(hidden);
 }

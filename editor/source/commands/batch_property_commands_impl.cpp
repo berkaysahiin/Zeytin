@@ -1,8 +1,6 @@
 module;
 
 #include "rapidjson/document.h"
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
 #include "rapidjson/pointer.h"
 
 #include <cassert>
@@ -16,7 +14,8 @@ module;
 
 module zeytin.command.batch_property;
 import zeytin.selection;
-import zeytin.engine.event;
+import zeytin.engine.message;
+import zeytin.common.message.editor_to_engine.entity_property_changed;
 import zeytin.entity.document;
 import zeytin.logger;
 import zeytin.entity.registry;
@@ -141,30 +140,14 @@ bool BatchPropertyChangeCommand::Impl::update_entity_document(const PropertyChan
 
 // TODO: make this batch also ?
 void BatchPropertyChangeCommand::Impl::notify_engine(const PropertyChange& change) {
-    rapidjson::Document msg;
-    msg.SetObject();
-    auto& alloc = msg.GetAllocator();
-    
-    msg.AddMember("type", "entity_property_changed", alloc);
-    msg.AddMember("entity_id", entity_id, alloc);
-    
-    rapidjson::Value variant_type_val(variant_type.c_str(), alloc);
-    msg.AddMember("variant_type", variant_type_val, alloc);
-    
-    rapidjson::Value key_path_val(change.key_path.c_str(), alloc);
-    msg.AddMember("key_path", key_path_val, alloc);
-    
-    rapidjson::Value key_type_val(get_key_type(change.new_value).c_str(), alloc);
-    msg.AddMember("key_type", key_type_val, alloc);
-    
-    rapidjson::Value value_val(value_to_string(change.new_value).c_str(), alloc);
-    msg.AddMember("value", value_val, alloc);
-    
-    rapidjson::StringBuffer buffer;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-    msg.Accept(writer);
-    
-    EngineEventBus::get().publish<const std::string&>(EngineEvent::EntityModifiedEditor, buffer.GetString());
+    const std::string value = value_to_string(change.new_value);
+    send_message_to_engine<EditorEntityPropertyChangedMessage>(
+        entity_id,
+        variant_type,
+        get_key_type(change.new_value),
+        change.key_path,
+        value
+    );
 }
 
 std::string BatchPropertyChangeCommand::Impl::value_to_string(const PropertyValue& value) const {

@@ -9,9 +9,13 @@ module;
 
 export module zeytin.engine.communication;
 
-export class EngineCommunication {
+import zeytin.singleton;
+
+export class EngineCommunication : public Singleton<EngineCommunication> {
+    friend class Singleton<EngineCommunication>;
 public:
-    EngineCommunication();
+    using Singleton<EngineCommunication>::get;
+
     ~EngineCommunication();
 
     bool initialize();
@@ -21,6 +25,8 @@ public:
     void raise_events();
 
 private:
+    EngineCommunication();
+
     void register_event_handlers();
     void register_message_handlers();
     void receive_messages();

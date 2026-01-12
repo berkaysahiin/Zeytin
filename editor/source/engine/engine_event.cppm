@@ -12,17 +12,12 @@ export module zeytin.engine.event;
 
 export enum class EngineEvent {
     EngineStarted,
-    EngineSendScene,
-    KillEngine,
     EngineStopped,
-    EntityModifiedEditor,
-    EntitySelectedEditor,
     EnterPlayMode,
     PausePlayMode,
     UnPausePlayMode,
     ExitPlayMode,
     SyncEditor,
-    WindowStateChanged,
 };
 
 export class EngineEventBus {

@@ -17,52 +17,26 @@ import zeytin.entity.list;
 import zeytin.entity.document;
 import zeytin.variant.document;
 import zeytin.variant.list;
-import zeytin.engine.event;
+import zeytin.engine.message;
+import zeytin.common.message.editor_to_engine.entity_variant_added;
+import zeytin.common.message.editor_to_engine.entity_variant_removed;
 import zeytin.logger;
 
 namespace {
     void notify_engine_component_added(uint64_t entity_id, const std::string& type, const rapidjson::Value* component_data = nullptr) {
-        rapidjson::Document msg;
-        msg.SetObject();
-        auto& alloc = msg.GetAllocator();
-        
-        msg.AddMember("type", "entity_variant_added", alloc);
-        msg.AddMember("entity_id", entity_id, alloc);
-        msg.AddMember("variant_type", rapidjson::Value(type.c_str(), alloc), alloc);
-        
+        std::string component_json;
         if (component_data) {
-            rapidjson::Value data_copy;
-            data_copy.CopyFrom(*component_data, alloc);
-            msg.AddMember("component_data", data_copy, alloc);
+            rapidjson::StringBuffer buffer;
+            rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+            component_data->Accept(writer);
+            component_json.assign(buffer.GetString(), buffer.GetSize());
         }
-        
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        msg.Accept(writer);
-        
-        EngineEventBus::get().publish<const std::string&>(
-            EngineEvent::EntityModifiedEditor, 
-            buffer.GetString()
-        );
+
+        send_message_to_engine<EditorEntityVariantAddedMessage>(entity_id, type, component_json);
     }
     
     void notify_engine_component_removed(uint64_t entity_id, const std::string& type) {
-        rapidjson::Document msg;
-        msg.SetObject();
-        auto& alloc = msg.GetAllocator();
-        
-        msg.AddMember("type", "entity_variant_removed", alloc);
-        msg.AddMember("entity_id", entity_id, alloc);
-        msg.AddMember("variant_type", rapidjson::Value(type.c_str(), alloc), alloc);
-        
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        msg.Accept(writer);
-        
-        EngineEventBus::get().publish<const std::string&>(
-            EngineEvent::EntityModifiedEditor, 
-            buffer.GetString()
-        );
+        send_message_to_engine<EditorEntityVariantRemovedMessage>(entity_id, type);
     }
 
     EntityDocument* get_entity(uint64_t entity_id) {

@@ -4,15 +4,13 @@ module;
 #include <vector>
 #include <memory>
 #include <optional>
-#include "rapidjson/document.h"
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
 
 module zeytin.selection;
 import zeytin.entity.registry;
 import zeytin.logger;
 import zeytin.level;
-import zeytin.engine.event;
+import zeytin.engine.message;
+import zeytin.common.message.editor_to_engine.entity_selected;
 
 struct SelectionManager::Impl {
 	//TODO: change this to EntityID or not ?
@@ -28,23 +26,8 @@ struct SelectionManager::Impl {
     }
     
     void send_selection_to_engine() {
-        rapidjson::Document msg;
-        msg.SetObject();
-        auto& alloc = msg.GetAllocator();
-        
-        msg.AddMember("type", "entity_selected", alloc);
-        
-        if (selected_entity) {
-            msg.AddMember("entity_id", selected_entity->get_id(), alloc);
-        } else {
-            msg.AddMember("entity_id", 0, alloc);
-        }
-        
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        msg.Accept(writer);
-        
-        EngineEventBus::get().publish<const std::string&>(EngineEvent::EntitySelectedEditor, buffer.GetString());
+        const uint64_t entity_id = selected_entity ? selected_entity->get_id() : 0;
+        send_message_to_engine<EditorEntitySelectedMessage>(entity_id);
     }
 };
 

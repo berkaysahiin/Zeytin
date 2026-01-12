@@ -86,16 +86,20 @@ void EngineView::handle_input() {
     m_is_focused = ImGui::IsWindowFocused();
     m_is_hovered = ImGui::IsItemHovered();
 
-    m_input_writer.set_focus(m_is_focused, m_is_hovered);
+    const bool allow_keyboard = m_is_focused;
+    const bool allow_mouse = m_is_hovered;
+
+    m_input_writer.set_focus(allow_keyboard, allow_mouse);
 
     // only process input if window is focused or hovered
-    if (!m_is_focused && !m_is_hovered) {
+    if (!allow_keyboard && !allow_mouse) {
         m_input_writer.end_frame();
         return;
     }
 
+
     // handle mouse position. transform from screen space to virtual space
-    if (m_is_hovered && m_image_width > 0 && m_image_height > 0) {
+    if (allow_mouse && m_image_width > 0 && m_image_height > 0) {
         ImVec2 mouse_pos = ImGui::GetMousePos();
         ImVec2 window_pos = ImGui::GetWindowPos();
 
@@ -117,8 +121,9 @@ void EngineView::handle_input() {
 
         m_input_writer.set_mouse_position(virtual_x, virtual_y);
 
-        // mouse delta
         const ImGuiIO& io = ImGui::GetIO();
+
+        // mouse delta
         float delta_scale_x = static_cast<float>(m_width) / m_image_width;
         float delta_scale_y = static_cast<float>(m_height) / m_image_height;
         m_input_writer.set_mouse_delta(io.MouseDelta.x * delta_scale_x, io.MouseDelta.y * delta_scale_y);
@@ -126,17 +131,21 @@ void EngineView::handle_input() {
 		// scroll
         m_input_writer.set_scroll_delta(io.MouseWheel);
     }
-
-    // mouse buttons check when focused
-    if (m_is_focused || m_is_hovered) {
+ 
+    // mouse buttons check when hovered
+    if (allow_mouse) {
         m_input_writer.set_mouse_button(0, ImGui::IsMouseDown(ImGuiMouseButton_Left));
         m_input_writer.set_mouse_button(1, ImGui::IsMouseDown(ImGuiMouseButton_Right));
         m_input_writer.set_mouse_button(2, ImGui::IsMouseDown(ImGuiMouseButton_Middle));
+    } else {
+        m_input_writer.set_mouse_button(0, false);
+        m_input_writer.set_mouse_button(1, false);
+        m_input_writer.set_mouse_button(2, false);
     }
-
+ 
     // keyboard input when focused
-    if (m_is_focused) {
-        ImGuiIO& io = ImGui::GetIO();
+    if (allow_keyboard) {
+
 
         // check common game keys - map ImGui keys to Raylib key codes
         // letters A-Z (Raylib: 65-90)

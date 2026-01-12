@@ -11,6 +11,8 @@ module zeytin.entity.list;
 import zeytin.resource;
 import zeytin.engine.event;
 import zeytin.logger;
+import zeytin.engine.message;
+import zeytin.common.message.editor_to_engine.scene;
 
 namespace {
     constexpr const char* BACKUP_DIR = "temp_backup";
@@ -36,7 +38,8 @@ void EntityList::register_event_handlers() {
         [this](auto _) {
             std::string scene = as_string();
             if(!scene.empty()) {
-                EngineEventBus::get().publish<const std::string&>(EngineEvent::EngineSendScene, scene);
+                //EngineEventBus::get().publish<const std::string&>(EngineEvent::EngineSendScene, scene);
+				send_message_to_engine<EditorSceneMessage>(scene);
             }
             else {
                 //log_warning() << "Empty scene will not be sent to the engine" << std::endl;
@@ -330,7 +333,8 @@ void EntityList::load_level(const Level& level) {
     // Sync with engine if running
     if (m_is_play_mode || m_is_synced_once) {
         std::string scene = as_string();
-        EngineEventBus::get().publish<const std::string&>(EngineEvent::EngineSendScene, scene);
+        //EngineEventBus::get().publish<const std::string&>(EngineEvent::EngineSendScene, scene);
+		send_message_to_engine<EditorSceneMessage>(scene);
     }
 }
 

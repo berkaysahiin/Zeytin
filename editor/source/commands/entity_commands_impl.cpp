@@ -1,8 +1,6 @@
 module;
 
 #include "rapidjson/document.h"
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
 
 #include <memory>
 #include <optional>
@@ -12,51 +10,19 @@ module zeytin.command.entity;
 import zeytin.entity.document;
 import zeytin.entity.list;
 import zeytin.selection;
-import zeytin.engine.event;
+import zeytin.engine.message;
+import zeytin.common.message.editor_to_engine.entity_added;
+import zeytin.common.message.editor_to_engine.entity_removed;
 import zeytin.logger;
 import zeytin.entity.registry;
 
 namespace {
     void notify_entity_added(uint64_t entity_id, const std::string& entity_json) {
-        rapidjson::Document msg;
-        msg.SetObject();
-        auto& alloc = msg.GetAllocator();
-
-        msg.AddMember("type", "entity_added", alloc);
-        msg.AddMember("entity_id", entity_id, alloc);
-        
-        rapidjson::Document entity_data;
-        entity_data.Parse(entity_json.c_str());
-        rapidjson::Value entity_copy;
-        entity_copy.CopyFrom(entity_data, alloc);
-        msg.AddMember("entity_data", entity_copy, alloc);
-
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        msg.Accept(writer);
-
-        EngineEventBus::get().publish<const std::string&>(
-            EngineEvent::EntityModifiedEditor, 
-            buffer.GetString()
-        );
+        send_message_to_engine<EditorEntityAddedMessage>(entity_id, entity_json);
     }
 
     void notify_entity_removed(uint64_t entity_id) {
-        rapidjson::Document msg;
-        msg.SetObject();
-        auto& alloc = msg.GetAllocator();
-
-        msg.AddMember("type", "entity_removed", alloc);
-        msg.AddMember("entity_id", entity_id, alloc);
-
-        rapidjson::StringBuffer buffer;
-        rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-        msg.Accept(writer);
-
-        EngineEventBus::get().publish<const std::string&>(
-            EngineEvent::EntityModifiedEditor, 
-            buffer.GetString()
-        );
+        send_message_to_engine<EditorEntityRemovedMessage>(entity_id);
     }
 }
 
