@@ -192,114 +192,137 @@ void Inspector::Impl::render_property(rapidjson::Document& document, rapidjson::
 	const bool is_hidden = VariantMetadata::get().has_annotation(variant_type, key, "HIDDEN");
 	if(is_hidden) return;
 
+	const bool is_readonly = VariantMetadata::get().has_annotation(variant_type, key, "READONLY");
+	const auto tooltip = VariantMetadata::get().get_annotation(variant_type, key, "TOOLTIP");
+	const bool has_tooltip = tooltip.has_value() && !tooltip->empty();
+
     const std::string unique_id = std::to_string(entity_id) + "_" + variant_type + "_" + current_path;
+
+    auto show_tooltip = [&tooltip, has_tooltip]() {
+        if (has_tooltip && ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("%s", tooltip->c_str());
+        }
+    };
 
     ImGui::AlignTextToFramePadding();
     ImGui::Text("%s", key.c_str());
+    show_tooltip();
     ImGui::SameLine(150.0f);
     ImGui::PushItemWidth(-1);
 
     if (value.IsInt()) {
         int int_value = value.GetInt();
-        
+
+        ImGui::BeginDisabled(is_readonly);
         bool edited = ImGui::DragInt(("##" + unique_id).c_str(), &int_value);
         bool activated = ImGui::IsItemActivated();
         bool deactivated = ImGui::IsItemDeactivatedAfterEdit();
-        
-        if (activated || edited || deactivated) {
-            log_info("INT [{}]: activated={}, edited={}, deactivated={}, old={}, new={}", 
-                     key, activated, edited, deactivated, value.GetInt(), int_value);
-        }
-        
-        if (activated) {
-            editing_original_values[unique_id] = value.GetInt();
-            log_info("Captured old value for {}: {}", key, value.GetInt());
-        }
-        
-        if (edited) {
-            value.SetInt(int_value);
-        }
-        
-        if (deactivated) {
-            log_info("Deactivated for {}", key);
-            auto it = editing_original_values.find(unique_id);
-            if (it != editing_original_values.end()) {
-                int old_value = std::get<int>(it->second);
-                
-                log_info("Found old value: {}, new value: {}", old_value, int_value);
-                
-                if (old_value != int_value) {
-                    log_info("Creating command for {} change: {} -> {}", key, old_value, int_value);
-                    auto command = std::make_unique<PropertyChangeCommand>(
-                        PropertyLocation{entity_id, variant_type, current_path},
-                        old_value,
-                        int_value
-                    );
-                    CommandManager::get().execute_command(std::move(command));
+        ImGui::EndDisabled();
+
+        if (!is_readonly) {
+            if (activated || edited || deactivated) {
+                log_info("INT [{}]: activated={}, edited={}, deactivated={}, old={}, new={}", 
+                         key, activated, edited, deactivated, value.GetInt(), int_value);
+            }
+
+            if (activated) {
+                editing_original_values[unique_id] = value.GetInt();
+                log_info("Captured old value for {}: {}", key, value.GetInt());
+            }
+
+            if (edited) {
+                value.SetInt(int_value);
+            }
+
+            if (deactivated) {
+                log_info("Deactivated for {}", key);
+                auto it = editing_original_values.find(unique_id);
+                if (it != editing_original_values.end()) {
+                    int old_value = std::get<int>(it->second);
+
+                    log_info("Found old value: {}, new value: {}", old_value, int_value);
+
+                    if (old_value != int_value) {
+                        log_info("Creating command for {} change: {} -> {}", key, old_value, int_value);
+                        auto command = std::make_unique<PropertyChangeCommand>(
+                            PropertyLocation{entity_id, variant_type, current_path},
+                            old_value,
+                            int_value
+                        );
+                        CommandManager::get().execute_command(std::move(command));
+                    } else {
+                        log_info("Values are equal, no command needed");
+                    }
+
+                    editing_original_values.erase(it);
                 } else {
-                    log_info("Values are equal, no command needed");
+                    log_error("Deactivated for {} but no original value found!", key);
                 }
-                
-                editing_original_values.erase(it);
-            } else {
-                log_error("Deactivated for {} but no original value found!", key);
             }
         }
     } 
     else if (value.IsFloat() || value.IsDouble()) {
         float float_value = value.IsDouble() ? 
             static_cast<float>(value.GetDouble()) : value.GetFloat();
-        
+
+        ImGui::BeginDisabled(is_readonly);
         bool edited = ImGui::DragFloat(("##" + unique_id).c_str(), &float_value, 0.1f, 0.0f, 0.0f, "%.3f");
         bool activated = ImGui::IsItemActivated();
         bool deactivated = ImGui::IsItemDeactivatedAfterEdit();
-        
-        if (activated || edited || deactivated) {
-            log_info("FLOAT [{}]: activated={}, edited={}, deactivated={}, old={}, new={}", 
-                     key, activated, edited, deactivated, 
-                     value.IsDouble() ? value.GetDouble() : value.GetFloat(), float_value);
-        }
-        
-        if (activated) {
-            editing_original_values[unique_id] = float_value;
-            log_info("Captured old value for {}: {}", key, float_value);
-        }
-        
-        if (edited) {
-            value.SetFloat(float_value);
-        }
-        
-        if (deactivated) {
-            log_info("Deactivated for {}", key);
-            auto it = editing_original_values.find(unique_id);
-            if (it != editing_original_values.end()) {
-                float old_value = std::get<float>(it->second);
-                
-                log_info("Found old value: {}, new value: {}", old_value, float_value);
-                
-                if (old_value != float_value) {
-                    log_info("Creating command for {} change: {} -> {}", key, old_value, float_value);
-                    auto command = std::make_unique<PropertyChangeCommand>(
-                        PropertyLocation{entity_id, variant_type, current_path},
-                        old_value,
-                        float_value
-                    );
-                    CommandManager::get().execute_command(std::move(command));
+        ImGui::EndDisabled();
+
+        if (!is_readonly) {
+            if (activated || edited || deactivated) {
+                log_info("FLOAT [{}]: activated={}, edited={}, deactivated={}, old={}, new={}", 
+                         key, activated, edited, deactivated, 
+                         value.IsDouble() ? value.GetDouble() : value.GetFloat(), float_value);
+            }
+
+            if (activated) {
+                editing_original_values[unique_id] = float_value;
+                log_info("Captured old value for {}: {}", key, float_value);
+            }
+
+            if (edited) {
+                value.SetFloat(float_value);
+            }
+
+            if (deactivated) {
+                log_info("Deactivated for {}", key);
+                auto it = editing_original_values.find(unique_id);
+                if (it != editing_original_values.end()) {
+                    float old_value = std::get<float>(it->second);
+
+                    log_info("Found old value: {}, new value: {}", old_value, float_value);
+
+                    if (old_value != float_value) {
+                        log_info("Creating command for {} change: {} -> {}", key, old_value, float_value);
+                        auto command = std::make_unique<PropertyChangeCommand>(
+                            PropertyLocation{entity_id, variant_type, current_path},
+                            old_value,
+                            float_value
+                        );
+                        CommandManager::get().execute_command(std::move(command));
+                    } else {
+                        log_info("Values are equal, no command needed");
+                    }
+
+                    editing_original_values.erase(it);
                 } else {
-                    log_info("Values are equal, no command needed");
+                    log_error("Deactivated for {} but no original value found!", key);
                 }
-                
-                editing_original_values.erase(it);
-            } else {
-                log_error("Deactivated for {} but no original value found!", key);
             }
         }
     } 
     else if (value.IsBool()) {
         bool bool_value = value.GetBool();
         bool old_value = bool_value;
-        
-        if (ImGui::Checkbox(("##" + unique_id).c_str(), &bool_value)) {
+
+        ImGui::BeginDisabled(is_readonly);
+        bool edited = ImGui::Checkbox(("##" + unique_id).c_str(), &bool_value);
+        ImGui::EndDisabled();
+
+        if (!is_readonly && edited) {
             log_info("BOOL [{}]: changed from {} to {}", key, old_value, bool_value);
             value.SetBool(bool_value);
             auto command = std::make_unique<PropertyChangeCommand>(
@@ -314,49 +337,53 @@ void Inspector::Impl::render_property(rapidjson::Document& document, rapidjson::
         char buffer[256];
         strncpy(buffer, value.GetString(), sizeof(buffer) - 1);
         buffer[sizeof(buffer) - 1] = '\0';
-        
+
+        ImGui::BeginDisabled(is_readonly);
         bool edited = ImGui::InputText(("##" + unique_id).c_str(), buffer, sizeof(buffer));
         bool activated = ImGui::IsItemActivated();
         bool deactivated = ImGui::IsItemDeactivatedAfterEdit();
-        
-        if (activated || edited || deactivated) {
-            log_info("STRING [{}]: activated={}, edited={}, deactivated={}, old='{}', new='{}'", 
-                     key, activated, edited, deactivated, value.GetString(), buffer);
-        }
-        
-        if (activated) {
-            editing_original_values[unique_id] = std::string(value.GetString());
-            log_info("Captured old value for {}: '{}'", key, value.GetString());
-        }
-        
-        if (edited) {
-            value.SetString(buffer, document.GetAllocator());
-        }
-        
-        if (deactivated) {
-            log_info("Deactivated for {}", key);
-            auto it = editing_original_values.find(unique_id);
-            if (it != editing_original_values.end()) {
-                std::string old_value = std::get<std::string>(it->second);
-                std::string new_str_value = buffer;
-                
-                log_info("Found old value: '{}', new value: '{}'", old_value, new_str_value);
-                
-                if (old_value != new_str_value) {
-                    log_info("Creating command for {} change: '{}' -> '{}'", key, old_value, new_str_value);
-                    auto command = std::make_unique<PropertyChangeCommand>(
-                        PropertyLocation{entity_id, variant_type, current_path},
-                        old_value,
-                        new_str_value
-                    );
-                    CommandManager::get().execute_command(std::move(command));
+        ImGui::EndDisabled();
+
+        if (!is_readonly) {
+            if (activated || edited || deactivated) {
+                log_info("STRING [{}]: activated={}, edited={}, deactivated={}, old='{}', new='{}'", 
+                         key, activated, edited, deactivated, value.GetString(), buffer);
+            }
+
+            if (activated) {
+                editing_original_values[unique_id] = std::string(value.GetString());
+                log_info("Captured old value for {}: '{}'", key, value.GetString());
+            }
+
+            if (edited) {
+                value.SetString(buffer, document.GetAllocator());
+            }
+
+            if (deactivated) {
+                log_info("Deactivated for {}", key);
+                auto it = editing_original_values.find(unique_id);
+                if (it != editing_original_values.end()) {
+                    std::string old_value = std::get<std::string>(it->second);
+                    std::string new_str_value = buffer;
+
+                    log_info("Found old value: '{}', new value: '{}'", old_value, new_str_value);
+
+                    if (old_value != new_str_value) {
+                        log_info("Creating command for {} change: '{}' -> '{}'", key, old_value, new_str_value);
+                        auto command = std::make_unique<PropertyChangeCommand>(
+                            PropertyLocation{entity_id, variant_type, current_path},
+                            old_value,
+                            new_str_value
+                        );
+                        CommandManager::get().execute_command(std::move(command));
+                    } else {
+                        log_info("Values are equal, no command needed");
+                    }
+
+                    editing_original_values.erase(it);
                 } else {
-                    log_info("Values are equal, no command needed");
+                    log_error("Deactivated for {} but no original value found!", key);
                 }
-                
-                editing_original_values.erase(it);
-            } else {
-                log_error("Deactivated for {} but no original value found!", key);
             }
         }
     }
