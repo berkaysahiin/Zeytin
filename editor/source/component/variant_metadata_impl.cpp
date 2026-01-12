@@ -4,9 +4,12 @@ module;
 #include <fstream>
 #include <unordered_map>
 #include <filesystem>
+#include <mutex>
+#include <chrono>
 #include "rapidjson/document.h"
 
 module zeytin.variant.metadata;
+import zeytin.filewatcher;
 import zeytin.logger;
 
 struct VariantMetadata::Impl {
@@ -14,6 +17,11 @@ struct VariantMetadata::Impl {
     std::unordered_map<std::string, 
         std::unordered_map<std::string, 
             std::unordered_map<std::string, std::string>>> metadata;
+
+    std::filesystem::path components_dir;
+    std::unique_ptr<FileWatcher> watcher;
+    bool watcher_started = false;
+    mutable std::mutex mutex;
 };
 
 VariantMetadata::VariantMetadata() 
@@ -27,6 +35,8 @@ bool VariantMetadata::has_annotation(
     const std::string& property_name, 
     const std::string& annotation_key) const 
 {
+    std::scoped_lock lock(pImpl->mutex);
+
     auto variant_it = pImpl->metadata.find(variant_name);
     if (variant_it == pImpl->metadata.end()) {
         return false;
@@ -44,6 +54,8 @@ bool VariantMetadata::has_any_annotation(
     const std::string& variant_name, 
     const std::string& property_name) const 
 {
+    std::scoped_lock lock(pImpl->mutex);
+
     auto variant_it = pImpl->metadata.find(variant_name);
     if (variant_it == pImpl->metadata.end()) {
         return false;
@@ -54,7 +66,7 @@ bool VariantMetadata::has_any_annotation(
         return false;
     }
     
-	return true;
+    return true;
 }
 
 std::optional<std::string> VariantMetadata::get_annotation(
@@ -62,6 +74,8 @@ std::optional<std::string> VariantMetadata::get_annotation(
     const std::string& property_name,
     const std::string& annotation_key) const 
 {
+    std::scoped_lock lock(pImpl->mutex);
+
     auto variant_it = pImpl->metadata.find(variant_name);
     if (variant_it == pImpl->metadata.end()) {
         return std::nullopt;
@@ -85,7 +99,9 @@ std::unordered_map<std::string, std::string> VariantMetadata::get_all_annotation
     const std::string& property_name) const 
 {
     std::unordered_map<std::string, std::string> result;
-    
+
+    std::scoped_lock lock(pImpl->mutex);
+
     auto variant_it = pImpl->metadata.find(variant_name);
     if (variant_it == pImpl->metadata.end()) {
         return result;
@@ -104,9 +120,13 @@ void VariantMetadata::load_from_component_files(const std::filesystem::path& com
         log_error("Components directory not found: {}", components_dir.string());
         return;
     }
-    
+
+    std::unordered_map<std::string, 
+        std::unordered_map<std::string, 
+            std::unordered_map<std::string, std::string>>> new_metadata;
+
     int loaded_count = 0;
-    
+
     for (const auto& entry : std::filesystem::directory_iterator(components_dir)) {
         if (entry.path().extension() != ".component") {
             continue;
@@ -163,12 +183,34 @@ void VariantMetadata::load_from_component_files(const std::filesystem::path& com
                     annotation_value = std::to_string(ann_it->value.GetDouble());
                 }
                 
-                pImpl->metadata[variant_name][property_name][annotation_key] = annotation_value;
+                new_metadata[variant_name][property_name][annotation_key] = annotation_value;
             }
         }
         
         loaded_count++;
     }
-    
+
+    {
+        std::scoped_lock lock(pImpl->mutex);
+        pImpl->metadata = std::move(new_metadata);
+        pImpl->components_dir = components_dir;
+    }
+
+    if (!pImpl->watcher_started) {
+        pImpl->watcher = std::make_unique<FileWatcher>(components_dir, std::chrono::milliseconds(500));
+        pImpl->watcher->add_callback({ ".component"}, [this](const std::filesystem::path&, const FileEvent) {
+            std::filesystem::path components_dir;
+            {
+                std::scoped_lock lock(pImpl->mutex);
+                components_dir = pImpl->components_dir;
+            }
+            if (!components_dir.empty()) {
+                load_from_component_files(components_dir);
+            }
+        });
+        pImpl->watcher->start();
+        pImpl->watcher_started = true;
+    }
+
     log_info("Loaded metadata for {} components", loaded_count);
 }
