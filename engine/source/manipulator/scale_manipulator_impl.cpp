@@ -14,6 +14,7 @@ import zeytin.raylib;
 import zeytin.manipulator.transform_utils;
 
 namespace {
+    constexpr float kDegToRad = 3.14159265358979323846f / 180.0f;
     enum class DragAxis { None, X, Y, Both };
 }
 
@@ -23,6 +24,7 @@ struct ScaleManipulator::Impl {
     float drag_start_y = 0.0f;
     float start_scale_x = 1.0f;
     float start_scale_y = 1.0f;
+    bool skip_drag_update = false;
 
     void handle_interaction(Context& ctx);
     bool is_hovering_handle(const Context& ctx, float mouse_x, float mouse_y, DragAxis axis) const;
@@ -46,6 +48,13 @@ void ScaleManipulator::update(Context& ctx) {
     const float pos_x = ctx.transform.position_x;
     const float pos_y = ctx.transform.position_y;
 
+    const float rotation_rad = ctx.transform.rotation * kDegToRad;
+    const Vector2 axis_x = {std::cos(rotation_rad), std::sin(rotation_rad)};
+    const Vector2 axis_y = {std::sin(rotation_rad), -std::cos(rotation_rad)};
+
+    const Vector2 x_end = {pos_x + axis_x.x * axis_length, pos_y + axis_x.y * axis_length};
+    const Vector2 y_end = {pos_x + axis_y.x * axis_length, pos_y + axis_y.y * axis_length};
+
     Vector2 mouse_pos = get_mouse_position();
     Vector2 world_mouse = get_screen_to_world2d(mouse_pos, ctx.camera);
 
@@ -57,11 +66,11 @@ void ScaleManipulator::update(Context& ctx) {
     Color x_color = (m_impl->dragging_axis == DragAxis::X) ? GREEN : (hover_x ? YELLOW : RED);
     Color y_color = (m_impl->dragging_axis == DragAxis::Y) ? GREEN : (hover_y ? YELLOW : BLUE);
 
-    draw_line_ex({pos_x, pos_y}, {pos_x + axis_length, pos_y}, line_thickness, x_color);
-    draw_line_ex({pos_x, pos_y}, {pos_x, pos_y - axis_length}, line_thickness, y_color);
+    draw_line_ex({pos_x, pos_y}, x_end, line_thickness, x_color);
+    draw_line_ex({pos_x, pos_y}, y_end, line_thickness, y_color);
 
-    Rectangle x_handle = {pos_x + axis_length - handle_size / 2.0f, pos_y - handle_size / 2.0f, handle_size, handle_size};
-    Rectangle y_handle = {pos_x - handle_size / 2.0f, pos_y - axis_length - handle_size / 2.0f, handle_size, handle_size};
+    Rectangle x_handle = {x_end.x - handle_size / 2.0f, x_end.y - handle_size / 2.0f, handle_size, handle_size};
+    Rectangle y_handle = {y_end.x - handle_size / 2.0f, y_end.y - handle_size / 2.0f, handle_size, handle_size};
     Rectangle center_handle = {pos_x - handle_size / 2.0f, pos_y - handle_size / 2.0f, handle_size, handle_size};
 
     draw_rectangle_rec(x_handle, x_color);
@@ -100,20 +109,36 @@ void ScaleManipulator::Impl::handle_interaction(Context& ctx) {
             drag_start_y = world_mouse.y;
             start_scale_x = ctx.transform.scale_x;
             start_scale_y = ctx.transform.scale_y;
+            skip_drag_update = true;
         }
     }
 
     if (dragging_axis != DragAxis::None && is_mouse_button_down(MOUSE_BUTTON_LEFT)) {
         const float axis_length = 80.0f;
-        const float delta_x = world_mouse.x - drag_start_x;
-        const float delta_y = world_mouse.y - drag_start_y;
+        const float rotation_rad = ctx.transform.rotation * kDegToRad;
+        const Vector2 axis_x = {std::cos(rotation_rad), std::sin(rotation_rad)};
+        const Vector2 axis_y = {std::sin(rotation_rad), -std::cos(rotation_rad)};
+
+        const float delta_world_x = world_mouse.x - drag_start_x;
+        const float delta_world_y = world_mouse.y - drag_start_y;
+
+        if (skip_drag_update) {
+            const float movement = std::abs(delta_world_x) + std::abs(delta_world_y);
+            if (movement < 0.0001f) {
+                return;
+            }
+            skip_drag_update = false;
+        }
+
+        const float delta_x = delta_world_x * axis_x.x + delta_world_y * axis_x.y;
+        const float delta_y = delta_world_x * axis_y.x + delta_world_y * axis_y.y;
 
         if (dragging_axis == DragAxis::X) {
             ctx.transform.scale_x = std::max(0.01f, start_scale_x + delta_x / axis_length);
         } else if (dragging_axis == DragAxis::Y) {
-            ctx.transform.scale_y = std::max(0.01f, start_scale_y - delta_y / axis_length);
+            ctx.transform.scale_y = std::max(0.01f, start_scale_y + delta_y / axis_length);
         } else if (dragging_axis == DragAxis::Both) {
-            const float delta = (delta_x - delta_y) * 0.5f;
+            const float delta = (delta_x + delta_y) * 0.5f;
             const float scale = std::max(0.01f, start_scale_x + delta / axis_length);
             ctx.transform.scale_x = scale;
             ctx.transform.scale_y = scale;
@@ -143,6 +168,7 @@ void ScaleManipulator::Impl::handle_interaction(Context& ctx) {
             transform_utils::send_batch_property_change_command(ctx.entity_id, changes);
         }
         dragging_axis = DragAxis::None;
+        skip_drag_update = false;
     }
 }
 
@@ -154,13 +180,19 @@ bool ScaleManipulator::Impl::is_hovering_handle(const Context& ctx, float mouse_
     const float pos_x = ctx.transform.position_x;
     const float pos_y = ctx.transform.position_y;
 
+    const float rotation_rad = ctx.transform.rotation * kDegToRad;
+    const Vector2 axis_x = {std::cos(rotation_rad), std::sin(rotation_rad)};
+    const Vector2 axis_y = {std::sin(rotation_rad), -std::cos(rotation_rad)};
+
     float handle_x = pos_x;
     float handle_y = pos_y;
 
     if (axis == DragAxis::X) {
-        handle_x = pos_x + axis_length;
+        handle_x = pos_x + axis_x.x * axis_length;
+        handle_y = pos_y + axis_x.y * axis_length;
     } else if (axis == DragAxis::Y) {
-        handle_y = pos_y - axis_length;
+        handle_x = pos_x + axis_y.x * axis_length;
+        handle_y = pos_y + axis_y.y * axis_length;
     }
 
     return std::abs(mouse_x - handle_x) <= half && std::abs(mouse_y - handle_y) <= half;
