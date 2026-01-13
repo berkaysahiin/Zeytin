@@ -1,0 +1,63 @@
+{
+    "entity_id": 6036112419270490439,
+    "variants": [
+        {
+            "type": "CDerivedStats",
+            "value": {
+                "health": 100,
+                "mana": 50.0,
+                "icon_path": "",
+                "stamina": 25.0,
+                "speed": 5.0,
+                "entity_id": 6036112419270490439
+            }
+        },
+        {
+            "type": "CCombatStats",
+            "value": {
+                "strength": 36,
+                "agility": 0,
+                "crit_chance": 100.0,
+                "crit_multiplier": 1.5,
+                "weapon_name": "",
+                "armor_rating": 0,
+                "entity_id": 6036112419270490439
+            }
+        },
+        {
+            "type": "CTransform",
+            "value": {
+                "position_x": 1322.4644775390625,
+                "position_y": 515.6398315429688,
+                "rotation": 0.0,
+                "scale_x": 1.0,
+                "scale_y": -7.900000095367432,
+                "entity_id": 6036112419270490439
+            }
+        },
+        {
+            "type": "CCollider",
+            "value": {
+                "width": 85.80000305175781,
+                "height": 89.0999984741211,
+                "offset_x": -16.5,
+                "offset_y": 6.400000095367432,
+                "enable_debug": true,
+                "show_bounds": false,
+                "random_float_1": 0.0,
+                "random_float_2": 0.0,
+                "entity_id": 6036112419270490439
+            }
+        },
+        {
+            "type": "Position",
+            "value": {
+                "x": 24.100000381469727,
+                "y": 26.600000381469727,
+                "_x": 0.0,
+                "_y": 0.0,
+                "entity_id": 6036112419270490439
+            }
+        }
+    ]
+}
