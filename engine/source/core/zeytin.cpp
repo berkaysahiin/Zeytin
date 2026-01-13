@@ -21,6 +21,7 @@ import zeytin.resource;
 import zeytin.logger;
 import zeytin.common.message.engine_to_editor.scene;
 import zeytin.common.message.engine_to_editor.tracked_property_value;
+import zeytin.common.message.engine_to_editor.enable_if_result;
 import zeytin.json;
 import zeytin.component;
 import zeytin.guid;
@@ -695,6 +696,13 @@ void Zeytin::subscribe_editor_events() {
             handle_tracked_property_request(msg);
         }
     );
+
+    EditorEventBus::get().subscribe<const rapidjson::Document&>(
+        EditorEvent::EnableIfRequest,
+        [this](const rapidjson::Document& msg) {
+            handle_enable_if_request(msg);
+        }
+    );
 }
 
 void Zeytin::handle_entity_property_changed(const rapidjson::Document& doc) {
@@ -1059,6 +1067,56 @@ void Zeytin::handle_tracked_property_request(const rapidjson::Document& msg) {
     }
 
     log_error("Tracked property request: variant '{}' not found", variant_type);
+}
+
+void Zeytin::handle_enable_if_request(const rapidjson::Document& msg) {
+    if (msg.HasParseError()) {
+        log_error("Invalid enable-if request");
+        return;
+    }
+
+    if (!msg.HasMember("entity_id") || !msg.HasMember("variant_type") ||
+        !msg.HasMember("key_path") || !msg.HasMember("method_name")) {
+        log_error("Enable-if request missing fields");
+        return;
+    }
+
+    const uint64_t entity_id = msg["entity_id"].GetUint64();
+    const std::string variant_type = msg["variant_type"].GetString();
+    const std::string key_path = msg["key_path"].GetString();
+    const std::string method_name = msg["method_name"].GetString();
+
+    bool enabled = false;
+    bool handled = false;
+
+    auto& variants = get_components(entity_id);
+    for (auto& variant : variants) {
+        if (variant.get_type().get_name() != variant_type) {
+            continue;
+        }
+
+        handled = true;
+        const rttr::method method = variant.get_type().get_method(method_name);
+        if (!method.is_valid()) {
+            log_warning("Enable-if request: method '{}' not found on {}", method_name, variant_type);
+            break;
+        }
+
+        rttr::variant result = method.invoke(variant);
+        if (result.is_valid() && result.can_convert<bool>()) {
+            result.convert<bool>();
+            enabled = result.get_value<bool>();
+        } else {
+            log_warning("Enable-if request: method '{}' did not return bool on {}", method_name, variant_type);
+        }
+        break;
+    }
+
+    if (!handled) {
+        log_warning("Enable-if request: variant '{}' not found", variant_type);
+    }
+
+    send_message_to_editor<EnableIfResultMessage>(entity_id, variant_type, key_path, enabled);
 }
 
 #endif // EDITOR_MODE

@@ -14,6 +14,12 @@ cd "$ENGINE_DIR/build"
 echo "Configuring CMake with Ninja generator..."
 cmake .. -G Ninja -DENGINE_CONFIG=weditor
 
+echo "Preparser first iteration"
+cd "$ENGINE_DIR"
+./preparser "$ENGINE_DIR/build"
+
+cd "$ENGINE_DIR/build"
+
 echo "Building the first pass for preparser..."
 cmake --build . -j
 

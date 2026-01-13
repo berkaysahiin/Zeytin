@@ -24,6 +24,7 @@ import zeytin.entity.registry;
 import zeytin.variant.metadata;
 import zeytin.inspector.utils;
 import zeytin.inspector.tracking;
+import zeytin.inspector.enable_if;
 import zeytin.property.tracker;
 import zeytin.asset;
 
@@ -197,6 +198,14 @@ void Inspector::Impl::render_property(rapidjson::Document& document, rapidjson::
 	// If we should render this property at all ? 
 	const bool is_hidden = VariantMetadata::get().has_annotation(variant_type, key, "HIDDEN");
 	if(is_hidden) return;
+
+	const auto enable_if = VariantMetadata::get().get_annotation(variant_type, key, "ENABLE_IF");
+	if (enable_if.has_value()) {
+		const auto enabled = EnableIfTracker::get().get_value(entity_id, variant_type, current_path, *enable_if);
+		if (!enabled.value_or(false)) {
+			return;
+		}
+	}
 
 	const bool is_readonly = VariantMetadata::get().has_annotation(variant_type, key, "READONLY");
 	const auto tooltip = VariantMetadata::get().get_annotation(variant_type, key, "TOOLTIP");

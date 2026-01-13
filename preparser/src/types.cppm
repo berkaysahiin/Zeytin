@@ -5,6 +5,7 @@ module;
 #include <variant>
 #include <vector>
 #include <filesystem>
+#include <optional>
 
 export module preparser.types;
 
@@ -16,12 +17,14 @@ export struct PropertyInfo {
 	PropertyValue value; 
 	std::vector<PropertyAttr> attrs;
 	std::string annotation;
+	std::optional<std::string> visibility_method;
 };
 
 export struct ComponentInfo {
     std::string name;
     std::string module_name;
     std::vector<PropertyInfo> properties;
+    std::vector<std::string> methods;
     std::filesystem::path source_file;
     std::filesystem::path generated_code_path;
     std::filesystem::path generated_component_file;

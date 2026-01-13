@@ -49,6 +49,11 @@ void generate_rttr_registration(const std::vector<ComponentInfo>& components) {
         out << "\t\t(rttr::metadata(\"is_component\", true))\n";
         out << "        .constructor<>()(rttr::policy::ctor::as_object)";
 
+        for (const auto& method : component.methods) {
+            out << std::format("\n\t\t.method(\"{}\", &{}::{})",
+                              method, component.name, method);
+        }
+
         for (const auto& prop : component.properties) {
             out << std::format("\n\t\t.property(\"{}\", &{}::{})",
                               prop.name, component.name, prop.name);

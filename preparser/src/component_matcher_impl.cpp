@@ -8,6 +8,7 @@ module;
 #include <clang/Tooling/Tooling.h>
 #include <clang/Tooling/CompilationDatabase.h>
 #include <filesystem>
+#include <algorithm>
 #include <llvm/Support/FileSystem.h>
 
 #include <cassert>
@@ -16,6 +17,7 @@ module preparser.matchers.component;
 import preparser.types;
 import preparser.logger;
 import preparser.utility;
+import preparser.matchers.component.enable_if_method;
 
 struct Result 
 {
@@ -38,10 +40,11 @@ static Result property_type_rules(const clang::FieldDecl *Field);
 static void collect_fields_recursive(const clang::CXXRecordDecl *Record, std::vector<const clang::FieldDecl*>& fields);
 static bool has_virtual_component_field(const clang::CXXRecordDecl *Record);
 
+
 void ComponentMatchCallback::run(const clang::ast_matchers::MatchFinder::MatchResult& Result) {
     const auto* Record = Result.Nodes.getNodeAs<clang::CXXRecordDecl>("component");
 	if (!Record || !Record->isCompleteDefinition()) {
-		log("Skipping record... {}", Record->getName().str());
+		//log("Skipping record... {}", Record->getName().str());
 		return;
 	}
 
@@ -52,7 +55,7 @@ void ComponentMatchCallback::run(const clang::ast_matchers::MatchFinder::MatchRe
 	component.name = Record->getName().str();
 
 	if (has_virtual_component_field(Record)) {
-		log("Skipping virtual component... {}", component.name);
+		//log("Skipping virtual component... {}", component.name);
 		return;
 	}
 
@@ -89,12 +92,10 @@ void ComponentMatchCallback::run(const clang::ast_matchers::MatchFinder::MatchRe
 	if(!std::filesystem::exists(component.generated_code_path)) {
 		//log("[CODE_GENERATOR] Parsing: {}. First time generating {}", component.source_file.string(), component.generated_code_path.string());
 		component.requires_code_generation = true;
-    	collect_fields_recursive(Record, fields);
 	}
 	else if(source_timestmap > std::filesystem::last_write_time(component.generated_code_path)) {
 		//log("[CODE_GENERATOR] Parsing: {}. Generated code is outdated {}", component.source_file.string(), component.generated_code_path.string());
 		component.requires_code_generation = true;
-    	collect_fields_recursive(Record, fields);
 	}
 	else {
 		//log("[CODE_GENERATOR] Skipping: {}. Generated code is up to date {}", component.source_file.string(), component.generated_code_path.string());
@@ -104,12 +105,10 @@ void ComponentMatchCallback::run(const clang::ast_matchers::MatchFinder::MatchRe
 	if(!std::filesystem::exists(component.generated_component_file)) {
 		//log("[DATA_GENERATOR] Parsing: {}. First time generating {}", component.source_file.string(), component.generated_component_file.string());
 		component.requires_data_generation = true;
-    	collect_fields_recursive(Record, fields);
 	}
 	else if(source_timestmap > std::filesystem::last_write_time(component.generated_component_file)) {
 		//log("[DATA_GENERATOR] Parsing: {}. Generated data is outdated {}", component.source_file.string(), component.generated_component_file.string());
 		component.requires_data_generation = true;
-    	collect_fields_recursive(Record, fields);
 	}
 	else {
 		//log("[DATA_GENERATOR] Skipping: {}. Generated data is up to date {}", component.source_file.string(), component.generated_component_file.string());
@@ -119,8 +118,11 @@ void ComponentMatchCallback::run(const clang::ast_matchers::MatchFinder::MatchRe
 	if(!component.requires_code_generation && !component.requires_data_generation) {
 		goto END;
 	}
+	else {
+		//log("Handling {}. Code Generation: {}, Data Generation: {}", component.name, component.requires_code_generation, component.requires_data_generation);
+	}
 
-	log("Parsing {}", component.name);
+	collect_fields_recursive(Record, fields);
 
 	for (const auto* Field : fields) {
 		if(!Field || !has_any_annotation(Field)) {
@@ -143,6 +145,20 @@ void ComponentMatchCallback::run(const clang::ast_matchers::MatchFinder::MatchRe
 
 		PropertyInfo property;
 		parse_property(Field, property);
+
+		const auto enable_if_method = validate_enable_if_method(Record, property);
+		if (property.visibility_method && !enable_if_method) {
+			found_errors = true;
+			continue;
+		}
+
+		if (enable_if_method) {
+			const auto& name = *enable_if_method;
+			if (std::find(component.methods.begin(), component.methods.end(), name) == component.methods.end()) {
+				component.methods.push_back(name);
+			}
+		}
+
 		component.properties.push_back(property);
 	}
 
@@ -198,9 +214,21 @@ static void parse_property(const clang::FieldDecl *Field, PropertyInfo& property
 {
 	assert(Field != nullptr);
 	assert(has_any_annotation(Field));
+
 	property.attrs = parse_attr_from_annotation(get_annotation_value(Field).value());
 	property.annotation = get_annotation_value(Field).value();
 	property.name = Field->getName().str();
+
+	for (const auto& attr : property.attrs) {
+		if (!std::holds_alternative<std::pair<std::string, std::string>>(attr)) {
+			continue;
+		}
+
+		const auto& [key, value] = std::get<std::pair<std::string, std::string>>(attr);
+		if (key == "ENABLE_IF") {
+			property.visibility_method = extract_enable_if_method(value);
+		}
+	}
 
 	const PropertyType type = get_type(Field);
 	assert(type != PropertyType::None);

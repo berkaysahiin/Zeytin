@@ -28,6 +28,7 @@ export enum class EditorEvent {
     WindowStateChanged,
     EntitySelected,
     TrackedPropertyRequest,
+    EnableIfRequest,
 };
 
 export class EditorEventBus {

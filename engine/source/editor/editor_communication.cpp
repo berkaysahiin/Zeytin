@@ -11,6 +11,7 @@ module zeytin.editor.communication;
 import zeytin.common.message.engine_to_editor.engine_started;
 import zeytin.common.message.engine_to_editor.engine_shutdown;
 import zeytin.common.message.editor_to_engine.tracked_property_request;
+import zeytin.common.message.editor_to_engine.enable_if_request;
 import zeytin.common.message_registry;
 import zeytin.editor.event;
 import zeytin.logger;
@@ -65,6 +66,9 @@ namespace {
         });
         registry.register_handler(EditorTrackedPropertyRequestMessage{}.get_type(), [](const rapidjson::Document& doc, const std::string&) {
             EditorEventBus::get().publish<const rapidjson::Document&>(EditorEvent::TrackedPropertyRequest, doc);
+        });
+        registry.register_handler(EnableIfRequestMessage{}.get_type(), [](const rapidjson::Document& doc, const std::string&) {
+            EditorEventBus::get().publish<const rapidjson::Document&>(EditorEvent::EnableIfRequest, doc);
         });
     }
 }

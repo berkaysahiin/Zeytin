@@ -5,6 +5,8 @@ module;
 #include <filesystem>
 #include <optional>
 #include <fstream>
+#include <algorithm>
+#include <cctype>
 
 #include <clang/ASTMatchers/ASTMatchers.h>
 
@@ -72,4 +74,42 @@ export std::optional<std::string> extract_module_name(const std::string& filepat
     }
 
 	return {};
+}
+
+export std::optional<std::string> extract_enable_if_method(std::string value) {
+    auto trim = [](std::string& s) {
+        s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](unsigned char ch) {
+            return !std::isspace(ch);
+        }));
+        s.erase(std::find_if(s.rbegin(), s.rend(), [](unsigned char ch) {
+            return !std::isspace(ch);
+        }).base(), s.end());
+    };
+
+    trim(value);
+    if (value.empty()) {
+        return {};
+    }
+
+    const char first = value.front();
+    const char last = value.back();
+    if ((first == '"' && last == '"') || (first == '\'' && last == '\'')) {
+        value = value.substr(1, value.size() - 2);
+    }
+
+    trim(value);
+    if (value.empty()) {
+        return {};
+    }
+
+    if (value.ends_with("()")) {
+        value.erase(value.size() - 2);
+        trim(value);
+    }
+
+    if (value.empty()) {
+        return {};
+    }
+
+    return value;
 }
