@@ -32,27 +32,51 @@ target_include_directories(ZeytinEngine_${ENGINE_CONFIG} PRIVATE
     3rdparty/rttr
 )
 
-target_link_directories(ZeytinEngine_${ENGINE_CONFIG} PRIVATE
-    3rdparty/raylib/lib/linux
-    3rdparty/rttr/lib/linux
-    3rdparty/zmq/linux
-)
+if(WIN32)
+    target_link_directories(ZeytinEngine_${ENGINE_CONFIG} PRIVATE
+        3rdparty/raylib/lib/windows
+        3rdparty/rttr/lib/windows
+    )
+else()
+    target_link_directories(ZeytinEngine_${ENGINE_CONFIG} PRIVATE
+        3rdparty/raylib/lib/linux
+        3rdparty/rttr/lib/linux
+    )
+endif()
 
 target_compile_options(ZeytinEngine_${ENGINE_CONFIG} PRIVATE -w)
 
-target_link_libraries(ZeytinEngine_${ENGINE_CONFIG} PRIVATE
-    raylib
-    m
-    pthread
-    dl
-    rt
-    X11
-    asound
-    rttr_core
-)
+if(WIN32)
+    target_link_libraries(ZeytinEngine_${ENGINE_CONFIG} PRIVATE
+        raylib
+        rttr_core
+        winmm
+        gdi32
+        user32
+        shell32
+    )
+else()
+    target_link_libraries(ZeytinEngine_${ENGINE_CONFIG} PRIVATE
+        raylib
+        m
+        pthread
+        dl
+        rt
+        X11
+        asound
+        rttr_core
+    )
+endif()
 
 if(ENGINE_CONFIG STREQUAL "weditor")
-    target_link_libraries(ZeytinEngine_${ENGINE_CONFIG} PRIVATE zmq)
+    if(WIN32)
+        message(FATAL_ERROR "Windows weditor build is unsupported. Use ENGINE_CONFIG=standalone.")
+    else()
+        target_link_directories(ZeytinEngine_${ENGINE_CONFIG} PRIVATE
+            3rdparty/zmq/linux
+        )
+        target_link_libraries(ZeytinEngine_${ENGINE_CONFIG} PRIVATE zmq)
+    endif()
     target_compile_options(ZeytinEngine_${ENGINE_CONFIG} PRIVATE -g -O0)
     target_compile_definitions(ZeytinEngine_${ENGINE_CONFIG} PRIVATE
         DEBUG=1
