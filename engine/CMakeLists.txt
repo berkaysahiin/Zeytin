@@ -14,10 +14,6 @@ set_property(CACHE ENGINE_CONFIG PROPERTY STRINGS weditor standalone)
 file(GLOB_RECURSE SOURCES source/*.cpp)
 file(GLOB_RECURSE MODULE_SOURCES source/*.cppm)
 
-if(ENGINE_CONFIG STREQUAL "weditor")
-    list(APPEND SOURCES 3rdparty/tracy/TracyClient.cpp)
-endif()
-
 add_executable(ZeytinEngine_${ENGINE_CONFIG} ${SOURCES})
 
 target_sources(ZeytinEngine_${ENGINE_CONFIG}
@@ -34,7 +30,6 @@ target_include_directories(ZeytinEngine_${ENGINE_CONFIG} PRIVATE
     3rdparty/zmq
     3rdparty/raylib
     3rdparty/rttr
-    3rdparty/tracy
 )
 
 target_link_directories(ZeytinEngine_${ENGINE_CONFIG} PRIVATE
