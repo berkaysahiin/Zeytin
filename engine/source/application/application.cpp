@@ -3,6 +3,8 @@ module;
 #include "core/macros.h"
 #include "raylib.h"
 
+#include <string>
+
 module zeytin.application;
 import zeytin.config;
 import zeytin.raylib;

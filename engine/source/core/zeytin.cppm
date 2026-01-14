@@ -10,10 +10,13 @@ module;
 export module zeytin.zeytin;
 import zeytin.entity;
 import zeytin.raylib;
-import zeytin.editor.communication;
-import zeytin.editor.event;
 import zeytin.singleton;
 import zeytin.shared_texture;
+
+#ifdef EDITOR_MODE
+import zeytin.editor.communication;
+import zeytin.editor.event;
+#endif
 
 constexpr float VIRTUAL_WIDTH = 1920;
 constexpr float VIRTUAL_HEIGHT = 1080;

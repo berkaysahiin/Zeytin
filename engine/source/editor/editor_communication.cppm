@@ -1,14 +1,18 @@
 module;
 
-#include <thread>
-#include <mutex>
-#include <queue>
-#include <string>
-#include <atomic>
-#include "zmq/zmq.hpp"
+#ifdef EDITOR_MODE 
+	#include <string>
+	#include <thread>
+	#include <mutex>
+	#include <queue>
+	#include <atomic>
+	#include "zmq/zmq.hpp"
+#endif
 
 export module zeytin.editor.communication;
 import zeytin.singleton;
+
+#ifdef EDITOR_MODE
 
 export class EditorCommunication : public Singleton<EditorCommunication> {
 	friend class Singleton<EditorCommunication>;
@@ -41,3 +45,5 @@ private:
     std::mutex m_queue_mutex;
     std::queue<std::string> m_message_queue;
 };
+
+#endif

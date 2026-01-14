@@ -8,9 +8,9 @@ module zeytin.manipulator.transform_utils;
 import zeytin.common.message.engine_to_editor.property_change_command;
 import zeytin.common.message.engine_to_editor.batch_property_change_command;
 import zeytin.logger;
-import zeytin.editor.message;
 
 #ifdef EDITOR_MODE
+import zeytin.editor.message;
 import zeytin.editor.event;
 #endif
 

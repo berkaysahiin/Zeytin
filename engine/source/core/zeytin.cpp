@@ -27,11 +27,11 @@ import zeytin.component;
 import zeytin.guid;
 import zeytin.property;
 import zeytin.raylib;
-import zeytin.editor.communication;
 import zeytin.shared_texture;
-import zeytin.editor.message;
 
 #ifdef EDITOR_MODE
+import zeytin.editor.communication;
+import zeytin.editor.message;
 import zeytin.manipulator.manager;
 #endif
 
@@ -98,7 +98,7 @@ void Zeytin::initialize_standalone() {
     std::string scene_json = LevelManager::load_level(default_level);
     
     if (scene_json.empty() || !deserialize_scene(scene_json)) {
-        log_error() << "Failed to load startup level: " << default_level << std::endl;
+        log_error("Failed to load startup level: {}", default_level);
         m_state.should_die = true;
         return;
     }
@@ -175,7 +175,7 @@ void Zeytin::run_frame() {
     if (!m_current_level_name.empty()) {
         request_level_load(m_current_level_name);
     } else {
-        //log_error() << "No level to reload" << std::endl;
+        log_error("No level to reload");
     }
 #endif
     m_state.reload_next_frame = false;
@@ -195,10 +195,13 @@ void Zeytin::run_frame() {
         play_late_update_components();
     }
 
-	// call to manipulator
-	// TODO: come up with a callback register system ? instead of putting here ?
-	ManipulatorManager::get().handle_keyboard_shortcuts();
-	ManipulatorManager::get().handle_selected(m_selected_entity);
+#ifdef EDITOR_MODE
+    // call to manipulator
+    // TODO: come up with a callback register system ? instead of putting here ?
+    ManipulatorManager::get().handle_keyboard_shortcuts();
+    ManipulatorManager::get().handle_selected(m_selected_entity);
+#endif
+
 
     end_mode2d();
     end_texture_mode();

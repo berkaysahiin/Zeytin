@@ -172,6 +172,8 @@ void ScaleManipulator::Impl::handle_interaction(Context& ctx) {
     }
 }
 
+#endif
+
 bool ScaleManipulator::Impl::is_hovering_handle(const Context& ctx, float mouse_x, float mouse_y, DragAxis axis) const {
     const float axis_length = 80.0f;
     const float handle_size = 12.0f;
@@ -197,4 +199,4 @@ bool ScaleManipulator::Impl::is_hovering_handle(const Context& ctx, float mouse_
 
     return std::abs(mouse_x - handle_x) <= half && std::abs(mouse_y - handle_y) <= half;
 }
-#endif
+

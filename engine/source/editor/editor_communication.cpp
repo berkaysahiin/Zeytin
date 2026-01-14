@@ -8,6 +8,9 @@ module;
 #include "zmq/zmq.hpp"
 
 module zeytin.editor.communication;
+
+#ifdef EDITOR_MODE
+
 import zeytin.common.message.engine_to_editor.engine_started;
 import zeytin.common.message.engine_to_editor.engine_shutdown;
 import zeytin.common.message.editor_to_engine.tracked_property_request;
@@ -227,3 +230,5 @@ void EditorCommunication::receive_messages() {
         }
     }
 }
+
+#endif

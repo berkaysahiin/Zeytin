@@ -122,6 +122,19 @@ void RotateManipulator::Impl::handle_interaction(Context& ctx) {
     }
 }
 
+float RotateManipulator::Impl::get_angle_to_mouse(const Context& ctx, float mouse_x, float mouse_y) const {
+    const float pos_x = ctx.transform.position_x;
+    const float pos_y = ctx.transform.position_y;
+
+    float dx = mouse_x - pos_x;
+    float dy = mouse_y - pos_y;
+
+    // atan2 returns radians, convert to degrees
+    float angle_rad = std::atan2(dy, dx);
+    return angle_rad * RAD2DEG;
+}
+#endif
+
 bool RotateManipulator::Impl::is_hovering_circle(const Context& ctx, float mouse_x, float mouse_y) const {
     const float circle_radius = 80.0f;
     const float hover_threshold = 10.0f;
@@ -137,15 +150,3 @@ bool RotateManipulator::Impl::is_hovering_circle(const Context& ctx, float mouse
     return std::abs(distance - circle_radius) < hover_threshold;
 }
 
-float RotateManipulator::Impl::get_angle_to_mouse(const Context& ctx, float mouse_x, float mouse_y) const {
-    const float pos_x = ctx.transform.position_x;
-    const float pos_y = ctx.transform.position_y;
-
-    float dx = mouse_x - pos_x;
-    float dy = mouse_y - pos_y;
-
-    // atan2 returns radians, convert to degrees
-    float angle_rad = std::atan2(dy, dx);
-    return angle_rad * RAD2DEG;
-}
-#endif

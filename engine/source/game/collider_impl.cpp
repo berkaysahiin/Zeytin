@@ -9,7 +9,9 @@ import zeytin.zeytin;
 import zeytin.game.transform;
 import zeytin.query;
 import zeytin.manipulator.manager;
+#ifdef EDITOR_MODE
 import zeytin.editor.message;
+#endif
 import zeytin.entity;
 
 void CCollider::on_update() {
