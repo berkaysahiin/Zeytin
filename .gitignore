@@ -49,3 +49,6 @@ shared_resources/config
 engine/preparser
 editor/windows.json
 engine/engine_gdb.log
+common/CMakeFiles/ZeytinCommon.dir
+common/cmake_install.cmake
+engine/build-standalone
