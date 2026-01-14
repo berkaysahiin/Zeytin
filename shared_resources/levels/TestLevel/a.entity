@@ -27,11 +27,11 @@
         {
             "type": "CTransform",
             "value": {
-                "position_x": 1322.4644775390625,
-                "position_y": 515.6398315429688,
-                "rotation": 0.0,
-                "scale_x": 1.0,
-                "scale_y": -7.900000095367432,
+                "position_x": 1534.7869873046875,
+                "position_y": 418.5781555175781,
+                "rotation": 357.2804870605469,
+                "scale_x": 11.486320495605469,
+                "scale_y": 9.353778839111328,
                 "entity_id": 6036112419270490439
             }
         },
@@ -43,7 +43,7 @@
                 "offset_x": -16.5,
                 "offset_y": 6.400000095367432,
                 "enable_debug": true,
-                "show_bounds": false,
+                "show_bounds": true,
                 "random_float_1": 0.0,
                 "random_float_2": 0.0,
                 "entity_id": 6036112419270490439
