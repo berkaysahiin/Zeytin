@@ -9,6 +9,7 @@ module;
 #include <clang/Tooling/CompilationDatabase.h>
 #include <filesystem>
 #include <algorithm>
+#include <string_view>
 #include <llvm/Support/FileSystem.h>
 
 #include <cassert>
@@ -35,7 +36,8 @@ enum class PropertyType
 };
 
 static PropertyType get_type(const clang::FieldDecl *Field);
-static void parse_property(const clang::FieldDecl *Field, PropertyInfo& property);
+static void parse_property(const clang::FieldDecl *Field, PropertyInfo& property, bool is_inherited);
+static void apply_inherited_property_flags(std::vector<PropertyAttr>& attrs, bool is_inherited);
 static Result property_type_rules(const clang::FieldDecl *Field);
 static void collect_fields_recursive(const clang::CXXRecordDecl *Record, std::vector<const clang::FieldDecl*>& fields);
 static bool has_virtual_component_field(const clang::CXXRecordDecl *Record);
@@ -144,7 +146,8 @@ void ComponentMatchCallback::run(const clang::ast_matchers::MatchFinder::MatchRe
 		}
 
 		PropertyInfo property;
-		parse_property(Field, property);
+		const bool is_inherited = Field->getParent() != Record;
+		parse_property(Field, property, is_inherited);
 
 		const auto enable_if_method = validate_enable_if_method(Record, property);
 		if (property.visibility_method && !enable_if_method) {
@@ -210,12 +213,66 @@ static void collect_fields_recursive(const clang::CXXRecordDecl *Record, std::ve
     }
 }
 
-static void parse_property(const clang::FieldDecl *Field, PropertyInfo& property)
+static void apply_inherited_property_flags(std::vector<PropertyAttr>& attrs, bool is_inherited)
+{
+	bool mark_readonly = false;
+	bool mark_hidden = false;
+
+	for (auto it = attrs.begin(); it != attrs.end();) {
+		if (!std::holds_alternative<std::string>(*it)) {
+			++it;
+			continue;
+		}
+
+		const auto& flag = std::get<std::string>(*it);
+		if (flag == "READONLY_IN_DERIVED") {
+			mark_readonly = true;
+			it = attrs.erase(it);
+			continue;
+		}
+
+		if (flag == "HIDDEN_IN_DERIVED") {
+			mark_hidden = true;
+			it = attrs.erase(it);
+			continue;
+		}
+
+		++it;
+	}
+
+	if (!is_inherited) {
+		return;
+	}
+
+	const auto has_flag = [&attrs](std::string_view flag) {
+		for (const auto& attr : attrs) {
+			if (!std::holds_alternative<std::string>(attr)) {
+				continue;
+			}
+
+			if (std::get<std::string>(attr) == flag) {
+				return true;
+			}
+		}
+		return false;
+	};
+
+	if (mark_readonly && !has_flag("READONLY")) {
+		attrs.emplace_back(std::string("READONLY"));
+	}
+
+	if (mark_hidden && !has_flag("HIDDEN")) {
+		attrs.emplace_back(std::string("HIDDEN"));
+	}
+}
+
+static void parse_property(const clang::FieldDecl *Field, PropertyInfo& property, bool is_inherited)
 {
 	assert(Field != nullptr);
 	assert(has_any_annotation(Field));
 
 	property.attrs = parse_attr_from_annotation(get_annotation_value(Field).value());
+	apply_inherited_property_flags(property.attrs, is_inherited);
 	property.annotation = get_annotation_value(Field).value();
 	property.name = Field->getName().str();
 
