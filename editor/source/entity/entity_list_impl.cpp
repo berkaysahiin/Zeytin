@@ -65,7 +65,7 @@ void EntityList::register_event_handlers() {
             sync_entities_from_document(doc);
             if(!m_is_synced_once) {
                 m_is_synced_once = true;
-                //log_info() << "Initial sync with runtime" << std::endl;
+                log_info("Initial sync with runtime");
             }
         }
     );
@@ -146,6 +146,9 @@ std::string EntityList::as_string() const {
 }
 
 void EntityList::sync_entities_from_document(const rapidjson::Document& document) {
+	// TODO: this should not only update, but add
+
+
     if(!document.IsObject()) {
         return;
     }
