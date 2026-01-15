@@ -279,7 +279,7 @@ std::optional<std::reference_wrapper<T>> add(EntityID id, Args&&... args) {
     }
 
     T variant(std::forward<Args>(args)...);
-    variant.EntityID = id;
+    variant.entity_id = id;
     variant.on_init();
     
     auto& variants = Zeytin::get().get_components(id);
