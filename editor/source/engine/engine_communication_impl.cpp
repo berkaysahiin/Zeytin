@@ -170,7 +170,7 @@ bool EngineCommunication::initialize() {
         return true;
     }
     catch (const zmq::error_t& e) {
-        //log_error() << "ZeroMQ error: " << e.what() << std::endl;
+        log_error("ZeroMQ error: {}", e.what());
         return false;
     }
 }
@@ -194,6 +194,8 @@ void EngineCommunication::raise_events() {
         const std::string& msg = messages.front();
 
         if(msg.empty()) {
+            log_error("Message received at editor is empty string");
+        	messages.pop();
             continue;
         }
 
@@ -201,16 +203,13 @@ void EngineCommunication::raise_events() {
         doc.Parse(msg.c_str());
 
         if (doc.HasParseError()) {
-            //log_error() << "Failed to parse message: " << msg.substr(0, 100)
-                     // << (msg.length() > 100 ? "..." : "") << std::endl;
-            //log_error() << "Parse error code: " << doc.GetParseError()
-                    //  << " at offset " << doc.GetErrorOffset() << std::endl;
+            log_error("Parse error code: at offset {}", doc.GetErrorOffset());
             messages.pop();
             continue;
         }
 
         if (!doc.IsObject()) {
-            // log_error() << "Message is not a valid JSON object" << std::endl;
+            log_error("Message is not a valid JSON object");
             messages.pop();
             continue;
         }
@@ -222,7 +221,7 @@ void EngineCommunication::raise_events() {
         }
 
         if (!MessageRegistry::get().dispatch(doc, msg)) {
-            //log_warning() << "Unknown message received from engine" << std::endl;
+            log_warning("Unknown message received from engine");
         }
 
         messages.pop();
