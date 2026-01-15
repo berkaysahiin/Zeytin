@@ -14,6 +14,13 @@ set_property(CACHE ENGINE_CONFIG PROPERTY STRINGS weditor standalone)
 file(GLOB_RECURSE SOURCES source/*.cpp)
 file(GLOB_RECURSE MODULE_SOURCES source/*.cppm)
 
+if(ENGINE_CONFIG STREQUAL "standalone")
+    list(FILTER SOURCES EXCLUDE REGEX "source/shared_input/")
+    list(FILTER SOURCES EXCLUDE REGEX "source/shared_texture/")
+    list(FILTER MODULE_SOURCES EXCLUDE REGEX "source/shared_input/")
+    list(FILTER MODULE_SOURCES EXCLUDE REGEX "source/shared_texture/")
+endif()
+
 add_executable(ZeytinEngine_${ENGINE_CONFIG} ${SOURCES})
 
 target_sources(ZeytinEngine_${ENGINE_CONFIG}
@@ -35,7 +42,7 @@ target_include_directories(ZeytinEngine_${ENGINE_CONFIG} PRIVATE
 if(WIN32)
     target_link_directories(ZeytinEngine_${ENGINE_CONFIG} PRIVATE
         3rdparty/raylib/lib/windows
-        3rdparty/rttr/lib/windows
+        3rdparty/_rttr/lib/windows
     )
 else()
     target_link_directories(ZeytinEngine_${ENGINE_CONFIG} PRIVATE
