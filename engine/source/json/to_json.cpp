@@ -5,6 +5,7 @@ module;
 #include <iostream>
 #include <fstream>
 #include <filesystem>
+#include <unordered_set>
 
 #define RAPIDJSON_HAS_STDSTRING 1
 #include "rapidjson/prettywriter.h"
@@ -238,6 +239,9 @@ void to_json_recursively(const instance& obj2, PrettyWriter<StringBuffer>& write
     }
 
     auto prop_list = obj.get_derived_type().get_properties();
+    std::unordered_set<std::string> serialized_properties;
+    serialized_properties.reserve(prop_list.size());
+
     for (auto prop : prop_list)
     {
         if (!prop.is_valid()) {
@@ -247,22 +251,28 @@ void to_json_recursively(const instance& obj2, PrettyWriter<StringBuffer>& write
         
         if (prop.get_metadata("NO_SERIALIZE"))
             continue;
-
+ 
         try {
             variant prop_value = prop.get_value(obj);
             if (!prop_value.is_valid())
                 continue; 
-
+ 
             const auto name = prop.get_name();
-            writer.String(name.data(), static_cast<rapidjson::SizeType>(name.length()), false);
+            std::string name_str = name.to_string();
+            if (!serialized_properties.insert(name_str).second) {
+                continue;
+            }
+
+            writer.String(name_str.c_str(), static_cast<rapidjson::SizeType>(name_str.size()), false);
             if (!write_variant(prop_value, writer))
             {
-                std::cerr << "Failed to serialize property: " << name.to_string() << std::endl;
+                std::cerr << "Failed to serialize property: " << name_str << std::endl;
             }
         } catch (const std::exception& e) {
             std::cerr << "Exception handling property: " << e.what() << std::endl;
         }
     }
+
 
     writer.EndObject();
 }
