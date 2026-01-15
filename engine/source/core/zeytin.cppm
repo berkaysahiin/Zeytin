@@ -11,9 +11,9 @@ export module zeytin.zeytin;
 import zeytin.entity;
 import zeytin.raylib;
 import zeytin.singleton;
-import zeytin.shared_texture;
 
 #ifdef EDITOR_MODE
+import zeytin.shared_texture;
 import zeytin.editor.communication;
 import zeytin.editor.event;
 #endif

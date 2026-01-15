@@ -3,6 +3,7 @@ module;
 #include <functional>
 #include <type_traits>
 #include <optional>
+#include <sstream>
 
 #include "rttr/variant.h"
 

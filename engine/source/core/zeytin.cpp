@@ -27,9 +27,9 @@ import zeytin.component;
 import zeytin.guid;
 import zeytin.property;
 import zeytin.raylib;
-import zeytin.shared_texture;
 
 #ifdef EDITOR_MODE
+import zeytin.shared_texture;
 import zeytin.editor.communication;
 import zeytin.editor.message;
 import zeytin.manipulator.manager;
