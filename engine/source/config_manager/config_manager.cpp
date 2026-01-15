@@ -147,6 +147,7 @@ ConfigManager::MaybeConfig ConfigManager::get_impl(const std::string& key) const
 
 bool ConfigManager::has(const std::string& key) const {
     auto it = pImpl->m_config_values.find(key);
+	return it != pImpl->m_config_values.end();
 }
 
 void ConfigManager::remove(const std::string& key) {
