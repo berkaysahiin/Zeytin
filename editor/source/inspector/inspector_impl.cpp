@@ -27,12 +27,12 @@ import zeytin.inspector.tracking;
 import zeytin.inspector.enable_if;
 import zeytin.property.tracker;
 import zeytin.asset;
+import zeytin.component.registry;
 
 struct Inspector::Impl {
-    std::vector<ComponentDocument>& variants;
     std::map<std::string, PropertyValue> editing_original_values;
 
-    Impl(std::vector<ComponentDocument>& vars) : variants(vars) {}
+    Impl() {}
 
     void render_entity_header(EntityDocument& entity);
     void render_variants(EntityDocument& entity);
@@ -54,8 +54,8 @@ struct Inspector::Impl {
     void render_add_component_button(EntityDocument& entity, uint64_t entity_id);
 };
 
-Inspector::Inspector(std::vector<ComponentDocument>& variants)
-    : pImpl(std::make_unique<Impl>(variants))
+Inspector::Inspector()
+    : pImpl(std::make_unique<Impl>())
 {
 }
 
@@ -485,7 +485,12 @@ void Inspector::Impl::render_add_component_button(EntityDocument& entity, uint64
     }
 
     if (ImGui::BeginPopup("add_component_popup")) {
-        for (auto& variant_doc : variants) {
+        const auto document_ids = get_document_ids();
+        for (const auto& doc_id : document_ids) {
+            auto doc_opt = get_document(doc_id);
+            if (!doc_opt) continue;
+            
+            auto& variant_doc = doc_opt->get();
             rapidjson::Document& variant_json = variant_doc.get_document();
             if (!variant_json.HasMember("type")) {
                 continue;
