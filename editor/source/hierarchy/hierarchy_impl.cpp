@@ -24,7 +24,7 @@ namespace {
     }
 }
 
-Hierarchy::Hierarchy(std::vector<VariantDocument>& variants, EntityList* entity_list)
+Hierarchy::Hierarchy(std::vector<ComponentDocument>& variants, EntityList* entity_list)
     : m_variants(variants), m_entity_list(entity_list)
 {
     subscribe_events();

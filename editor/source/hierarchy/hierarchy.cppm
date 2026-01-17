@@ -4,14 +4,14 @@ module;
 #include <cstdint>
 
 export module zeytin.hierarchy;
-import zeytin.variant.document;
-import zeytin.variant.list;
+import zeytin.component.document;
+import zeytin.component.list;
 import zeytin.entity.document;
 import zeytin.entity.list;
 
 export class Hierarchy final {
 public: 
-    Hierarchy(std::vector<VariantDocument>& variants, EntityList* entity_list);
+    Hierarchy(std::vector<ComponentDocument>& variants, EntityList* entity_list);
     void update();
 
 private:
@@ -24,6 +24,6 @@ private:
     void render_add_component_menu(EntityDocument& entity_document);
     void save_all_entities();
 
-    std::vector<VariantDocument>& m_variants;
+    std::vector<ComponentDocument>& m_variants;
     EntityList* m_entity_list = nullptr;
 };
