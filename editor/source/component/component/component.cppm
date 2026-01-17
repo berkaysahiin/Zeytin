@@ -17,8 +17,6 @@ export {
 
     using PropertyPredicate = Function<bool(const Property&)>;
 
-    Maybe<Component> parse_component_file(PathView file_path);
-    
     MaybeRef<Property> get_property(Component& component, StringView name);
     MaybeRef<const Property> get_property(const Component& component, StringView name);
 
