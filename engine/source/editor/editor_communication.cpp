@@ -3,6 +3,7 @@ module;
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <queue>
 
 #include "rapidjson/document.h"
 #include "zmq/zmq.hpp"
