@@ -39,7 +39,7 @@ void Application::init_window() {
 
     InitWindow(screen_width, screen_height, "Zeytin");
 
-    if(window_x != window_y != -1) {
+    if(window_x != -1 && window_y != -1) {
         SetWindowPosition(window_x, window_y);
     }
 
