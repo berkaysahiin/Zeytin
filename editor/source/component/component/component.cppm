@@ -11,7 +11,6 @@ export {
         ComponentID id;
         String type;
         List<Property> properties;
-        Path source_file;
 		HashMap<PropertyID, AnnotationMap> annotations;
     };
 

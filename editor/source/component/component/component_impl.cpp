@@ -70,11 +70,6 @@ bool is_valid(const Component& component) {
         return false;
     }
     
-    if (component.source_file.empty()) {
-        log_warning("Component validation failed: empty source file");
-        return false;
-    }
-    
     return true;
 }
 
