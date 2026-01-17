@@ -15,6 +15,8 @@ import zeytin.property;
 
 Component component_from_document(const ComponentDocument& document) {
     Component component;
+
+	// TODO: change this to hash ?
     component.id = generate_unique_id();
 
     const auto& json = document.get_document();
