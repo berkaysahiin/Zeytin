@@ -85,7 +85,6 @@ void EngineControls::render() {
         render_build_status();
     }
 }
-}
 
 void EngineControls::render_engine_controls() {
     if (ImGui::Button("Kill Engine")) {
