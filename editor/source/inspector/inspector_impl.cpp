@@ -211,6 +211,8 @@ void Inspector::Impl::render_property(rapidjson::Document& document, rapidjson::
 	const auto tooltip = VariantMetadata::get().get_annotation(variant_type, key, "TOOLTIP");
 	const auto min_annotation = VariantMetadata::get().get_annotation(variant_type, key, "MIN");
 	const auto max_annotation = VariantMetadata::get().get_annotation(variant_type, key, "MAX");
+	const bool is_deprecated = VariantMetadata::get().has_annotation(variant_type, key, "DEPRECATED");
+	const auto deprecated_msg = VariantMetadata::get().get_annotation(variant_type, key, "DEPRECATED");
 	const auto key_type = get_key_type_from_value(value);
 
     const std::string unique_id = std::to_string(entity_id) + "_" + variant_type + "_" + current_path;
@@ -221,13 +223,31 @@ void Inspector::Impl::render_property(rapidjson::Document& document, rapidjson::
 
     ImGui::AlignTextToFramePadding();
     push_tracked_label_style(is_tracked);
+    
+    if (is_deprecated) {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.8f, 0.7f, 0.0f, 1.0f)); // Yellow/warning color
+    }
+    
     ImGui::Text("%s", key.c_str());
+    
+    if (is_deprecated) {
+        ImGui::PopStyleColor();
+    }
+    
     pop_tracked_label_style(is_tracked);
-    show_tooltip_if_hovered(tooltip);
+    
+    if (is_deprecated && deprecated_msg.has_value()) {
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("DEPRECATED: %s", deprecated_msg->c_str());
+        }
+    } else {
+        show_tooltip_if_hovered(tooltip);
+    }
 
     render_property_tracking_menu("track_property_context_label##" + unique_id, location, key_type);
 
-    ImGui::SameLine(150.0f);
+    const float value_column_position = is_deprecated ? 180.0f : 150.0f;
+    ImGui::SameLine(value_column_position);
     ImGui::PushItemWidth(-1);
 
 
