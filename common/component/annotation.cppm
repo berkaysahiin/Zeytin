@@ -1,6 +1,6 @@
 module;
 
-export module zeytin.shared.annotation;
+export module zeytin.common.annotation;
 
 export {
 	enum class AnnotationKey {
