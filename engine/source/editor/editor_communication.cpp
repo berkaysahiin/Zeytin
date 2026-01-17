@@ -182,14 +182,21 @@ bool EditorCommunication::send_message(const std::string& message) {
 }
 
 void EditorCommunication::raise_events() {
-    while (!m_message_queue.empty()) {
-        const auto& msg = m_message_queue.front();
+    std::queue<std::string> local_queue;
+    
+    {
+        std::lock_guard<std::mutex> lock(m_queue_mutex);
+        std::swap(local_queue, m_message_queue);
+    }
+    
+    while (!local_queue.empty()) {
+        const auto& msg = local_queue.front();
         rapidjson::Document doc;
         doc.Parse(msg.c_str());
         
         if (doc.HasParseError() || !doc.HasMember("type")) {
             log_warning("Invalid message format received");
-            m_message_queue.pop();
+            local_queue.pop();
             continue;
         }
         
@@ -197,7 +204,7 @@ void EditorCommunication::raise_events() {
             log_warning("Unknown message type received from editor");
         }
         
-        m_message_queue.pop();
+        local_queue.pop();
     }
 }
 
