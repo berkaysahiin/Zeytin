@@ -43,6 +43,7 @@ void update_property(rttr::variant& obj, const std::vector<std::string>& path_pa
 			if (property.get_name() == current_path) {
 				rttr::variant nested_obj = property.get_value(obj);
 				update_property(nested_obj, path_parts, path_index + 1, value);
+				property.set_value(obj, nested_obj);
 				return;
 			}
 		}
