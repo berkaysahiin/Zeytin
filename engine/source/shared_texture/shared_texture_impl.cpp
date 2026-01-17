@@ -81,6 +81,11 @@ void SharedTextureWriter::write_pixels(const unsigned char* pixels, uint32_t wid
         return;
     }
 
+    // bounds check to prevent buffer overflow
+    if (width > SHARED_TEXTURE_WIDTH || height > SHARED_TEXTURE_HEIGHT) {
+        return;
+    }
+
     auto* header = static_cast<SharedTextureHeader*>(m_mapped_memory);
     unsigned char* pixel_data = static_cast<unsigned char*>(m_mapped_memory) + sizeof(SharedTextureHeader);
 
