@@ -15,8 +15,8 @@ module zeytin.command.component;
 import zeytin.entity.registry;
 import zeytin.entity.list;
 import zeytin.entity.document;
-import zeytin.variant.document;
-import zeytin.variant.list;
+import zeytin.component.document;
+import zeytin.component.list;
 import zeytin.engine.message;
 import zeytin.common.message.editor_to_engine.entity_variant_added;
 import zeytin.common.message.editor_to_engine.entity_variant_removed;
@@ -57,17 +57,17 @@ namespace {
         return &entity_opt->get();
     }
 
-    VariantDocument* get_variant_template(const std::string& component_type) {
+    ComponentDocument* get_variant_template(const std::string& component_type) {
         auto variant_list_opt = EntityRegistry::get().get_variant_list();
         if (!variant_list_opt) {
-            log_error("ComponentCommand: VariantList not registered");
+            log_error("ComponentCommand: ComponentList not registered");
             return nullptr;
         }
         
-        VariantList& variant_list = variant_list_opt->get();
-        std::vector<VariantDocument>& variants = variant_list.get_variants();
+        ComponentList& variant_list = variant_list_opt->get();
+        std::vector<ComponentDocument>& variants = variant_list.get_variants();
         
-        auto it = std::ranges::find_if(variants, [&component_type](const VariantDocument& v) {
+        auto it = std::ranges::find_if(variants, [&component_type](const ComponentDocument& v) {
             return v.get_name() == component_type && !v.is_dead();
         });
         
@@ -83,7 +83,7 @@ namespace {
         EntityDocument* entity = get_entity(entity_id);
         if (!entity) return false;
         
-        VariantDocument* variant_template = get_variant_template(component_type);
+        ComponentDocument* variant_template = get_variant_template(component_type);
         if (!variant_template) return false;
         
         rapidjson::Document& entity_doc = entity->get_document();
@@ -99,9 +99,12 @@ namespace {
         }
         
         // Copy variant template to entity
-        rapidjson::Value new_variant;
-        new_variant.CopyFrom(variant_doc, entity_doc.GetAllocator());
-        variants_array.PushBack(new_variant, entity_doc.GetAllocator());
+        rapidjson::Value new_component;
+        new_component.CopyFrom(variant_doc, entity_doc.GetAllocator());
+        if (new_component.HasMember("annotations")) {
+            new_component.RemoveMember("annotations");
+        }
+        variants_array.PushBack(new_component, entity_doc.GetAllocator());
         
         // Notify engine
         notify_engine_component_added(entity_id, component_type);
