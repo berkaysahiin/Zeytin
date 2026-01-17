@@ -1,6 +1,6 @@
 export module zeytin.annotation;
 
-export import zeytin.shared.annotation;
+export import zeytin.common.annotation;
 import zeytin.utility.typedefs;
 
 import zeytin.utility.json;
