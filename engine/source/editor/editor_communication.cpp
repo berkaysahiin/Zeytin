@@ -116,7 +116,7 @@ bool EditorCommunication::initialize() {
 }
 
 void EditorCommunication::start_connection_attempts() {
-    std::thread([this]() {
+    m_connection_thread = std::thread([this]() {
         EditorEventBus::get().subscribe<bool>(EditorEvent::EngineStartConfirmed,
             [this](bool) {
                 m_connection_confirmed = true;
@@ -136,7 +136,7 @@ void EditorCommunication::start_connection_attempts() {
         } else if (attempts >= max_attempts) {
             log_error("Failed to connect to editor after {} attempts", max_attempts);
         }
-    }).detach();
+    });
 }
 
 void EditorCommunication::send_started_message() {
@@ -157,6 +157,10 @@ void EditorCommunication::shutdown() {
     
     if (m_receive_thread.joinable()) {
         m_receive_thread.join();
+    }
+    
+    if (m_connection_thread.joinable()) {
+        m_connection_thread.join();
     }
     
     m_initialized = false;

@@ -42,6 +42,7 @@ private:
     zmq::socket_t m_publisher;
     zmq::socket_t m_subscriber;
     std::thread m_receive_thread;
+    std::thread m_connection_thread;
     std::mutex m_queue_mutex;
     std::queue<std::string> m_message_queue;
 };
