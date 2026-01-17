@@ -93,6 +93,15 @@ std::optional<std::string> VariantMetadata::get_annotation(
     
     return annotation_it->second;
 }
+	
+bool VariantMetadata::add_annotation(const std::string& variant_name,
+                                              const std::string& property_name,
+                                              std::string annotation_key, std::string annotation_value)
+{
+    std::scoped_lock lock(pImpl->mutex);
+	pImpl->metadata[variant_name][property_name] = {{annotation_key, annotation_value}};
+	return true;
+}
 
 std::unordered_map<std::string, std::string> VariantMetadata::get_all_annotations(
     const std::string& variant_name,

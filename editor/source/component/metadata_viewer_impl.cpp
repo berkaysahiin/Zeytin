@@ -28,8 +28,8 @@ void MetadataViewer::render() {
 void MetadataViewer::render_variant_list() {
     ImGui::Text("Components");
     ImGui::Separator();
-    
-    auto variant_list_opt = EntityRegistry::get().get_variant_list();
+
+    const auto variant_list_opt = EntityRegistry::get().get_variant_list();
     if (!variant_list_opt.has_value()) {
         ImGui::TextDisabled("No component list available");
         return;

@@ -24,6 +24,10 @@ public:
     std::optional<std::string> get_annotation(const std::string& variant_name,
                                               const std::string& property_name,
                                               const std::string& annotation_key) const;
+
+	bool add_annotation(const std::string& variant_name,
+                                              const std::string& property_name,
+                                              std::string annotation_key, std::string annotation_value);
     
     std::unordered_map<std::string, std::string> get_all_annotations(
         const std::string& variant_name,
