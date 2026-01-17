@@ -29,10 +29,10 @@ import zeytin.property.tracker;
 import zeytin.asset;
 
 struct Inspector::Impl {
-    std::vector<VariantDocument>& variants;
+    std::vector<ComponentDocument>& variants;
     std::map<std::string, PropertyValue> editing_original_values;
 
-    Impl(std::vector<VariantDocument>& vars) : variants(vars) {}
+    Impl(std::vector<ComponentDocument>& vars) : variants(vars) {}
 
     void render_entity_header(EntityDocument& entity);
     void render_variants(EntityDocument& entity);
@@ -54,7 +54,7 @@ struct Inspector::Impl {
     void render_add_component_button(EntityDocument& entity, uint64_t entity_id);
 };
 
-Inspector::Inspector(std::vector<VariantDocument>& variants)
+Inspector::Inspector(std::vector<ComponentDocument>& variants)
     : pImpl(std::make_unique<Impl>(variants))
 {
 }

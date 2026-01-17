@@ -4,11 +4,11 @@ module;
 #include <memory>
 
 export module zeytin.inspector;
-import zeytin.variant.document;
+import zeytin.component.document;
 
 export class Inspector final {
 public:
-    Inspector(std::vector<VariantDocument>& variants);
+    Inspector(std::vector<ComponentDocument>& variants);
     ~Inspector();
     
     void render();
