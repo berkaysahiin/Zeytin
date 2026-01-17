@@ -6,7 +6,7 @@ module;
 
 module zeytin.metadata.viewer;
 import zeytin.variant.metadata;
-import zeytin.variant.list;
+import zeytin.component.list;
 import zeytin.entity.registry;
 
 MetadataViewer::MetadataViewer() {}
@@ -14,7 +14,7 @@ MetadataViewer::MetadataViewer() {}
 MetadataViewer::~MetadataViewer() {}
 
 void MetadataViewer::render() {
-    ImGui::BeginChild("VariantListPane", ImVec2(250, 0), true);
+    ImGui::BeginChild("ComponentListPane", ImVec2(250, 0), true);
     render_variant_list();
     ImGui::EndChild();
     
