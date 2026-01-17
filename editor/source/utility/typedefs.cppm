@@ -31,4 +31,6 @@ export {
 
 	template<typename T>
 	using MaybeRef = Maybe<std::reference_wrapper<T>>;
+
+	using uint64 = std::uint64_t;
 }
