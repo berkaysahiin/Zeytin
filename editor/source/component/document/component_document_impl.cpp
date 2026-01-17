@@ -115,11 +115,6 @@ void ComponentDocument::Impl::load_from_file() {
         return;
     }
     
-    // Remove annotations section if present
-    if (document.HasMember("annotations")) {
-        document.RemoveMember("annotations");
-    }
-    
     // Ensure the loaded document has valid structure
     ensure_valid_structure();
 }

@@ -6,8 +6,7 @@ module;
 
 module zeytin.metadata.viewer;
 import zeytin.variant.metadata;
-import zeytin.component.list;
-import zeytin.entity.registry;
+import zeytin.component.registry;
 
 MetadataViewer::MetadataViewer() {}
 
@@ -29,44 +28,45 @@ void MetadataViewer::render_variant_list() {
     ImGui::Text("Components");
     ImGui::Separator();
 
-    const auto variant_list_opt = EntityRegistry::get().get_variant_list();
-    if (!variant_list_opt.has_value()) {
+    const auto document_ids = get_document_ids();
+    if (document_ids.empty()) {
         ImGui::TextDisabled("No component list available");
         return;
     }
     
-    const auto& variant_list = variant_list_opt.value().get();
-    const auto& variants = variant_list.get_variants();
-    
-    for (int i = 0; i < variants.size(); i++) {
-        const auto& variant = variants[i];
-        if (variant.is_dead()) {
+    for (int i = 0; i < static_cast<int>(document_ids.size()); i++) {
+        auto doc_opt = get_document_const(document_ids[i]);
+        if (!doc_opt) {
+            continue;
+        }
+        
+        const auto& doc = doc_opt->get();
+        if (doc.is_dead()) {
             continue;
         }
 
         const bool is_selected = (m_selected_variant_index == i);
-        if (ImGui::Selectable(variant.get_name().c_str(), is_selected)) {
+        if (ImGui::Selectable(doc.get_name().c_str(), is_selected)) {
             m_selected_variant_index = i;
         }
     }
 }
 
 void MetadataViewer::render_variant_details() {
-    auto variant_list_opt = EntityRegistry::get().get_variant_list();
-    if (!variant_list_opt.has_value()) {
-        ImGui::TextDisabled("No variant list available");
-        return;
-    }
+    const auto document_ids = get_document_ids();
     
-    auto& variant_list = variant_list_opt.value().get();
-    const auto& variants = variant_list.get_variants();
-    
-    if (m_selected_variant_index < 0 || m_selected_variant_index >= variants.size()) {
+    if (m_selected_variant_index < 0 || m_selected_variant_index >= static_cast<int>(document_ids.size())) {
         ImGui::TextDisabled("Select a component to view metadata");
         return;
     }
 
-    const auto& variant = variants[m_selected_variant_index];
+    auto doc_opt = get_document_const(document_ids[m_selected_variant_index]);
+    if (!doc_opt) {
+        ImGui::TextDisabled("No variant available");
+        return;
+    }
+
+    const auto& variant = doc_opt->get();
     if (variant.is_dead()) {
         ImGui::TextDisabled("Selected component was removed");
         return;
