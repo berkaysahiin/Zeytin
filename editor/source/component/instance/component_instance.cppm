@@ -13,7 +13,6 @@ export {
     struct ComponentInstance {
         ComponentInstanceID id;
         ComponentID component_id;
-        ComponentDocumentID component_document_id;
         PropertyOverrideMap overrides;
     };
 

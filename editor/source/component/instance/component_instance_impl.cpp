@@ -8,7 +8,6 @@ module zeytin.component.instance;
 ComponentInstance create_component_instance(const ComponentID component_id) {
     ComponentInstance instance;
     instance.component_id = component_id;
-    instance.component_document_id = 0;
     instance.id = generate_unique_id();
     return instance;
 }
