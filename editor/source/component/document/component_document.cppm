@@ -5,7 +5,6 @@ module;
 #include <rapidjson/document.h>
 
 export module zeytin.component.document;
-
 import zeytin.utility.typedefs;
 
 export {

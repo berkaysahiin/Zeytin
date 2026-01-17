@@ -19,13 +19,8 @@ struct ComponentDocument::Impl {
     
     Impl(std::string variant_name);
     
-    // Structure enforcement
     void ensure_valid_structure();
-    
-    // Validation
     ValidationResult validate() const;
-    
-    // Serialization
     void load_from_file();
 };
 
