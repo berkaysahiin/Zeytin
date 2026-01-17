@@ -774,13 +774,8 @@ void Zeytin::handle_entity_property_changed(const rapidjson::Document& doc) {
                 log_error("Failed to parse value '{}' as {}: {}", value_str, key_type, e.what());
                 return;
             }
-            else {
-                log_error("Unsupported key_type '{}' for entity {} variant {} property {}", 
-                         key_type, entity_id, variant_type, key_path);
-                return;
-            }
-            
-            return;
+
+			return;
         }
     }
     
