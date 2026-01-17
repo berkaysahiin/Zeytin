@@ -756,17 +756,23 @@ void Zeytin::handle_entity_property_changed(const rapidjson::Document& doc) {
                 return;
             }
             
-            if (key_type == "int") {
-                update_property(variant, path_parts, 0, std::stoi(value_str));
+            try {
+                if (key_type == "int") {
+                    update_property(variant, path_parts, 0, std::stoi(value_str));
+                }
+                else if (key_type == "float") {
+                    update_property(variant, path_parts, 0, std::stof(value_str));
+                }
+                else if (key_type == "bool") {
+                    update_property(variant, path_parts, 0, (value_str == "true" || value_str == "1"));
+                }
+                else if (key_type == "string") {
+                    update_property(variant, path_parts, 0, value_str);
+                }
             }
-            else if (key_type == "float") {
-                update_property(variant, path_parts, 0, std::stof(value_str));
-            }
-            else if (key_type == "bool") {
-                update_property(variant, path_parts, 0, (value_str == "true" || value_str == "1"));
-            }
-            else if (key_type == "string") {
-                update_property(variant, path_parts, 0, value_str);
+            catch (const std::exception& e) {
+                log_error("Failed to parse value '{}' as {}: {}", value_str, key_type, e.what());
+                return;
             }
             else {
                 log_error("Unsupported key_type '{}' for entity {} variant {} property {}", 
