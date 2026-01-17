@@ -22,9 +22,9 @@ import zeytin.logger;
 import zeytin.common.message.engine_to_editor.scene;
 import zeytin.common.message.engine_to_editor.tracked_property_value;
 import zeytin.common.message.engine_to_editor.enable_if_result;
+import zeytin.common.guid;
 import zeytin.json;
 import zeytin.component;
-import zeytin.guid;
 import zeytin.property;
 import zeytin.raylib;
 
