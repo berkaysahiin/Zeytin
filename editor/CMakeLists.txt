@@ -1,11 +1,12 @@
 cmake_minimum_required(VERSION 4.2)
 project(ZeytinEditor CXX)
 
-set(CMAKE_CXX_STANDARD 20)
-add_subdirectory("../common" "${CMAKE_CURRENT_BINARY_DIR}/common")
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+add_subdirectory("../common" "${CMAKE_CURRENT_BINARY_DIR}/common")
 
 file(GLOB_RECURSE SOURCES
     source/*.cpp
@@ -24,6 +25,12 @@ target_sources(ZeytinEditor
   	PUBLIC
  	FILE_SET all_my_modules TYPE CXX_MODULES FILES
     ${MODULE_SOURCES}
+)
+
+set_target_properties(ZeytinEditor PROPERTIES
+    CXX_STANDARD 23
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS OFF
 )
 
 target_link_libraries(ZeytinEditor PRIVATE ZeytinCommon)
