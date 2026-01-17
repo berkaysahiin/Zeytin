@@ -14,6 +14,7 @@ import zeytin.selection;
 import zeytin.command.manager;
 import zeytin.command.component;
 import zeytin.command.entity;
+import zeytin.component.registry;
 
 import zeytin.validation;
 import zeytin.validation.entity;
@@ -24,8 +25,8 @@ namespace {
     }
 }
 
-Hierarchy::Hierarchy(std::vector<ComponentDocument>& variants, EntityList* entity_list)
-    : m_variants(variants), m_entity_list(entity_list)
+Hierarchy::Hierarchy(EntityList* entity_list)
+    : m_entity_list(entity_list)
 {
     subscribe_events();
 }
@@ -250,42 +251,11 @@ void Hierarchy::render_entity(EntityDocument& entity_document) {
 
 void Hierarchy::handle_entity_context_menu(EntityDocument& entity_document, uint64_t entity_id) {
     if (ImGui::BeginPopup("entity_context_menu")) {
-        if (ImGui::BeginMenu("Add Component")) {
-            render_add_component_menu(entity_document);
-            ImGui::EndMenu();
-        }
-
-        ImGui::Separator();
-
-        if (ImGui::MenuItem("As prefab")) {
-            // TODO: implement 
-        }
-
         if (ImGui::MenuItem("Delete")) {
 			auto command = std::make_unique<RemoveEntityCommand>(entity_id);
     		CommandManager::get().execute_command(std::move(command));
         }
 
         ImGui::EndPopup();
-    }
-}
-
-void Hierarchy::render_add_component_menu(EntityDocument& entity_document) {
-    uint64_t entity_id = entity_document.get_id();
-    
-    for (const auto& variant : m_variants) {
-        if (variant.is_dead() || variant.get_name().empty()) continue;
-
-        const std::string& component_name = variant.get_name();
-        bool already_exists = entity_document.has_component(component_name);
-
-        if (already_exists) {
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.5f, 0.5f, 0.5f, 1.0f));
-            ImGui::MenuItem(component_name.c_str(), nullptr, false, false);
-            ImGui::PopStyleColor();
-        } else if (ImGui::MenuItem(component_name.c_str())) {
-            auto command = std::make_unique<AddComponentCommand>(entity_id, component_name);
-            CommandManager::get().execute_command(std::move(command));
-        }
     }
 }
