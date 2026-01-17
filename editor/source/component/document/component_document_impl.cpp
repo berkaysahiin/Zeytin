@@ -14,6 +14,7 @@ import zeytin.validation;
 
 struct ComponentDocument::Impl {
     std::string name;
+    std::filesystem::path file_path;
     rapidjson::Document document;
     bool is_dead_flag = false;
     
@@ -73,7 +74,8 @@ void ComponentDocument::Impl::load_from_file() {
         return;
     }
 
-    const std::filesystem::path path = ResourceManager::get().get_component_path(name);
+    file_path = ResourceManager::get().get_component_path(name);
+    const std::filesystem::path& path = file_path;
 
     std::ifstream in_file(path);
     if (!in_file.is_open()) {
@@ -141,6 +143,10 @@ ComponentDocument& ComponentDocument::operator=(ComponentDocument&&) noexcept = 
 
 const std::string& ComponentDocument::get_name() const {
     return pImpl->name;
+}
+
+const std::filesystem::path& ComponentDocument::get_file_path() const {
+    return pImpl->file_path;
 }
 
 bool ComponentDocument::is_dead() const {

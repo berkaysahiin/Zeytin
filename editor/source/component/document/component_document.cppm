@@ -23,6 +23,7 @@ public:
     ComponentDocument& operator=(ComponentDocument&&) noexcept;
     
     const std::string& get_name() const;
+    const Path& get_file_path() const;
     bool is_dead() const;
     void mark_dead();
     void set_alive();
