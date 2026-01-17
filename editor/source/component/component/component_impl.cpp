@@ -18,6 +18,16 @@ MaybeRef<Property> get_property(Component& component, StringView name) {
     return {};
 }
 
+MaybeRef<Property> get_property(Component& component, PropertyPredicate pred) {
+    auto it = std::ranges::find_if(component.properties, pred);
+    
+    if (it != component.properties.end()) {
+        return std::ref(*it);
+    }
+
+    return {};
+}
+
 MaybeRef<const Property> get_property(const Component& component, StringView name) {
     auto it = std::ranges::find_if(component.properties,
         [name](const Property& prop) { return prop.name == name; });
@@ -28,17 +38,7 @@ MaybeRef<const Property> get_property(const Component& component, StringView nam
     return {};
 }
 
-MaybeRef<Property> find_property(Component& component, PropertyPredicate pred) {
-    auto it = std::ranges::find_if(component.properties, pred);
-    
-    if (it != component.properties.end()) {
-        return std::ref(*it);
-    }
-
-    return {};
-}
-
-MaybeRef<const Property> find_property(const Component& component, PropertyPredicate pred) {
+MaybeRef<const Property> get_property(const Component& component, PropertyPredicate pred) {
     auto it = std::ranges::find_if(component.properties, pred);
     
     if (it != component.properties.end()) {

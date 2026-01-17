@@ -18,13 +18,12 @@ export {
     using PropertyPredicate = Function<bool(const Property&)>;
 
     MaybeRef<Property> get_property(Component& component, StringView name);
-    MaybeRef<const Property> get_property(const Component& component, StringView name);
+    MaybeRef<Property> get_property(Component& component, PropertyPredicate pred);
 
-    MaybeRef<Property> find_property(Component& component, PropertyPredicate pred);
-    MaybeRef<const Property> find_property(const Component& component, PropertyPredicate pred);
+    MaybeRef<const Property> get_property(const Component& component, StringView name);
+    MaybeRef<const Property> get_property(const Component& component, PropertyPredicate pred);
     
     void set_property(Component& component, StringView name, PropertyValue value);
-    bool has_property(const Component& component, StringView name);
     bool is_valid(const Component& component);
     
     MaybeRef<const AnnotationValue> get_annotation(const Component& component, const Property& prop, const AnnotationKey key);
