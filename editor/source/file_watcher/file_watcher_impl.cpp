@@ -74,6 +74,7 @@ void FileWatcher::watch_loop() {
 		// waiting until the directory we are looking is created
         const bool directory_exists = std::filesystem::exists(pImpl->m_path_to_watch); 
         if(!directory_exists) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(500));
             continue;
         }
 
