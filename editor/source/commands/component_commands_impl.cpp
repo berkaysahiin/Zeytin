@@ -16,7 +16,7 @@ import zeytin.entity.registry;
 import zeytin.entity.list;
 import zeytin.entity.document;
 import zeytin.component.document;
-import zeytin.component.list;
+import zeytin.component.registry;
 import zeytin.engine.message;
 import zeytin.common.message.editor_to_engine.entity_variant_added;
 import zeytin.common.message.editor_to_engine.entity_variant_removed;
@@ -58,25 +58,19 @@ namespace {
     }
 
     ComponentDocument* get_variant_template(const std::string& component_type) {
-        auto variant_list_opt = EntityRegistry::get().get_variant_list();
-        if (!variant_list_opt) {
-            log_error("ComponentCommand: ComponentList not registered");
+        auto doc_opt = get_document_by_name(component_type);
+        if (!doc_opt) {
+            log_error("ComponentCommand: Failed to find component template: {}", component_type);
             return nullptr;
         }
         
-        ComponentList& variant_list = variant_list_opt->get();
-        std::vector<ComponentDocument>& variants = variant_list.get_variants();
-        
-        auto it = std::ranges::find_if(variants, [&component_type](const ComponentDocument& v) {
-            return v.get_name() == component_type && !v.is_dead();
-        });
-        
-        if (it == variants.end()) {
-            log_error("ComponentCommand: Failed to find variant template: {}", component_type);
+        ComponentDocument& doc = doc_opt->get();
+        if (doc.is_dead()) {
+            log_error("ComponentCommand: Component template is dead: {}", component_type);
             return nullptr;
         }
         
-        return &(*it);
+        return &doc;
     }
 
     bool add_component_to_entity(uint64_t entity_id, const std::string& component_type) {
