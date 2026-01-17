@@ -2,6 +2,7 @@ module;
 
 #include <string>
 #include <future>
+#include <mutex>
 
 export module zeytin.engine.controls;
 
@@ -44,4 +45,5 @@ private:
     std::string m_build_details;
     std::future<void> m_build_monitor_future;
     bool m_build_monitor_active;
+    std::mutex m_build_mutex;
 };

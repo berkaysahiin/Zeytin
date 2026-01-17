@@ -37,7 +37,11 @@ EngineControls::EngineControls()
             if (success) {
                 m_is_running = true;
                 m_is_engine_starting = false;
-                m_build_status = BuildStatus::None;
+                
+                {
+                    std::lock_guard<std::mutex> lock(m_build_mutex);
+                    m_build_status = BuildStatus::None;
+                }
 
                 if (m_engine_window_hidden) {
                     send_window_state(true);
@@ -68,20 +72,19 @@ EngineControls::~EngineControls() {
 }
 
 void EngineControls::render() {
-    float total_width = ImGui::GetWindowWidth();
-    float center_width = total_width * 0.2f;
-    float center_pos = (total_width - center_width) * 0.5f;
-    float right_pos = total_width - 400.0f; 
-
-    ImGui::SetCursorPosX(center_pos);
     render_engine_controls();
-
-    ImGui::SetCursorPosX(right_pos);
     render_play_controls();
 
-    if (m_build_status == BuildStatus::Running || m_build_status == BuildStatus::Failed) {
+    BuildStatus status;
+    {
+        std::lock_guard<std::mutex> lock(m_build_mutex);
+        status = m_build_status;
+    }
+    
+    if (status == BuildStatus::Running || status == BuildStatus::Failed) {
         render_build_status();
     }
+}
 }
 
 void EngineControls::render_engine_controls() {
@@ -108,7 +111,13 @@ void EngineControls::render_engine_controls() {
 
     if (!m_is_running) {
         if (!m_is_engine_starting) {
-            if (m_build_status == BuildStatus::Running) {
+            BuildStatus status;
+            {
+                std::lock_guard<std::mutex> lock(m_build_mutex);
+                status = m_build_status;
+            }
+            
+            if (status == BuildStatus::Running) {
                 ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.2f, 0.2f, 0.5f));
                 ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.2f, 0.2f, 0.2f, 0.5f));
                 ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.2f, 0.2f, 0.2f, 0.5f));
@@ -132,7 +141,14 @@ void EngineControls::render_engine_controls() {
     }
     
     ImGui::SameLine(ImGui::GetWindowWidth() - 120);
-    switch (m_build_status) {
+    
+    BuildStatus status_for_display;
+    {
+        std::lock_guard<std::mutex> lock(m_build_mutex);
+        status_for_display = m_build_status;
+    }
+    
+    switch (status_for_display) {
         case BuildStatus::Running:
             ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.0f, 1.0f), "Building...");
             break;
@@ -201,7 +217,18 @@ void EngineControls::render_play_controls() {
 }
 
 void EngineControls::render_build_status() {
-    if (m_build_status == BuildStatus::Failed) {
+    BuildStatus status;
+    std::string message;
+    std::string details;
+    
+    {
+        std::lock_guard<std::mutex> lock(m_build_mutex);
+        status = m_build_status;
+        message = m_build_message;
+        details = m_build_details;
+    }
+    
+    if (status == BuildStatus::Failed) {
         m_is_engine_starting = false;
         m_is_running = false;
         
@@ -211,21 +238,22 @@ void EngineControls::render_build_status() {
             ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "Engine build failed!");
             ImGui::Separator();
             
-            if (!m_build_message.empty()) {
-                ImGui::TextWrapped("%s", m_build_message.c_str());
+            if (!message.empty()) {
+                ImGui::TextWrapped("%s", message.c_str());
             }
             
-            if (!m_build_details.empty()) {
+            if (!details.empty()) {
                 ImGui::Separator();
                 ImGui::Text("Build output:");
                 ImGui::BeginChild("ErrorDetails", ImVec2(0, -30), true);
-                ImGui::TextWrapped("%s", m_build_details.c_str());
+                ImGui::TextWrapped("%s", details.c_str());
                 ImGui::EndChild();
             }
             
             ImGui::Separator();
             if (ImGui::Button("Close", ImVec2(120, 0))) {
                 ImGui::CloseCurrentPopup();
+                std::lock_guard<std::mutex> lock(m_build_mutex);
                 m_build_status = BuildStatus::None;
                 m_build_message.clear();
                 m_build_details.clear();
@@ -233,7 +261,7 @@ void EngineControls::render_build_status() {
             ImGui::EndPopup();
         }
     }
-    else if (m_build_status == BuildStatus::Running) {
+    else if (status == BuildStatus::Running) {
         ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - 210, 50));
         ImGui::SetNextWindowSize(ImVec2(200, 80));
         ImGui::Begin("Building", nullptr, 
@@ -256,9 +284,12 @@ void EngineControls::render_build_status() {
 void EngineControls::start_engine() {
     log_info("Attempting to start the engine...");
     
-    m_build_status = BuildStatus::Running;
-    m_build_message.clear();
-    m_build_details.clear();
+    {
+        std::lock_guard<std::mutex> lock(m_build_mutex);
+        m_build_status = BuildStatus::Running;
+        m_build_message.clear();
+        m_build_details.clear();
+    }
     
     monitor_build();
 }
@@ -289,8 +320,7 @@ void EngineControls::monitor_build() {
         if (exit_code != 0) {
             log_error("Build failed with exit code: {}", exit_code);
             
-            m_build_status = BuildStatus::Failed;
-            m_build_message = "Build failed with exit code " + std::to_string(exit_code);
+            std::string build_details_temp;
             
             // read build output from temporary file
             try {
@@ -299,10 +329,10 @@ void EngineControls::monitor_build() {
                     if (output_file.is_open()) {
                         std::stringstream buffer;
                         buffer << output_file.rdbuf();
-                        m_build_details = buffer.str();
+                        build_details_temp = buffer.str();
                         output_file.close();
                         
-                        if (m_build_details.empty()) {
+                        if (build_details_temp.empty()) {
                             log_error("Build output file was empty");
                         }                     } else {
                     	log_error("Failed to open build output file: {}", temp_output_file);
@@ -314,16 +344,31 @@ void EngineControls::monitor_build() {
                 log_error("Failed to read build log: {}", e.what());
             }
             
+            {
+                std::lock_guard<std::mutex> lock(m_build_mutex);
+                m_build_status = BuildStatus::Failed;
+                m_build_message = "Build failed with exit code " + std::to_string(exit_code);
+                m_build_details = build_details_temp;
+            }
+            
             std::filesystem::remove(temp_output_file);
         } else {
             log_info("Build and launch successful!");
-            m_build_status = BuildStatus::Success;
+            
+            {
+                std::lock_guard<std::mutex> lock(m_build_mutex);
+                m_build_status = BuildStatus::Success;
+            }
             
             std::filesystem::remove(temp_output_file);
             
             // auto-hide success status after 3 seconds
             std::this_thread::sleep_for(std::chrono::seconds(3));
-            m_build_status = BuildStatus::None;
+            
+            {
+                std::lock_guard<std::mutex> lock(m_build_mutex);
+                m_build_status = BuildStatus::None;
+            }
         }
     });
 }
