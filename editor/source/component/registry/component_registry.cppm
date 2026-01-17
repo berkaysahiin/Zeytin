@@ -26,6 +26,10 @@ export {
     MaybeRef<const ComponentDocument> get_document_const(ComponentDocumentID document_id);
     MaybeRef<ComponentDocument> get_document_by_name(const String& name);
     MaybeRef<const ComponentDocument> get_document_by_name_const(const String& name);
+    
+    Maybe<ComponentDocumentID> get_document_id_for_component(ComponentID component_id);
+    MaybeRef<ComponentDocument> get_document_from_component(ComponentID component_id);
+    MaybeRef<const ComponentDocument> get_document_from_component_const(ComponentID component_id);
 
     ComponentInstanceID create_instance(ComponentID component_id);
 

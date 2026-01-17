@@ -298,3 +298,28 @@ static void start_watching() {
 
 	watcher_thread.detach(); 
 }
+
+Maybe<ComponentDocumentID> get_document_id_for_component(const ComponentID component_id) {
+    for (const auto& [doc_id, comp_id] : g_component_by_document) {
+        if (comp_id == component_id) {
+            return doc_id;
+        }
+    }
+    return {};
+}
+
+MaybeRef<ComponentDocument> get_document_from_component(const ComponentID component_id) {
+    auto doc_id_opt = get_document_id_for_component(component_id);
+    if (doc_id_opt) {
+        return get_document(doc_id_opt.value());
+    }
+    return {};
+}
+
+MaybeRef<const ComponentDocument> get_document_from_component_const(const ComponentID component_id) {
+    auto doc_id_opt = get_document_id_for_component(component_id);
+    if (doc_id_opt) {
+        return get_document_const(doc_id_opt.value());
+    }
+    return {};
+}
