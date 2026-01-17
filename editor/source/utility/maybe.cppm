@@ -2,7 +2,7 @@ module;
 
 #include <optional>
 
-export module zeytin.maybe;
+export module zeytin.utility.maybe;
 
 export {
 	template<typename T>
