@@ -97,7 +97,7 @@ void AssetBrowser::render() {
     
     float window_width = ImGui::GetContentRegionAvail().x;
     float tree_width = window_width * 0.3f;
-    float content_width = window_width * 0.7f;
+    [[maybe_unused]] float content_width = window_width * 0.7f;
     
     ImGui::BeginChild("DirectoryTree", ImVec2(tree_width, 0), true);
     render_directory_tree();
