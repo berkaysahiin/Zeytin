@@ -122,17 +122,24 @@ List<ComponentDocumentID> get_document_ids() {
 }
 
 MaybeRef<ComponentInstance> create_instance(const ComponentID component_id) {
-    ComponentInstance instance = create_component_instance(component_id);
-    const auto instance_id = instance.id;
+	ComponentInstance instance {
+		.id = generate_unique_id(),
+		.component_id = component_id,
+		.overrides = {}
+	};
 
-    auto [it, inserted] = g_instances.emplace(instance_id, std::move(instance));
+    auto [it, inserted] = g_instances.emplace(instance.id, std::move(instance));
     if (!inserted) {
         return {};
     }
 
-    g_instances_by_component[component_id].push_back(instance_id);
+    g_instances_by_component[component_id].push_back(instance.id);
 
     return std::ref(it->second);
+}
+
+MaybeRef<ComponentInstance> create_instance(const Component& component) {
+	return create_instance(component.id);
 }
 
 MaybeRef<ComponentInstance> get_instance(const ComponentInstanceID id) {

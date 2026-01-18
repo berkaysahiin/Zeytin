@@ -9,7 +9,7 @@ import zeytin.common.guid;
 
 MaybeRef<Property> get_property(Component& component, StringView name) {
     auto it = std::ranges::find_if(component.properties,
-        [name](const Property& prop) { return prop.name == name; });
+        [name](ConstRef<Property> prop) { return prop.name == name; });
     
     if (it != component.properties.end()) {
         return std::ref(*it);
@@ -28,9 +28,9 @@ MaybeRef<Property> get_property(Component& component, PropertyPredicate pred) {
     return {};
 }
 
-MaybeRef<const Property> get_property(const Component& component, StringView name) {
+MaybeRef<const Property> get_property(ConstRef<Component> component, StringView name) {
     auto it = std::ranges::find_if(component.properties,
-        [name](const Property& prop) { return prop.name == name; });
+        [name](ConstRef<Property> prop) { return prop.name == name; });
     
     if (it != component.properties.end()) {
         return std::cref(*it);
@@ -38,7 +38,7 @@ MaybeRef<const Property> get_property(const Component& component, StringView nam
     return {};
 }
 
-MaybeRef<const Property> get_property(const Component& component, PropertyPredicate pred) {
+MaybeRef<const Property> get_property(ConstRef<Component> component, PropertyPredicate pred) {
     auto it = std::ranges::find_if(component.properties, pred);
     
     if (it != component.properties.end()) {
@@ -60,11 +60,11 @@ void set_property(Component& component, StringView name, PropertyValue value) {
     }
 }
 
-bool has_property(const Component& component, StringView name) {
+bool has_property(ConstRef<Component> component, StringView name) {
     return get_property(component, name).has_value();
 }
 
-bool is_valid(const Component& component) {
+bool is_valid(ConstRef<Component> component) {
     if (component.type.empty()) {
         log_warning("Component validation failed: empty type");
         return false;
@@ -73,7 +73,7 @@ bool is_valid(const Component& component) {
     return true;
 }
 
-MaybeRef<const AnnotationValue> get_annotation(const Component& component, const Property& prop, const AnnotationKey key) {
+MaybeRef<const AnnotationValue> get_annotation(ConstRef<Component> component, ConstRef<Property> prop, const AnnotationKey key) {
     auto ann_map_it = component.annotations.find(prop.id);
     if (ann_map_it == component.annotations.end()) {
         return {};
@@ -87,7 +87,7 @@ MaybeRef<const AnnotationValue> get_annotation(const Component& component, const
     return {};
 }
 
-bool has_annotation(const Component& component, const Property& prop, const AnnotationKey key) {
+bool has_annotation(ConstRef<Component> component, ConstRef<Property> prop, const AnnotationKey key) {
     auto ann_map_it = component.annotations.find(prop.id);
     if (ann_map_it == component.annotations.end()) {
         return false;

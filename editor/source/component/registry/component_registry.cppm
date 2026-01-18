@@ -10,7 +10,7 @@ export {
 
     void initialize_component_registry();
 
-    ComponentID sync_component(const ComponentDocument& document);
+    ComponentID sync_component(ConstRef<ComponentDocument> document);
     bool remove_component(ComponentDocumentID document_id);
 
     MaybeRef<Component> get_component(ComponentID component_id);
@@ -25,7 +25,6 @@ export {
     List<ComponentID> get_component_ids();
     List<ComponentDocumentID> get_document_ids();
 
-
     MaybeRef<ComponentDocument> get_document(ComponentDocumentID document_id);
     MaybeRef<const ComponentDocument> get_document_const(ComponentDocumentID document_id);
     MaybeRef<ComponentDocument> get_document_by_name(const String& name);
@@ -36,12 +35,13 @@ export {
     MaybeRef<const ComponentDocument> get_document_from_component_const(ComponentID component_id);
 
     MaybeRef<ComponentInstance> create_instance(ComponentID component_id);
+    MaybeRef<ComponentInstance> create_instance(ConstRef<Component> component);
 
     MaybeRef<ComponentInstance> get_instance(ComponentInstanceID id);
     MaybeRef<const ComponentInstance> get_instance_const(ComponentInstanceID id);
 
     bool destroy_instance(ComponentInstanceID id);
 
-    const List<ComponentInstanceID>& get_instances_for(ComponentID component_id);
+    ConstRef<List<ComponentInstanceID>> get_instances_for(ComponentID component_id);
     List<ComponentInstanceID> get_instances_for_copy(ComponentID component_id);
 }
