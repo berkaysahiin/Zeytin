@@ -17,45 +17,38 @@ namespace {
 	HashMap<ComponentID, Component> g_component_id_to_component;
 	HashMap<ComponentID, List<ComponentInstanceID>> g_instances_by_component;
 	HashMap<ComponentInstanceID, ComponentInstance> g_instances;
-	HashMap<ComponentDocumentID, ComponentID> g_component_by_document;
 	HashMap<ComponentDocumentID, ComponentDocument> g_documents;
 		
 	FileWatcher* g_file_watcher = nullptr;
+	
+	// NOTE: ComponentID == ComponentDocumentID (they use the same stable hash)
 }
 
-static ComponentDocumentID get_or_create_document_id(const String& name);
-static ComponentDocumentID get_or_create_document_id(const ComponentDocument& document);
+static Maybe<ComponentDocumentID> find_document_id(const String& name);
+static ComponentDocumentID generate_document_id(const String& name);
 
 static void load_component(PathView path);
 static void load_all_components();
 static void start_watching();
 
 ComponentID sync_component(const ComponentDocument& document) {
-    const ComponentDocumentID document_id = get_or_create_document_id(document);
-
     Component component = component_from_document(document);
-    component.id = generate_stable_id(component.type, 0);
-
-    auto existing_it = g_component_id_to_component.find(component.id);
-    if (existing_it != g_component_id_to_component.end()) {
-        component.id = existing_it->first;
-    }
 
     g_component_id_to_component[component.id] = std::move(component);
-    g_component_by_document[document_id] = component.id;
 
     return component.id;
 }
 
 bool remove_component(const ComponentDocumentID document_id) {
-    auto it = g_component_by_document.find(document_id);
-    if (it == g_component_by_document.end()) {
+    // ComponentID == ComponentDocumentID
+    const ComponentID component_id = document_id;
+    
+    auto it = g_component_id_to_component.find(component_id);
+    if (it == g_component_id_to_component.end()) {
         return false;
     }
 
-    const ComponentID component_id = it->second;
-    g_component_by_document.erase(it);
-    g_component_id_to_component.erase(component_id);
+    g_component_id_to_component.erase(it);
 
     auto instance_list_it = g_instances_by_component.find(component_id);
     if (instance_list_it != g_instances_by_component.end()) {
@@ -85,19 +78,11 @@ MaybeRef<const Component> get_component_const(const ComponentID component_id) {
 }
 
 MaybeRef<Component> get_component_from_document(const ComponentDocumentID document_id) {
-    auto it = g_component_by_document.find(document_id);
-    if (it == g_component_by_document.end()) {
-        return {};
-    }
-    return get_component(it->second);
+    return get_component(document_id);
 }
 
 MaybeRef<const Component> get_component_from_document_const(const ComponentDocumentID document_id) {
-    auto it = g_component_by_document.find(document_id);
-    if (it == g_component_by_document.end()) {
-        return {};
-    }
-    return get_component_const(it->second);
+    return get_component_const(document_id);
 }
 
 List<ComponentID> get_component_ids() {
@@ -204,8 +189,11 @@ MaybeRef<const ComponentDocument> get_document_const(const ComponentDocumentID d
 }
 
 MaybeRef<ComponentDocument> get_document_by_name(const String& name) {
-    ComponentDocumentID doc_id = get_or_create_document_id(name);
-    auto it = g_documents.find(doc_id);
+    auto doc_id_opt = find_document_id(name);
+    if (!doc_id_opt) {
+        return {};
+    }
+    auto it = g_documents.find(doc_id_opt.value());
     if (it != g_documents.end()) {
         return std::ref(it->second);
     }
@@ -213,41 +201,65 @@ MaybeRef<ComponentDocument> get_document_by_name(const String& name) {
 }
 
 MaybeRef<const ComponentDocument> get_document_by_name_const(const String& name) {
-    ComponentDocumentID doc_id = get_or_create_document_id(name);
-    auto it = g_documents.find(doc_id);
+    auto doc_id_opt = find_document_id(name);
+    if (!doc_id_opt) {
+        return {};
+    }
+    auto it = g_documents.find(doc_id_opt.value());
     if (it != g_documents.end()) {
         return std::cref(it->second);
     }
     return {};
 }
 
+Maybe<ComponentDocumentID> get_document_id_for_component(const ComponentID component_id) {
+    if (g_component_id_to_component.contains(component_id)) {
+        return component_id;
+    }
+    return {};
+}
+
+MaybeRef<ComponentDocument> get_document_from_component(const ComponentID component_id) {
+    return get_document(component_id);
+}
+
+MaybeRef<const ComponentDocument> get_document_from_component_const(const ComponentID component_id) {
+    return get_document_const(component_id);
+}
+
 // -------------------------------------
 
-static ComponentDocumentID get_or_create_document_id(const String& name) {
+static Maybe<ComponentDocumentID> find_document_id(const String& name) {
 	for (const auto& [id, doc] : g_documents) {
         if (doc.get_name() == name) {
             return id;
         }
     }
-    return generate_stable_id(name, 0);
+    return {};
 }
 
-static ComponentDocumentID get_or_create_document_id(const ComponentDocument& document) {
-    return get_or_create_document_id(document.get_name());
+static ComponentDocumentID generate_document_id(const String& name) {
+    return generate_stable_id(name, 0);
 }
 
 static void load_component(PathView path) {
 	String name = path.stem().string();
-	ComponentDocumentID doc_id = get_or_create_document_id(name);
-
-	auto it = g_documents.find(doc_id);
-	if (it != g_documents.end()) {
-		it->second.set_alive();
-		it->second.load_from_file();
-		sync_component(it->second);
+	auto doc_id_opt = find_document_id(name);
+	ComponentDocumentID doc_id;
+	
+	if (doc_id_opt) {
+		doc_id = doc_id_opt.value();
+		auto it = g_documents.find(doc_id);
+		if (it != g_documents.end()) {
+			it->second.set_alive();
+			it->second.load_from_file();
+			sync_component(it->second);
+		}
 	} else {
+		doc_id = generate_document_id(name);
 		auto [inserted_it, success] = g_documents.emplace(doc_id, ComponentDocument(std::move(name)));
 		if (success) {
+			inserted_it->second.set_id(doc_id);
 			inserted_it->second.load_from_file();
 			sync_component(inserted_it->second);
 		}
@@ -264,9 +276,12 @@ static void load_all_components() {
 
 		Path file_path = entry.path();
 		String name = file_path.stem().string();
-		ComponentDocumentID doc_id = get_or_create_document_id(name);
+		ComponentDocumentID doc_id = generate_document_id(name);
 
-		g_documents.emplace(doc_id, ComponentDocument(std::move(name)));
+		auto [it, success] = g_documents.emplace(doc_id, ComponentDocument(std::move(name)));
+		if (success) {
+			it->second.set_id(doc_id);
+		}
 	}
 
 	for(auto& [id, doc] : g_documents) {
@@ -286,9 +301,12 @@ static void start_watching() {
 		}
 		else if(event == FileEvent::Deleted) {
 			String name = path.stem().string();
-			ComponentDocumentID doc_id = get_or_create_document_id(name);
-			remove_component(doc_id);
-			g_documents.erase(doc_id);
+			auto doc_id_opt = find_document_id(name);
+			if (doc_id_opt) {
+				ComponentDocumentID doc_id = doc_id_opt.value();
+				remove_component(doc_id);
+				g_documents.erase(doc_id);
+			}
 		}
 	});
 	
@@ -297,29 +315,4 @@ static void start_watching() {
 	});
 
 	watcher_thread.detach(); 
-}
-
-Maybe<ComponentDocumentID> get_document_id_for_component(const ComponentID component_id) {
-    for (const auto& [doc_id, comp_id] : g_component_by_document) {
-        if (comp_id == component_id) {
-            return doc_id;
-        }
-    }
-    return {};
-}
-
-MaybeRef<ComponentDocument> get_document_from_component(const ComponentID component_id) {
-    auto doc_id_opt = get_document_id_for_component(component_id);
-    if (doc_id_opt) {
-        return get_document(doc_id_opt.value());
-    }
-    return {};
-}
-
-MaybeRef<const ComponentDocument> get_document_from_component_const(const ComponentID component_id) {
-    auto doc_id_opt = get_document_id_for_component(component_id);
-    if (doc_id_opt) {
-        return get_document_const(doc_id_opt.value());
-    }
-    return {};
 }
