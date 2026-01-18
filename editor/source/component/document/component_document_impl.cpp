@@ -17,6 +17,7 @@ struct ComponentDocument::Impl {
     std::filesystem::path file_path;
     rapidjson::Document document;
     bool is_dead_flag = false;
+    ComponentDocumentID id = 0;
     
     Impl(std::string variant_name);
     
@@ -142,6 +143,14 @@ const std::string& ComponentDocument::get_name() const {
 
 const std::filesystem::path& ComponentDocument::get_file_path() const {
     return pImpl->file_path;
+}
+
+ComponentDocumentID ComponentDocument::get_id() const {
+    return pImpl->id;
+}
+
+void ComponentDocument::set_id(ComponentDocumentID id) {
+    pImpl->id = id;
 }
 
 bool ComponentDocument::is_dead() const {

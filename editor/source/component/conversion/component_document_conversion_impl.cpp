@@ -15,9 +15,7 @@ import zeytin.property;
 
 Component component_from_document(const ComponentDocument& document) {
     Component component;
-
-	// TODO: change this to hash ?
-    component.id = generate_unique_id();
+    component.id = document.get_id(); // component id is same as ComponentDocumentID. There is a 1 to 1 map
 
     const auto& json = document.get_document();
     if (!json.IsObject()) {

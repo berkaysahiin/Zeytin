@@ -24,6 +24,8 @@ public:
     
     const std::string& get_name() const;
     const Path& get_file_path() const;
+    ComponentDocumentID get_id() const;
+    void set_id(ComponentDocumentID id);
     bool is_dead() const;
     void mark_dead();
     void set_alive();
