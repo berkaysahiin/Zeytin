@@ -5,6 +5,7 @@ module;
 
 export module zeytin.property;
 import zeytin.utility.json;
+import zeytin.utility.typedefs;
 
 export {
     using PropertyValue = JsonValue;
@@ -17,7 +18,8 @@ export {
 		PropertyID id;
     };
 
-	bool property_is_equal(const PropertyValue& lhs, const PropertyValue& rhs);
-    bool property_is_null(const PropertyValue& value);
+	bool property_is_equal(ConstRef<PropertyValue>, ConstRef<PropertyValue>);
+    bool property_is_null(ConstRef<PropertyValue>);
+    String property_value_to_string(ConstRef<PropertyValue> value);
 }
 

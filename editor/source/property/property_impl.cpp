@@ -6,7 +6,7 @@ module;
 
 module zeytin.property;
 
-bool property_is_equal(const PropertyValue& lhs, const PropertyValue& rhs) {
+bool property_is_equal(ConstRef<PropertyValue> lhs, ConstRef<PropertyValue> rhs) {
     if (lhs.index() != rhs.index()) {
         return false;
     }
@@ -21,6 +21,24 @@ bool property_is_equal(const PropertyValue& lhs, const PropertyValue& rhs) {
     }, lhs, rhs);
 }
 
-bool property_is_null(const PropertyValue& value) {
+bool property_is_null(ConstRef<PropertyValue> value) {
     return std::holds_alternative<std::monostate>(value);
+}
+
+String property_value_to_string(ConstRef<PropertyValue> value) {
+	return std::visit([](const auto& val) -> std::string {
+		using T = std::decay_t<decltype(val)>;
+		if constexpr (std::is_same_v<T, std::monostate>) {
+			return "(null)";
+		} else if constexpr (std::is_same_v<T, bool>) {
+			return val ? "true" : "false";
+		} else if constexpr (std::is_same_v<T, int64_t>) {
+			return std::to_string(val);
+		} else if constexpr (std::is_same_v<T, double>) {
+			return std::to_string(val);
+		} else if constexpr (std::is_same_v<T, std::string>) {
+			return val;
+		}
+		return "[ERROR]";
+	}, value);
 }
