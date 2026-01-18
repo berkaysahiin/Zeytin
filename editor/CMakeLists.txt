@@ -11,15 +11,19 @@ add_subdirectory("../common" "${CMAKE_CURRENT_BINARY_DIR}/common")
 file(GLOB_RECURSE SOURCES
     source/*.cpp
     source/*.c
+)
+
+file(GLOB_RECURSE THIRD_PARTY_SOURCES
     3rdparty/imgui/*.cpp
 	3rdparty/imgui_test_engine/*.cpp
     3rdparty/rlimgui/*.cpp
 )
-list(APPEND SOURCES 3rdparty/backward-cpp/backward.cpp)
+
+list(APPEND THIRD_PARTY_SOURCES 3rdparty/backward-cpp/backward.cpp)
 
 file(GLOB_RECURSE MODULE_SOURCES source/*.cppm)
 
-add_executable(ZeytinEditor ${SOURCES})
+add_executable(ZeytinEditor ${SOURCES} ${THIRD_PARTY_SOURCES})
 
 target_sources(ZeytinEditor
   	PUBLIC
@@ -51,7 +55,19 @@ target_link_directories(ZeytinEditor PRIVATE
     3rdparty/zmq/linux
 )
 
-target_compile_options(ZeytinEditor PRIVATE -w -g -O0)
+target_compile_options(ZeytinEditor PRIVATE -Wall -Wextra -Wpedantic -Werror -g -O0)
+
+set_source_files_properties(${THIRD_PARTY_SOURCES} PROPERTIES
+    COMPILE_OPTIONS "-w"
+)
+
+set_source_files_properties(source/engine/engine_communication.cppm PROPERTIES
+    COMPILE_OPTIONS "-Wno-deprecated-literal-operator"
+)
+
+set_source_files_properties(source/engine/engine_communication_impl.cpp PROPERTIES
+    COMPILE_OPTIONS "-Wno-deprecated-literal-operator"
+)
 
 target_compile_definitions(ZeytinEditor PRIVATE
 	NO_FONT_AWESOME
