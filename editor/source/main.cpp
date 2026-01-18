@@ -14,8 +14,10 @@ import zeytin.engine_view;
 import zeytin.component.registry;
 import zeytin.variant.metadata;
 import zeytin.component.view;
+import zeytin.entity.view;
 import zeytin.entity.list;
 import zeytin.entity.registry;
+import zeytin.entity.registry.runtime;
 import zeytin.windows.level;
 import zeytin.windows.property_tracker;
 import zeytin.inspector;
@@ -46,6 +48,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
         EntityRegistry::get().set_entity_list(entity_list);  
 
         initialize_component_registry();
+        initialize_entity_runtime_registry();
         
         // Load variant metadata (annotations)
         VariantMetadata::get().load_from_component_files("../shared_resources/components");
@@ -53,6 +56,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
         Hierarchy hierarchy(&entity_list);
         EngineView engine_view;
         ComponentViewWindow component_view;
+        EntityViewWindow entity_view;
         CommandHistory command_history;
 
         LevelWindow::get().set_entity_list(&entity_list);  
@@ -78,6 +82,11 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
         window_manager.add_window("Component View",
             [&component_view]() {
                 component_view.render();
+            });
+        
+        window_manager.add_window("Entity View",
+            [&entity_view]() {
+                entity_view.render();
             });
         
         window_manager.add_window("Engine View",
@@ -130,6 +139,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
         }
 
         engine_controls.kill_engine();
+        
+        shutdown_entity_runtime_registry();
     } 
 
     rlImGuiShutdown();
