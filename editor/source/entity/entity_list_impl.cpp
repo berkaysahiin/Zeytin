@@ -3,6 +3,7 @@ module;
 #include <filesystem>
 #include <vector>
 #include <optional>
+#include <cstring>
 
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
@@ -13,6 +14,9 @@ import zeytin.engine.event;
 import zeytin.logger;
 import zeytin.engine.message;
 import zeytin.common.message.editor_to_engine.scene;
+import zeytin.validation.component;
+import zeytin.validation.json;
+import zeytin.variant.metadata;
 
 namespace {
     constexpr const char* BACKUP_DIR = "temp_backup";
@@ -38,11 +42,10 @@ void EntityList::register_event_handlers() {
         [this](auto _) {
             std::string scene = as_string();
             if(!scene.empty()) {
-                //EngineEventBus::get().publish<const std::string&>(EngineEvent::EngineSendScene, scene);
 				send_message_to_engine<EditorSceneMessage>(scene);
             }
             else {
-                //log_warning() << "Empty scene will not be sent to the engine" << std::endl;
+                log_warning("Empty scene will not be sent to the engine");
             }
         }
     );
@@ -114,7 +117,7 @@ std::string EntityList::as_string() const {
         std::string entity_str = entity.as_string();
 
         if(entity_str.empty()) {
-            //log_error() << "Failed to get entity as string: " << entity.get_name() << std::endl;
+            log_error("Failed to get entity as string: {}", entity.get_name());
             continue;
         }
         
@@ -122,8 +125,7 @@ std::string EntityList::as_string() const {
         rapidjson::ParseResult parse_result = entity_doc.Parse(entity_str.c_str());
 
         if (parse_result.IsError()) {
-             //log_error() << "JSON parse error: " << parse_result.Code()
-             //         << " (offset: " << parse_result.Offset() << ")" << std::endl;
+             log_error("JSON parse error at offset: {}", parse_result.Offset());
             continue;
         }
         
@@ -138,63 +140,136 @@ std::string EntityList::as_string() const {
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
 
     if (!document.Accept(writer)) {
-        //log_error() << "Failed to write document to string buffer" << std::endl;
+        log_error("Failed to write document to string buffer");
         return "";
     }
     
     return std::string(buffer.GetString(), buffer.GetSize());
 }
 
-void EntityList::sync_entities_from_document(const rapidjson::Document& document) {
+void EntityList::sync_entities_from_document(const rapidjson::Document& scene) {
+	// TODO REFACTOR THIS
 	// TODO: this should not only update, but add
 
-
-    if(!document.IsObject()) {
+    if(!scene.IsObject()) {
+        log_error("Invalid message received. Document is not an object");
         return;
     }
 
-    if (!document.HasMember("entities")) {
+    if (!scene.HasMember("entities")) {
         log_error("Received sync message does not have 'entities' member");
         return;
     }
     
-    if (!document["entities"].IsArray()) {
+    if (!scene["entities"].IsArray()) {
         log_error("Received sync message 'entities' is not an array");
         return;
     }
     
-    const auto& entities = document["entities"].GetArray();
-    for (const auto& entity : entities) {
-        if (!entity.HasMember("entity_id") || !entity["entity_id"].IsUint64()) {
-            log_error("Entity missing required 'entity_id' field");
-            continue;
-        }
-        
-        if (!entity.HasMember("variants") || !entity["variants"].IsArray()) {
-            log_error("Entity missing required 'variants' field");
+    const auto& scene_entities = scene["entities"].GetArray();
+
+    for (const auto& scene_entity : scene_entities) {
+
+        if (!json_validation::has_uint64_member(scene_entity, "entity_id")) {
+            log_error("Entity missing entity_id");
             continue;
         }
 
-        uint64_t entity_id = entity["entity_id"].GetUint64();
+        if (!json_validation::has_array_member(scene_entity, "variants")) {
+            log_error("Entity missing variants");
+            continue;
+        }
+
+        const uint64_t entity_id = scene_entity["entity_id"].GetUint64();
         bool found = false;
         
-        for (auto& entity_doc : m_entities) {
-            auto& existing_doc = entity_doc.get_document();
-            if (existing_doc.HasMember("entity_id") &&
-                existing_doc["entity_id"].GetUint64() == entity_id) {
+		// This is really bad. We should map id to EntityDocument
+        for (EntityDocument& entity_doc : m_entities) {
+			rapidjson::Document& existing_doc = entity_doc.get_document();
+            
+            if (!json_validation::has_uint64_member(existing_doc, "entity_id")) continue;
+            if (existing_doc["entity_id"].GetUint64() != entity_id) continue;
 
-				existing_doc["variants"].Clear();
-
+            if (json_validation::has_array_member(existing_doc, "variants") &&
+                json_validation::has_array_member(scene_entity, "variants")) {
+                
+                auto& editor_variants = existing_doc["variants"];
+                const auto& engine_variants = scene_entity["variants"].GetArray();
+                
+                std::vector<ComponentDifference> all_diffs;
+                
+                for (rapidjson::SizeType i = 0; i < editor_variants.Size(); ++i) {
+                    auto& editor_component = editor_variants[i];
+                    
+                    if (!json_validation::has_string_member(editor_component, "type")) continue;
+                    
+                    const char* editor_type = editor_component["type"].GetString();
+                    
+                    const rapidjson::Value* engine_component = nullptr;
+                    for (const auto& comp : engine_variants) {
+                        if (json_validation::has_string_member(comp, "type") &&
+                            std::strcmp(comp["type"].GetString(), editor_type) == 0) {
+                            engine_component = &comp;
+                            break;
+                        }
+                    }
+                    
+                    if (!engine_component) continue;
+                    
+                    ComponentDifference diff = component_validation::detect_component_differences(
+                        editor_type, editor_component, *engine_component, existing_doc.GetAllocator());
+                    
+                    if (!diff.removed_properties.empty()) {
+                        all_diffs.push_back(std::move(diff));
+                    }
+                }
+                
+                existing_doc["variants"].Clear();
+                
                 rapidjson::Document new_doc;
-                new_doc.CopyFrom(entity, new_doc.GetAllocator());
+                new_doc.CopyFrom(scene_entity, new_doc.GetAllocator());
+                
+                for (auto& diff : all_diffs) {
+                    for (auto& new_variant : new_doc["variants"].GetArray()) {
+                        if (json_validation::has_string_member(new_variant, "type") &&
+                            std::strcmp(new_variant["type"].GetString(), diff.component_type.c_str()) == 0) {
+
+                            
+                            if (!new_variant.HasMember("value")) {
+                                new_variant.AddMember("value", rapidjson::Value(rapidjson::kObjectType), new_doc.GetAllocator());
+                            }
+                            
+                            auto& value_obj = new_variant["value"];
+                            for (auto& removed : diff.removed_properties) {
+                                rapidjson::Value key;
+                                key.SetString(removed.property_name.c_str(), removed.property_name.length(), new_doc.GetAllocator());
+                                value_obj.AddMember(key, removed.value, new_doc.GetAllocator());
+
+								log_warning("{}.{} has been removed. The property is DEPRECATED", diff.component_type, removed.property_path);
+
+								VariantMetadata::get().add_annotation(diff.component_type, removed.property_name, "DEPRECATED", "Removed"); 
+                            }
+                            break;
+                        }
+                    }
+                }
+                
                 entity_doc.set_document(std::move(new_doc));
                 found = true;
                 break;
             }
+
+            existing_doc["variants"].Clear();
+
+            rapidjson::Document new_doc;
+            new_doc.CopyFrom(scene_entity, new_doc.GetAllocator());
+            entity_doc.set_document(std::move(new_doc));
+            found = true;
+            break;
         }
         
         if (!found) {
-            //log_error() << "Entity with ID " << entity_id << " not found in entity list" << std::endl;
+            log_error("Entity with ID {}", entity_id);
         }
     }
 }

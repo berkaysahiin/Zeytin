@@ -10,11 +10,10 @@ import zeytin.theme;
 import zeytin.hierarchy;
 import zeytin.engine.controls;
 import zeytin.engine.communication;
-import zeytin.testviewer;
 import zeytin.engine_view;
-import zeytin.variant.list;
+import zeytin.component.registry;
 import zeytin.variant.metadata;
-import zeytin.metadata.viewer;
+import zeytin.component.view;
 import zeytin.entity.list;
 import zeytin.entity.registry;
 import zeytin.windows.level;
@@ -23,7 +22,7 @@ import zeytin.inspector;
 import zeytin.command.keyboardlistener;
 import zeytin.command_history;
 
-int main(int argc, char* argv[])
+int main([[maybe_unused]] int argc, [[maybe_unused]] char* argv[])
 {
     SetTraceLogLevel(LOG_WARNING);
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_MSAA_4X_HINT | FLAG_WINDOW_ALWAYS_RUN);
@@ -46,16 +45,14 @@ int main(int argc, char* argv[])
         EntityList entity_list;
         EntityRegistry::get().set_entity_list(entity_list);  
 
-        VariantList variant_list;
-        EntityRegistry::get().set_variant_list(variant_list);
+        initialize_component_registry();
         
         // Load variant metadata (annotations)
         VariantMetadata::get().load_from_component_files("../shared_resources/components");
 
-        Hierarchy hierarchy(variant_list.get_variants(), &entity_list);
-        TestViewer test_viewer;
+        Hierarchy hierarchy(&entity_list);
         EngineView engine_view;
-        MetadataViewer metadata_viewer;
+        ComponentViewWindow component_view;
         CommandHistory command_history;
 
         LevelWindow::get().set_entity_list(&entity_list);  
@@ -78,14 +75,9 @@ int main(int argc, char* argv[])
                 AssetBrowser::get().render();
             });
             
-        window_manager.add_window("Test Viewer",
-            [&test_viewer]() {
-                test_viewer.render();
-            });
-        
-        window_manager.add_window("Metadata Viewer",
-            [&metadata_viewer]() {
-                metadata_viewer.render();
+        window_manager.add_window("Component View",
+            [&component_view]() {
+                component_view.render();
             });
         
         window_manager.add_window("Engine View",
@@ -102,7 +94,7 @@ int main(int argc, char* argv[])
                 LevelWindow::get().render();
             });
 
-        Inspector inspector(variant_list.get_variants());
+        Inspector inspector;
 
         window_manager.add_window("Inspector",
             [&inspector]() {

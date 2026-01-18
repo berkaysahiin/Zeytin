@@ -51,5 +51,5 @@ private:
     Level m_current_level;
 
     std::vector<EntityDocument> m_entities;
-    std::vector<LevelUnloadingCallback> m_level_unloading_callbacks;  // RENAMED
+    std::vector<LevelUnloadingCallback> m_level_unloading_callbacks;  
 };
