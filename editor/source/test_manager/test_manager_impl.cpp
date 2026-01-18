@@ -92,7 +92,7 @@ void TestManager::register_all_tests() {
         IM_CHECK(item_exists);
     };
 
-    ImGuiTest* re_add_position = IM_REGISTER_TEST(m_test_engine, "Hierarchy", "Re Add Position To Entity");
+    [[maybe_unused]] ImGuiTest* re_add_position = IM_REGISTER_TEST(m_test_engine, "Hierarchy", "Re Add Position To Entity");
     add_position->TestFunc = [](ImGuiTestContext* ctx) {
         IM_CHECK(ctx->ItemExists("Hierarchy"));
         ctx->SetRef("Hierarchy");

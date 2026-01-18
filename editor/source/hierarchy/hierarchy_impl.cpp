@@ -19,12 +19,6 @@ import zeytin.component.registry;
 import zeytin.validation;
 import zeytin.validation.entity;
 
-namespace {
-    void notify_entity_removed(uint64_t entity_id) {
-        send_message_to_engine<EditorEntityRemovedMessage>(entity_id);
-    }
-}
-
 Hierarchy::Hierarchy(EntityList* entity_list)
     : m_entity_list(entity_list)
 {
@@ -249,7 +243,7 @@ void Hierarchy::render_entity(EntityDocument& entity_document) {
     ImGui::PopID();
 }
 
-void Hierarchy::handle_entity_context_menu(EntityDocument& entity_document, uint64_t entity_id) {
+void Hierarchy::handle_entity_context_menu([[maybe_unused]] EntityDocument& entity_document, uint64_t entity_id) {
     if (ImGui::BeginPopup("entity_context_menu")) {
         if (ImGui::MenuItem("Delete")) {
 			auto command = std::make_unique<RemoveEntityCommand>(entity_id);

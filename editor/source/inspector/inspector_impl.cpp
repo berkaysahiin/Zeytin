@@ -121,7 +121,7 @@ void Inspector::Impl::render_variants(EntityDocument& entity) {
 }
 
 void Inspector::Impl::render_variant(rapidjson::Document& document, rapidjson::Value& variant,
-                                int index, uint64_t entity_id) {
+                                [[maybe_unused]] int index, uint64_t entity_id) {
     if (!variant.IsObject() || !variant.HasMember("type")) {
         return;
     }
