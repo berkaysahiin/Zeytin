@@ -6,11 +6,15 @@ module;
 #include <unordered_map>
 #include <filesystem>
 #include <optional>
+#include <type_traits>
 
 export module zeytin.utility.typedefs;
 export import zeytin.utility.json;
+import zeytin.logger;
 
 export {
+	using uint64 = std::uint64_t;
+
 	template<class T>
 	using List = std::vector<T>;
 
@@ -26,11 +30,21 @@ export {
 	using Path = std::filesystem::path;
 	using PathView = const std::filesystem::path&;
 
+	// == ref ==
+
+	template<typename T>
+	using ConstRef = const T&;
+
+	template<typename T>
+	using Ref = T&;
+
+	//  == maybe ==
 	template<typename T>
 	using Maybe = std::optional<T>;
 
 	template<typename T>
 	using MaybeRef = Maybe<std::reference_wrapper<T>>;
 
-	using uint64 = std::uint64_t;
+	template<typename T>
+	using MaybeConstRef = Maybe<std::reference_wrapper<const T>>;
 }
