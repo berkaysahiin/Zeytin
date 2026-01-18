@@ -4,10 +4,10 @@ module;
 
 export module zeytin.component.view;
 
-export class ComponentView {
+export class ComponentViewWindow {
 public:
-	ComponentView();
-	~ComponentView();
+	ComponentViewWindow();
+	~ComponentViewWindow();
 	
 	void render();
 	

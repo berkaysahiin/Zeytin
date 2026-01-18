@@ -27,20 +27,20 @@ namespace {
 	void render_instance_details(const ComponentInstance& instance, const Component& component);
 }
 
-struct ComponentView::Impl {
+struct ComponentViewWindow::Impl {
 	std::optional<ComponentID> selected_component_id;
 	
 	void render_component_list();
 	void render_component_details();
 };
 
-ComponentView::ComponentView() 
+ComponentViewWindow::ComponentViewWindow() 
 	: pImpl(std::make_unique<Impl>()) {
 }
 
-ComponentView::~ComponentView() = default;
+ComponentViewWindow::~ComponentViewWindow() = default;
 
-void ComponentView::render() {
+void ComponentViewWindow::render() {
 	ImGui::BeginChild("ComponentListPane", ImVec2(300, 0), true);
 	pImpl->render_component_list();
 	ImGui::EndChild();
@@ -52,7 +52,7 @@ void ComponentView::render() {
 	ImGui::EndChild();
 }
 
-void ComponentView::Impl::render_component_list() {
+void ComponentViewWindow::Impl::render_component_list() {
 	ImGui::Text("Components");
 	ImGui::Separator();
 
@@ -75,7 +75,7 @@ void ComponentView::Impl::render_component_list() {
 	}
 }
 
-void ComponentView::Impl::render_component_details() {
+void ComponentViewWindow::Impl::render_component_details() {
 	if (!selected_component_id.has_value()) {
 		ImGui::TextDisabled("Select a component to view details");
 		return;
@@ -172,7 +172,7 @@ void render_document_section(const ComponentDocument& doc, ComponentID component
 		ImGui::TableNextColumn();
 		auto doc_id_opt = get_document_id_for_component(component_id);
 		if (doc_id_opt) {
-			ImGui::Text("%llu", doc_id_opt.value());
+			ImGui::Text("%lu", doc_id_opt.value());
 		} else {
 			ImGui::TextDisabled("(none)");
 		}
@@ -226,7 +226,7 @@ void render_component_section(const Component& component) {
 		ImGui::TableNextColumn();
 		ImGui::Text("Component ID");
 		ImGui::TableNextColumn();
-		ImGui::Text("%llu", component.id);
+		ImGui::Text("%lu", component.id);
 		
 		ImGui::TableNextRow();
 		ImGui::TableNextColumn();
@@ -262,7 +262,7 @@ void render_component_section(const Component& component) {
 				ImGui::TableNextRow();
 				
 				ImGui::TableNextColumn();
-				ImGui::Text("%llu", property.id);
+				ImGui::Text("%lu", property.id);
 				
 				ImGui::TableNextColumn();
 				ImGui::Text("%s", property.name.c_str());
@@ -338,8 +338,8 @@ void render_instances_section(ComponentID component_id) {
 }
 
 void render_instance_details(const ComponentInstance& instance, const Component& component) {
-	ImGui::Text("Instance ID: %llu", instance.id);
-	ImGui::Text("Component ID: %llu", instance.component_id);
+	ImGui::Text("Instance ID: %lu", instance.id);
+	ImGui::Text("Component ID: %lu", instance.component_id);
 	ImGui::Text("Overrides: %zu", instance.overrides.size());
 	ImGui::Separator();
 	
