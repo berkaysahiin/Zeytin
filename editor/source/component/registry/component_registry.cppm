@@ -19,8 +19,12 @@ export {
     MaybeRef<Component> get_component_from_document(ComponentDocumentID document_id);
     MaybeRef<const Component> get_component_from_document_const(ComponentDocumentID document_id);
 
+    MaybeRef<Component> get_component_by_name(const String& name);
+    MaybeRef<const Component> get_component_by_name_const(const String& name);
+    
     List<ComponentID> get_component_ids();
     List<ComponentDocumentID> get_document_ids();
+
 
     MaybeRef<ComponentDocument> get_document(ComponentDocumentID document_id);
     MaybeRef<const ComponentDocument> get_document_const(ComponentDocumentID document_id);
@@ -31,7 +35,7 @@ export {
     MaybeRef<ComponentDocument> get_document_from_component(ComponentID component_id);
     MaybeRef<const ComponentDocument> get_document_from_component_const(ComponentID component_id);
 
-    ComponentInstanceID create_instance(ComponentID component_id);
+    MaybeRef<ComponentInstance> create_instance(ComponentID component_id);
 
     MaybeRef<ComponentInstance> get_instance(ComponentInstanceID id);
     MaybeRef<const ComponentInstance> get_instance_const(ComponentInstanceID id);

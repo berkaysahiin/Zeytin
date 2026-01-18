@@ -85,6 +85,24 @@ MaybeRef<const Component> get_component_from_document_const(const ComponentDocum
     return get_component_const(document_id);
 }
 
+MaybeRef<Component> get_component_by_name(const String& name) {
+    for (auto& [id, component] : g_component_id_to_component) {
+        if (component.type == name) {
+            return std::ref(component);
+        }
+    }
+    return {};
+}
+
+MaybeRef<const Component> get_component_by_name_const(const String& name) {
+    for (const auto& [id, component] : g_component_id_to_component) {
+        if (component.type == name) {
+            return std::cref(component);
+        }
+    }
+    return {};
+}
+
 List<ComponentID> get_component_ids() {
     List<ComponentID> ids;
     ids.reserve(g_component_id_to_component.size());
@@ -103,14 +121,18 @@ List<ComponentDocumentID> get_document_ids() {
     return ids;
 }
 
-ComponentInstanceID create_instance(const ComponentID component_id) {
+MaybeRef<ComponentInstance> create_instance(const ComponentID component_id) {
     ComponentInstance instance = create_component_instance(component_id);
     const auto instance_id = instance.id;
 
-    g_instances.emplace(instance_id, std::move(instance));
+    auto [it, inserted] = g_instances.emplace(instance_id, std::move(instance));
+    if (!inserted) {
+        return {};
+    }
+
     g_instances_by_component[component_id].push_back(instance_id);
 
-    return instance_id;
+    return std::ref(it->second);
 }
 
 MaybeRef<ComponentInstance> get_instance(const ComponentInstanceID id) {
