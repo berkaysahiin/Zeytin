@@ -16,5 +16,8 @@ export {
         PropertyValue value;
 		PropertyID id;
     };
+
+	bool property_is_equal(const PropertyValue& lhs, const PropertyValue& rhs);
+    bool property_is_null(const PropertyValue& value);
 }
 
