@@ -12,6 +12,8 @@ export module zeytin.utility.typedefs;
 export import zeytin.utility.json;
 import zeytin.logger;
 
+export namespace fs = std::filesystem;
+
 export {
 	using uint64 = std::uint64_t;
 
