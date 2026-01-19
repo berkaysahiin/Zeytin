@@ -28,7 +28,7 @@ export struct CCollider : public Component
     PROPERTY(GROUP="Debug", ENABLE_IF=is_debug())  
 	float random_float_1 = 0;
 
-    PROPERTY(GROUP="Debug", ENABLE_IF=is_debug())  
+    PROPERTY(DEPRECATED="Use random_float_1 instead", GROUP="Debug", ENABLE_IF=is_debug())  
 	float random_float_2 = 0;
 
     void on_update() override;
