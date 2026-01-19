@@ -15,6 +15,7 @@ export struct PropertyLocation {
     std::string key_path;
 };
 
+// Conflicts with zeytin.property. Probably prefer tha one over this.
 export using PropertyValue = std::variant<int, float, bool, std::string>;
 
 export class PropertyChangeCommand : public Command {
