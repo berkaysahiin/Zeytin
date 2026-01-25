@@ -22,7 +22,7 @@ import zeytin.entity.registry;
 import zeytin.entity.list;
 
 struct BatchPropertyChangeCommand::Impl {
-    uint64_t entity_id;
+    uint64_t entity_id {};
     std::string variant_type;
     std::vector<PropertyChange> changes;
     
@@ -113,7 +113,7 @@ bool BatchPropertyChangeCommand::Impl::update_entity_document(const PropertyChan
         rapidjson::Pointer pointer(pointer_path.c_str());
         rapidjson::Value* target = pointer.Get(variant);
         
-        if (!target) {
+        if (target == nullptr) {
             log_error("Failed to find property at path: {}", pointer_path);
             return false;
         }

@@ -11,5 +11,7 @@ public:
     
     virtual void execute() = 0;
     virtual void undo() = 0;
-    virtual std::optional<std::string> get_description() const { return std::nullopt; }
+
+    [[nodiscard]] 
+	virtual std::optional<std::string> get_description() const { return std::nullopt; }
 };

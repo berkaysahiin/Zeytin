@@ -18,17 +18,28 @@ public:
     void undo();
     void redo();
     
-    bool can_undo() const;
-    bool can_redo() const;
+    [[nodiscard]] 
+	bool can_undo() const;
+
+    [[nodiscard]] 
+	bool can_redo() const;
     
-    std::optional<std::string> get_undo_description() const;
-    std::optional<std::string> get_redo_description() const;
+    [[nodiscard]] 
+	std::optional<std::string> get_undo_description() const;
+
+    [[nodiscard]] 
+	std::optional<std::string> get_redo_description() const;
     
     void clear();
     
-    size_t get_history_size() const;
-    size_t get_current_position() const;
-    std::optional<std::string> get_command_description(const size_t index) const;
+    [[nodiscard]] 
+	size_t get_history_size() const;
+
+    [[nodiscard]] 
+	size_t get_current_position() const;
+
+    [[nodiscard]] 
+	std::optional<std::string> get_command_description( size_t index) const;
 
 private:
     CommandManager();
