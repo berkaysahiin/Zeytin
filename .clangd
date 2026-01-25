@@ -1,0 +1,46 @@
+CompileFlags:
+  Add:
+    - -Wall
+    - -Wextra
+    - -Wpedantic
+
+Diagnostics:
+  ClangTidy:
+    Add:
+      - bugprone-*
+      - performance-*
+      - readability-*
+      - modernize-*
+      - cppcoreguidelines-*
+    Remove:
+      - modernize-use-trailing-return-type
+      - cppcoreguidelines-owning-memory
+      - cppcoreguidelines-avoid-magic-numbers
+      - readability-magic-numbers
+
+Completion:
+  AllScopes: true
+  DetailedLabel: true
+
+InlayHints:
+  Enabled: true
+  ParameterNames: true
+  DeducedTypes: true
+  Designators: true
+
+Hover:
+  ShowAKA: true
+
+SemanticTokens:
+  Enabled: true
+
+Index:
+  Background: Build
+  StandardLibrary: Yes
+
+CodeLens:
+  Enabled: true
+
+Style:
+  FullyQualifiedNamespaces: false
+

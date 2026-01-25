@@ -16,8 +16,6 @@
 
 *.swp
 
-.clangd
-
 bin/
 build/
 temp_backup/
