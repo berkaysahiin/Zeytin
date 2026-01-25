@@ -13,7 +13,7 @@ export {
     struct Entity {
         EntityID id;
         String name;
-        List<ComponentInstanceID> components;
+        List<ComponentInstanceID> components; // We could to this ComponentInstance ?
     };
 
 	[[nodiscard]]
