@@ -1,0 +1,17 @@
+{
+    "entity_id": 2284798232150996280,
+    "variants": [
+        {
+            "type": "CRTEffect",
+            "value": {
+                "enabled": true,
+                "curvature": 12.600000381469728,
+                "scanline_intensity": 0.30000001192092896,
+                "vignette_intensity": 0.30000001192092896,
+                "noise_intensity": 0.05000000074505806,
+                "chromatic_aberration": 0.5,
+                "entity_id": 2284798232150996280
+            }
+        }
+    ]
+}
