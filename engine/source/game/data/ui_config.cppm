@@ -17,6 +17,21 @@ export struct GGameUIConfig final : public DataComponent
     int actions_font_size = 24;
 
     PROPERTY(GROUP="Actions UI")
+    float actions_effect_duration = 0.25F;
+
+    PROPERTY(GROUP="Actions UI")
+    float actions_shake_px = 3.0F;
+
+    PROPERTY(GROUP="Actions UI")
+    int actions_flash_r = 230;
+
+    PROPERTY(GROUP="Actions UI")
+    int actions_flash_g = 90;
+
+    PROPERTY(GROUP="Actions UI")
+    int actions_flash_b = 90;
+
+    PROPERTY(GROUP="Actions UI")
     bool actions_anchor_right = true;
 
     PROPERTY(GROUP="Timer UI")

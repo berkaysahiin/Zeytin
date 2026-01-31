@@ -47,6 +47,9 @@ private:
 	Vector2 m_camera_base_target{0.0F, 0.0F};
 	bool m_camera_shake_active = false;
 
+	float m_actions_effect_timer = 0.0F;
+	bool m_actions_effect_active = false;
+
 	float m_move_timer = 0.0F;
 	EntityID m_move_from = 0;
 	EntityID m_move_to = 0;

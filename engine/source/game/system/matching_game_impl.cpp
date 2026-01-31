@@ -75,6 +75,16 @@ void GMatchingGame::on_play_update() {
 		}
 	}
 
+	if (m_actions_effect_active) {
+		m_actions_effect_timer += get_frame_time();
+		const auto ui_opt = Query::try_find_first<GGameUIConfig>();
+		const float duration = ui_opt ? ui_opt->get().actions_effect_duration : 0.25F;
+		if (duration <= 0.0F || m_actions_effect_timer >= duration) {
+			m_actions_effect_active = false;
+			m_actions_effect_timer = 0.0F;
+		}
+	}
+
 	if (handle_mouse_click()) {
 		check_game_state();
 	}
@@ -120,6 +130,8 @@ void GMatchingGame::process_card_selection(EntityID id, CCard& card) {
 		m_second_mask_type = card.e_mask_status;
 
 		m_remaining_actions--;
+		m_actions_effect_active = true;
+		m_actions_effect_timer = 0.0F;
 
 		auto& first_card = Query::get<CCard>(m_first_selected);
 
@@ -319,12 +331,37 @@ void GMatchingGame::draw_actions_ui() {
 	const float margin_x = ui_opt ? ui_opt->get().actions_x : 20.0F;
 	const float margin_y = ui_opt ? ui_opt->get().actions_y : 20.0F;
 	const bool anchor_right = ui_opt ? ui_opt->get().actions_anchor_right : true;
+	const float effect_duration = ui_opt ? ui_opt->get().actions_effect_duration : 0.25F;
+	const float shake_px = ui_opt ? ui_opt->get().actions_shake_px : 3.0F;
 
 	const float base_width = VIRTUAL_WIDTH > 0.0F ? VIRTUAL_WIDTH : static_cast<float>(get_screen_width());
-	const float x = anchor_right ? (base_width - text_width - margin_x) : margin_x;
-	const float y = margin_y;
+	float x = anchor_right ? (base_width - text_width - margin_x) : margin_x;
+	float y = margin_y;
+	if (m_actions_effect_active && effect_duration > 0.0F) {
+		const float t = m_actions_effect_timer;
+		const float phase = t * 60.0F;
+		const float decay = 1.0F - (t / effect_duration);
+		x += sinf(phase * 1.9F) * shake_px * decay;
+		y += cosf(phase * 2.3F) * shake_px * decay;
+	}
 
-	const Color text_color = make_color(200, 200, 200, 255);
+	Color text_color = make_color(200, 200, 200, 255);
+	if (m_actions_effect_active && effect_duration > 0.0F) {
+		const float t = m_actions_effect_timer;
+		const float decay = 1.0F - (t / effect_duration);
+		const int r = ui_opt ? ui_opt->get().actions_flash_r : 230;
+		const int g = ui_opt ? ui_opt->get().actions_flash_g : 90;
+		const int b = ui_opt ? ui_opt->get().actions_flash_b : 90;
+		const int base_r = 200;
+		const int base_g = 200;
+		const int base_b = 200;
+		text_color = make_color(
+			static_cast<int>(base_r + (r - base_r) * decay),
+			static_cast<int>(base_g + (g - base_g) * decay),
+			static_cast<int>(base_b + (b - base_b) * decay),
+			255
+		);
+	}
 	DrawText(text.c_str(), static_cast<int>(x), static_cast<int>(y), font_size, text_color);
 }
 
