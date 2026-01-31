@@ -16,6 +16,9 @@ export struct GCardConfig final: public DataComponent
 	PROPERTY(GROUP = "Timing")
 	float initial_reveal_duration = 2.0F;
 
+	PROPERTY(GROUP = "Timing")
+	float reveal_hold_after_timer = 0.5F;
+
 	PROPERTY(GROUP = "Card Back")
 	int mask_type = 0;
 };

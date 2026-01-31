@@ -9,6 +9,8 @@ module zeytin.game.matching_game;
 import zeytin.query;
 import zeytin.logger;
 import zeytin.game.card;
+import zeytin.game.card_config;
+import zeytin.game.card_board_system;
 import zeytin.game.transform;
 import zeytin.game.collider;
 import zeytin.game.card_renderer;
@@ -44,50 +46,21 @@ void GMatchingGame::on_play_update() {
 		return;
 	}
 
-	if (m_camera_shake_active) {
-		m_camera_shake_timer += get_frame_time();
-		const float t = m_camera_shake_timer;
-		if (m_camera_shake_duration > 0.0F && t <= m_camera_shake_duration) {
-			const float phase = t * 60.0F;
-			const float offset_x = sinf(phase * 1.7F) * m_camera_shake_amplitude;
-			const float offset_y = cosf(phase * 2.1F) * m_camera_shake_amplitude;
-			Camera2D& camera = Zeytin::get().get_camera();
-			camera.target = Vector2{.x=m_camera_base_target.x + offset_x, .y=m_camera_base_target.y + offset_y};
-		} else {
-			Camera2D& camera = Zeytin::get().get_camera();
-			camera.target = m_camera_base_target;
-			m_camera_shake_active = false;
-			m_camera_shake_timer = 0.0F;
-		}
-	}
-
 	draw_actions_ui();
 	draw_selection_highlight();
 	draw_mismatch_highlight();
 	draw_move_highlight();
 
-	if (m_mismatch_first != 0 || m_mismatch_prev_first != 0) {
+	if (m_mismatch_first != 0) {
 		m_mismatch_timer += get_frame_time();
 		const auto ui_opt = Query::try_find_first<GGameUIConfig>();
 		const float duration = ui_opt ? ui_opt->get().mismatch_duration : 0.0F;
-		if (duration <= 0.0F) {
+		if (duration <= 0.0F || m_mismatch_timer >= duration) {
+			m_mismatch_prev_first = m_mismatch_first;
+			m_mismatch_prev_second = m_mismatch_second;
 			m_mismatch_first = 0;
 			m_mismatch_second = 0;
-			m_mismatch_prev_first = 0;
-			m_mismatch_prev_second = 0;
 			m_mismatch_timer = 0.0F;
-		} else if (m_mismatch_timer >= duration) {
-			if (m_mismatch_prev_first == 0) {
-				m_mismatch_prev_first = m_mismatch_first;
-				m_mismatch_prev_second = m_mismatch_second;
-				m_mismatch_first = 0;
-				m_mismatch_second = 0;
-				m_mismatch_timer = 0.0F;
-			} else {
-				m_mismatch_prev_first = 0;
-				m_mismatch_prev_second = 0;
-				m_mismatch_timer = 0.0F;
-			}
 		}
 	}
 
@@ -164,15 +137,6 @@ void GMatchingGame::process_card_selection(EntityID id, CCard& card) {
 			m_mismatch_timer = 0.0F;
 			m_mismatch_prev_first = 0;
 			m_mismatch_prev_second = 0;
-			const auto ui_opt = Query::try_find_first<GGameUIConfig>();
-			if (ui_opt) {
-				const auto& ui = ui_opt->get();
-				m_camera_shake_duration = ui.mismatch_camera_shake_duration;
-				m_camera_shake_amplitude = ui.mismatch_camera_shake_px;
-				m_camera_shake_timer = 0.0F;
-				m_camera_shake_active = true;
-				m_camera_base_target = Zeytin::get().get_camera().target;
-			}
 			log_info("No match: symbols {} vs {}", first_card.symbol_id, card.symbol_id);
 			}
 		} else {
@@ -338,19 +302,26 @@ void GMatchingGame::draw_move_highlight() {
 
 void GMatchingGame::draw_actions_ui() {
 	const auto ui_opt = Query::try_find_first<GGameUIConfig>();
-	if (!ui_opt) {
-		return;
+	const auto config_opt = Query::try_find_first<GCardConfig>();
+	const auto board_opt = Query::try_find_first<CCardBoardSystem>();
+	if (config_opt && board_opt) {
+		const auto& config = config_opt->get();
+		const auto& board = board_opt->get();
+		const float reveal_cutoff = config.initial_reveal_duration + config.reveal_hold_after_timer;
+		if (board.get_reveal_timer() < reveal_cutoff) {
+			return;
+		}
 	}
-	const auto& ui = ui_opt->get();
-	const int font_size = ui.actions_font_size;
+
+	const int font_size = ui_opt ? ui_opt->get().actions_font_size : 24;
 	const std::string text = "Actions: " + std::to_string(m_remaining_actions);
 	const int text_width = MeasureText(text.c_str(), font_size);
-	const float margin_x = ui.actions_x;
-	const float margin_y = ui.actions_y;
-	const bool anchor_right = ui.actions_anchor_right;
+	const float margin_x = ui_opt ? ui_opt->get().actions_x : 20.0F;
+	const float margin_y = ui_opt ? ui_opt->get().actions_y : 20.0F;
+	const bool anchor_right = ui_opt ? ui_opt->get().actions_anchor_right : true;
 
-	const float screen_width = static_cast<float>(get_screen_width());
-	const float x = anchor_right ? (screen_width - text_width - margin_x) : margin_x;
+	const float base_width = VIRTUAL_WIDTH > 0.0F ? VIRTUAL_WIDTH : static_cast<float>(get_screen_width());
+	const float x = anchor_right ? (base_width - text_width - margin_x) : margin_x;
 	const float y = margin_y;
 
 	const Color text_color = make_color(200, 200, 200, 255);

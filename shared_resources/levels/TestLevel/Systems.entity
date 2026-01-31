@@ -12,16 +12,16 @@
         {
             "type": "GMatchingGame",
             "value": {
-                "allowed_actions": 20,
+                "allowed_actions": 8,
                 "entity_id": 9554886114356367157
             }
         },
         {
             "type": "GGameUIConfig",
             "value": {
-                "actions_x": 35.599998474121094,
-                "actions_y": 20.0,
-                "actions_font_size": 24,
+                "actions_x": 1565.0,
+                "actions_y": 600.0,
+                "actions_font_size": 60,
                 "actions_anchor_right": true,
                 "timer_x": 120.0,
                 "timer_y": 600.0,

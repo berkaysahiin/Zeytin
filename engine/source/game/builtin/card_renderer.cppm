@@ -5,6 +5,7 @@ module;
 
 export module zeytin.game.card_renderer;
 import zeytin.component;
+import zeytin.game.card;
 
 export struct CCardRenderer final : public Component
 {
@@ -30,4 +31,12 @@ export struct CCardRenderer final : public Component
     std::string symbol_4_path = "symbol_4.png";
 
     void on_update() override;
+
+    CardMaskStatus m_last_mask_status = CardMaskStatus::NO_MASK;
+    CardMaskStatus m_flip_from = CardMaskStatus::NO_MASK;
+    CardMaskStatus m_flip_to = CardMaskStatus::NO_MASK;
+
+    float m_flip_timer = 0.0F;
+    bool m_flipping = false;
+    bool m_initialized = false;
 };

@@ -97,7 +97,7 @@ void CCardBoardSystem::on_play_update() {
 
     m_reveal_timer += get_frame_time();
 
-    if (m_reveal_timer >= config.initial_reveal_duration) {
+	if (m_reveal_timer >= (config.initial_reveal_duration + config.reveal_hold_after_timer)) {
         const int32_t mask_matrix[4][4] = {
             {1, 1, 2, 2},
             {1, 2, 1, 2},
@@ -134,20 +134,20 @@ void CCardBoardSystem::on_update() {
         return;
     }
 
-    const float remaining_time = config.initial_reveal_duration - m_reveal_timer;
+	const float remaining_time = (m_reveal_timer >= config.initial_reveal_duration) ? 0.0F : (config.initial_reveal_duration - m_reveal_timer);
 
     const auto ui_opt = Query::try_find_first<GGameUIConfig>();
-    if (!ui_opt) {
+    const int font_size = ui_opt ? ui_opt->get().timer_font_size : 32;
+    const bool show_go = remaining_time <= 0.0F && m_reveal_timer < (config.initial_reveal_duration + config.reveal_hold_after_timer);
+    const int time_int = static_cast<int>(remaining_time);
+    const std::string text = show_go ? "GO" : ("Time: " + std::to_string(time_int));
+    if (!show_go && remaining_time <= 0.0F) {
         return;
     }
-    const auto& ui = ui_opt->get();
-    const int font_size = ui.timer_font_size;
-    const int time_int = static_cast<int>(remaining_time);
-    const std::string text = "Time: " + std::to_string(time_int);
 
-    const float text_x = ui.timer_x;
-    const float text_y = ui.timer_y;
-    const Color text_color = Color{.r=200, .g=200, .b=200, .a=255};
+    const float text_x = ui_opt ? ui_opt->get().timer_x : 20.0F;
+    const float text_y = ui_opt ? ui_opt->get().timer_y : 20.0F;
+    const Color text_color = show_go ? Color{.r=255, .g=220, .b=120, .a=255} : Color{.r=200, .g=200, .b=200, .a=255};
 
     DrawText(text.c_str(), static_cast<int>(text_x), static_cast<int>(text_y), font_size, text_color);
 }
