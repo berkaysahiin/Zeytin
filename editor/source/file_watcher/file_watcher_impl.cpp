@@ -2,6 +2,7 @@ module;
 
 #include <filesystem>
 #include <map>
+#include <utility>
 #include <vector>
 #include <thread>
 #include <unordered_map>
@@ -12,7 +13,7 @@ import zeytin.logger;
 struct FileWatcher::Impl
 { 
 	Impl(fs::path path_to_watch, PollingInterval interval) :
-		m_path_to_watch(path_to_watch), m_polling_interval(interval)
+		m_path_to_watch(std::move(path_to_watch)), m_polling_interval(interval)
 	{}
 
 	std::filesystem::path m_path_to_watch;
@@ -34,7 +35,7 @@ FileWatcher::FileWatcher(const std::filesystem::path& path_to_watch, std::chrono
         return;
     }
 
-    for(auto& file : fs::recursive_directory_iterator(pImpl->m_path_to_watch)) {
+    for(const auto& file : fs::recursive_directory_iterator(pImpl->m_path_to_watch)) {
         if (fs::is_regular_file(file)) {
             pImpl->m_paths[file.path()] = fs::last_write_time(file);
         }
@@ -90,11 +91,11 @@ void FileWatcher::watch_loop() {
         }
 
 		// modified and created files
-        for (auto& file : fs::recursive_directory_iterator(pImpl->m_path_to_watch)) {
+        for (const auto& file : fs::recursive_directory_iterator(pImpl->m_path_to_watch)) {
             if (fs::is_regular_file(file)) {
                 const auto& current_file_last_write_time = fs::last_write_time(file);
                 const auto& path = file.path();
-                if (pImpl->m_paths.find(path) != pImpl->m_paths.end()) {
+                if (pImpl->m_paths.contains(path)) {
                     if (pImpl->m_paths[path] != current_file_last_write_time) {
                         pImpl->m_paths[path] = current_file_last_write_time;
                         notify_callbacks(path, FileEvent::Modified);
