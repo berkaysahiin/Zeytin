@@ -2,6 +2,7 @@ module;
 
 #include "raylib.h"
 #include <cmath>
+#include <numbers>
 
 module zeytin.game.collider;
 import zeytin.raylib;
@@ -57,20 +58,20 @@ void CCollider::draw_bounds() const {
     const float pos_y = transform.position_y + scaled_offset_y;
 
     const Rectangle rec = {
-        pos_x,
-        pos_y,
-        scaled_width,
-        scaled_height
+        .x=pos_x,
+        .y=pos_y,
+        .width=scaled_width,
+        .height=scaled_height
     };
 
-    Vector2 origin = { scaled_width / 2.0f, scaled_height / 2.0f }; // Center the rectangle
+    Vector2 origin = { .x=scaled_width / 2.0F, .y=scaled_height / 2.0F }; // Center the rectangle
 
 #ifdef EDITOR_MODE
     // In editor mode, draw with green in edit mode, yellow in play mode
     if (!Zeytin::get().is_play_mode()) {
         DrawRectanglePro(rec, origin, transform.rotation, GREEN);
         // Draw center point
-        draw_circle_v({pos_x, pos_y}, 3.0f, GREEN);
+        draw_circle_v({.x=pos_x, .y=pos_y}, 3.0F, GREEN);
     } else if (Zeytin::get().is_paused_play_mode()) {
         DrawRectanglePro(rec, origin, transform.rotation, ORANGE);
     } else {
@@ -99,18 +100,18 @@ bool CCollider::is_point_inside(float px, float py) const {
     const float pos_x = transform.position_x + scaled_offset_x;
     const float pos_y = transform.position_y + scaled_offset_y;
 
-    const float rotation_rad = -transform.rotation * (3.14159265358979323846f / 180.0f);
+    const float rotation_rad = -transform.rotation * (std::numbers::pi_v<float> / 180.0F);
     const float cos_r = cosf(rotation_rad);
     const float sin_r = sinf(rotation_rad);
 
     const float local_x = px - pos_x;
     const float local_y = py - pos_y;
 
-    const float rotated_x = local_x * cos_r - local_y * sin_r;
-    const float rotated_y = local_x * sin_r + local_y * cos_r;
+    const float rotated_x = (local_x * cos_r) - (local_y * sin_r);
+    const float rotated_y = (local_x * sin_r) + (local_y * cos_r);
 
-    const float half_width = scaled_width / 2.0f;
-    const float half_height = scaled_height / 2.0f;
+    const float half_width = scaled_width / 2.0F;
+    const float half_height = scaled_height / 2.0F;
 
     return rotated_x >= -half_width && rotated_x <= half_width &&
            rotated_y >= -half_height && rotated_y <= half_height;

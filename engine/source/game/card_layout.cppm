@@ -15,6 +15,7 @@ import zeytin.game.card;
 import zeytin.game.card_board_config;
 import zeytin.game.card_config;
 import zeytin.game.transform;
+import zeytin.game.collider;
 
 export inline void clear_card_layout() {
     const std::vector<EntityID> ids = Query::find_all_with<CCard>();
@@ -28,6 +29,7 @@ void setup_card_layout(const GCardBoardConfig& board, const GCardConfig& config,
 					   [[maybe_unused]] const Alias<Ts...>& alias) {
     static_assert(alias_contains_v<CCard, Ts...>, "Alias must include CCard");
     static_assert(alias_contains_v<CTransform, Ts...>, "Alias must include CTransform");
+    static_assert(alias_contains_v<CCollider, Ts...>, "Alias must include CCollider");
 
     const int32_t rows = board.rows > 0 ? board.rows : 1;
     const int32_t columns = board.columns > 0 ? board.columns : 1;
@@ -52,8 +54,11 @@ void setup_card_layout(const GCardBoardConfig& board, const GCardConfig& config,
     const float cell_width = canvas_width / static_cast<float>(columns);
     const float cell_height = canvas_height / static_cast<float>(rows);
 
-    const float card_width = config.card_width < cell_width ? config.card_width : cell_width;
-    const float card_height = config.card_height < cell_height ? config.card_height : cell_height;
+    const float default_card_width = 96.0F;
+    const float default_card_height = 128.0F;
+
+    const float card_width = default_card_width < cell_width ? default_card_width : cell_width;
+    const float card_height = default_card_height < cell_height ? default_card_height : cell_height;
 
     const float offset_x = (cell_width - card_width) * 0.5F;
     const float offset_y = (cell_height - card_height) * 0.5F;
@@ -93,6 +98,10 @@ void setup_card_layout(const GCardBoardConfig& board, const GCardConfig& config,
             transform.rotation = 0.0F;
             transform.scale_x = 1.0F;
             transform.scale_y = 1.0F;
+
+            auto& collider = Query::get<CCollider>(entity_id);
+            collider.width = card_width;
+            collider.height = card_height;
         }
     }
 }

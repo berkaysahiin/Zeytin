@@ -21,13 +21,13 @@ export struct GCardBoardConfig final : public DataComponent
     float canvas_y = 0.0F;
 
     PROPERTY(GROUP="Canvas")
-    float canvas_width = 800.0F;
+    float canvas_width = 1920.0F;
 
     PROPERTY(GROUP="Canvas")
-    float canvas_height = 600.0F;
+    float canvas_height = 1080.0F;
 
     PROPERTY(GROUP="Canvas")
-    bool use_virtual_canvas = true;
+    bool use_virtual_canvas = false;
 
     PROPERTY(GROUP="Canvas")
     bool canvas_centered = false;

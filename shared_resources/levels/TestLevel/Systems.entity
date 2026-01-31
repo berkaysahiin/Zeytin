@@ -2,7 +2,7 @@
     "entity_id": 9554886114356367157,
     "variants": [
         {
-            "type": "CCardRenderer",
+            "type": "CCardBoardSystem",
             "value": {
                 "entity_id": 9554886114356367157
             }
