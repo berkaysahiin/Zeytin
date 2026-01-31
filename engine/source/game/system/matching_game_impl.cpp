@@ -44,19 +44,50 @@ void GMatchingGame::on_play_update() {
 		return;
 	}
 
+	if (m_camera_shake_active) {
+		m_camera_shake_timer += get_frame_time();
+		const float t = m_camera_shake_timer;
+		if (m_camera_shake_duration > 0.0F && t <= m_camera_shake_duration) {
+			const float phase = t * 60.0F;
+			const float offset_x = sinf(phase * 1.7F) * m_camera_shake_amplitude;
+			const float offset_y = cosf(phase * 2.1F) * m_camera_shake_amplitude;
+			Camera2D& camera = Zeytin::get().get_camera();
+			camera.target = Vector2{.x=m_camera_base_target.x + offset_x, .y=m_camera_base_target.y + offset_y};
+		} else {
+			Camera2D& camera = Zeytin::get().get_camera();
+			camera.target = m_camera_base_target;
+			m_camera_shake_active = false;
+			m_camera_shake_timer = 0.0F;
+		}
+	}
+
 	draw_actions_ui();
 	draw_selection_highlight();
 	draw_mismatch_highlight();
 	draw_move_highlight();
 
-	if (m_mismatch_first != 0) {
+	if (m_mismatch_first != 0 || m_mismatch_prev_first != 0) {
 		m_mismatch_timer += get_frame_time();
 		const auto ui_opt = Query::try_find_first<GGameUIConfig>();
 		const float duration = ui_opt ? ui_opt->get().mismatch_duration : 0.0F;
-		if (duration <= 0.0F || m_mismatch_timer >= duration) {
+		if (duration <= 0.0F) {
 			m_mismatch_first = 0;
 			m_mismatch_second = 0;
+			m_mismatch_prev_first = 0;
+			m_mismatch_prev_second = 0;
 			m_mismatch_timer = 0.0F;
+		} else if (m_mismatch_timer >= duration) {
+			if (m_mismatch_prev_first == 0) {
+				m_mismatch_prev_first = m_mismatch_first;
+				m_mismatch_prev_second = m_mismatch_second;
+				m_mismatch_first = 0;
+				m_mismatch_second = 0;
+				m_mismatch_timer = 0.0F;
+			} else {
+				m_mismatch_prev_first = 0;
+				m_mismatch_prev_second = 0;
+				m_mismatch_timer = 0.0F;
+			}
 		}
 	}
 
@@ -128,10 +159,21 @@ void GMatchingGame::process_card_selection(EntityID id, CCard& card) {
 			} else {
 				first_card.e_mask_status = m_first_mask_type;
 				card.e_mask_status = m_second_mask_type;
-				m_mismatch_first = m_first_selected;
-				m_mismatch_second = id;
-				m_mismatch_timer = 0.0F;
-				log_info("No match: symbols {} vs {}", first_card.symbol_id, card.symbol_id);
+			m_mismatch_first = m_first_selected;
+			m_mismatch_second = id;
+			m_mismatch_timer = 0.0F;
+			m_mismatch_prev_first = 0;
+			m_mismatch_prev_second = 0;
+			const auto ui_opt = Query::try_find_first<GGameUIConfig>();
+			if (ui_opt) {
+				const auto& ui = ui_opt->get();
+				m_camera_shake_duration = ui.mismatch_camera_shake_duration;
+				m_camera_shake_amplitude = ui.mismatch_camera_shake_px;
+				m_camera_shake_timer = 0.0F;
+				m_camera_shake_active = true;
+				m_camera_base_target = Zeytin::get().get_camera().target;
+			}
+			log_info("No match: symbols {} vs {}", first_card.symbol_id, card.symbol_id);
 			}
 		} else {
 			first_card.e_mask_status = CardMaskStatus::NO_MASK;
@@ -219,7 +261,9 @@ void GMatchingGame::draw_selection_highlight() {
 }
 
 void GMatchingGame::draw_mismatch_highlight() {
-	if (m_mismatch_first == 0) {
+	const EntityID trail_from = m_mismatch_prev_first != 0 ? m_mismatch_prev_first : m_mismatch_first;
+	const EntityID trail_to = m_mismatch_prev_second != 0 ? m_mismatch_prev_second : m_mismatch_second;
+	if (trail_from == 0 || trail_to == 0) {
 		return;
 	}
 
@@ -229,29 +273,27 @@ void GMatchingGame::draw_mismatch_highlight() {
 	}
 	const auto& ui = ui_opt->get();
 
-	const float thickness = ui.mismatch_outline_thickness;
-	const float shake = ui.mismatch_shake_px;
-	const Color mismatch_color = make_color(ui.mismatch_color_r, ui.mismatch_color_g, ui.mismatch_color_b, ui.mismatch_color_a);
-	const float t = m_mismatch_timer * 60.0F;
-	const float offset_x = sinf(t * 1.7F) * shake;
-	const float offset_y = cosf(t * 2.1F) * shake;
+	const float duration = ui.mismatch_duration;
+	const float alpha = duration > 0.0F ? (1.0F - (m_mismatch_timer / duration)) : 0.0F;
+	const float clamped = alpha < 0.0F ? 0.0F : (alpha > 1.0F ? 1.0F : alpha);
+	const int a = static_cast<int>(static_cast<float>(ui.mismatch_color_a) * clamped);
+	const Color mismatch_color = make_color(ui.mismatch_color_r, ui.mismatch_color_g, ui.mismatch_color_b, a);
 
-	auto draw_outline_for = [&](EntityID id) {
-		const auto& transform = Query::get<CTransform>(id);
-		const auto& collider = Query::get<CCollider>(id);
-		const Rectangle rect{
-			.x=transform.position_x - collider.width / 2.0F - thickness + offset_x,
-			.y=transform.position_y - collider.height / 2.0F - thickness + offset_y,
-			.width=collider.width + thickness * 2.0F,
-			.height=collider.height + thickness * 2.0F
-		};
-		DrawRectangleLinesEx(rect, thickness, mismatch_color);
-	};
+	const auto& from_transform = Query::get<CTransform>(trail_from);
+	const auto& to_transform = Query::get<CTransform>(trail_to);
+	const Vector2 from{.x=from_transform.position_x, .y=from_transform.position_y};
+	const Vector2 to{.x=to_transform.position_x, .y=to_transform.position_y};
 
-	draw_outline_for(m_mismatch_first);
-	if (m_mismatch_second != 0) {
-		draw_outline_for(m_mismatch_second);
+	const float base_thickness = ui.mismatch_trail_thickness;
+	for (int i = 2; i >= 0; --i) {
+		const float layer = static_cast<float>(i);
+		const float thickness = base_thickness + layer * 3.0F;
+		const float layer_alpha = clamped * (0.35F - layer * 0.1F);
+		const int layer_a = static_cast<int>(static_cast<float>(ui.mismatch_color_a) * layer_alpha);
+		const Color glow_color = make_color(ui.mismatch_color_r, ui.mismatch_color_g, ui.mismatch_color_b, layer_a);
+		DrawLineEx(from, to, thickness, glow_color);
 	}
+	DrawLineEx(from, to, base_thickness, mismatch_color);
 }
 
 void GMatchingGame::draw_move_highlight() {

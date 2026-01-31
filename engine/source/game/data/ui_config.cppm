@@ -49,6 +49,15 @@ export struct GGameUIConfig final : public DataComponent
     PROPERTY(GROUP="Mismatch UI")
     int mismatch_color_a = 240;
 
+    PROPERTY(GROUP="Mismatch UI")
+    float mismatch_trail_thickness = 6.0F;
+
+    PROPERTY(GROUP="Mismatch UI")
+    float mismatch_camera_shake_px = 6.0F;
+
+    PROPERTY(GROUP="Mismatch UI")
+    float mismatch_camera_shake_duration = 0.2F;
+
     PROPERTY(GROUP="Move UI")
     float move_duration = 0.25F;
 

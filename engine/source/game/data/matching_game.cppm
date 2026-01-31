@@ -1,6 +1,7 @@
 module;
 
 #include "preparser.h"
+#include "raylib.h"
 #include <set>
 
 export module zeytin.game.matching_game;
@@ -37,6 +38,14 @@ private:
 	float m_mismatch_timer = 0.0F;
 	EntityID m_mismatch_first = 0;
 	EntityID m_mismatch_second = 0;
+	EntityID m_mismatch_prev_first = 0;
+	EntityID m_mismatch_prev_second = 0;
+
+	float m_camera_shake_timer = 0.0F;
+	float m_camera_shake_duration = 0.0F;
+	float m_camera_shake_amplitude = 0.0F;
+	Vector2 m_camera_base_target{0.0F, 0.0F};
+	bool m_camera_shake_active = false;
 
 	float m_move_timer = 0.0F;
 	EntityID m_move_from = 0;
