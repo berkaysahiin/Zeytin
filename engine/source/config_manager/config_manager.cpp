@@ -13,7 +13,7 @@ module;
 #include <iostream>
 
 module zeytin.config;
-import zeytin.resource;
+import zeytin.resource.manager;
 import zeytin.logger;
 
 static rapidjson::Value variant_to_json_value(const ConfigManager::ConfigValue& value, rapidjson::Document::AllocatorType& allocator);

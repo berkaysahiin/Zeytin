@@ -2,7 +2,7 @@ module;
 
 #include <filesystem>
 
-module zeytin.resource;
+module zeytin.resource.manager;
 import zeytin.logger;
 
 #define ENTITY_FOLDER "entities"
@@ -28,7 +28,11 @@ std::filesystem::path ResourceManager::get_entities_path() const {
 }
 
 std::filesystem::path ResourceManager::get_components_path() const {
-	return get_resource_subdir(VARIANT_FOLDER); 
+	return get_resource_subdir(VARIANT_FOLDER);
+}
+
+std::filesystem::path ResourceManager::get_asset_path(const std::string& path) const {
+	return m_resources_path / "assets" / "textures" / path;
 }
 
 void ResourceManager::construct_paths() {

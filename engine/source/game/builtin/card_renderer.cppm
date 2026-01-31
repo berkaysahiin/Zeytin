@@ -1,6 +1,7 @@
 module;
 
 #include "preparser.h"
+#include <string>
 
 export module zeytin.game.card_renderer;
 import zeytin.component;
@@ -30,6 +31,12 @@ export struct CCardRenderer final : public Component
 
     PROPERTY(GROUP="Colors")
     int face_alpha = 255;
+
+    PROPERTY(GROUP="Mask Textures")
+    std::string mask_happy_path = "happy_face.png";
+
+    PROPERTY(GROUP="Mask Textures")
+    std::string mask_sad_path;
 
     void on_update() override;
 };

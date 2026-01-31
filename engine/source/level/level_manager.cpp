@@ -9,7 +9,7 @@ module;
 #include <filesystem>
 
 module zeytin.level;
-import zeytin.resource;
+import zeytin.resource.manager;
 import zeytin.logger;
 
 std::filesystem::path LevelManager::get_levels_directory() {

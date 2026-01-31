@@ -18,6 +18,8 @@ module;
 module zeytin.zeytin;
 import zeytin.level;
 import zeytin.resource;
+import zeytin.resource.manager;
+import zeytin.resource_cache;
 import zeytin.logger;
 import zeytin.common.message.engine_to_editor.scene;
 import zeytin.common.message.engine_to_editor.tracked_property_value;
@@ -135,7 +137,7 @@ EntityID Zeytin::new_entity() {
 
 void Zeytin::run_frame() {
     ZPROFILE_FUNCTION();
-    
+
 #ifdef EDITOR_MODE
     EditorCommunication::get().raise_events();
 #endif
@@ -143,14 +145,14 @@ void Zeytin::run_frame() {
 	if(m_state.load_level_next_frame) {
         if (!m_pending_level_name.empty()) {
             std::string scene_json = LevelManager::load_level(m_pending_level_name);
-            
+
             if (!scene_json.empty()) {
                 m_storage.clear();
-                
+
                 if (deserialize_scene(scene_json)) {
                     m_state.started = false;
                     m_state.late_started = false;
-					m_current_level_name = m_pending_level_name;  
+					m_current_level_name = m_pending_level_name;
                     //log_info() << "Successfully loaded level: " << m_pending_level_name << std::endl;
                 } else {
                     log_error("Failed to deserialize level: {}", m_pending_level_name);
@@ -158,7 +160,7 @@ void Zeytin::run_frame() {
             } else {
                 log_error("Failed to load level: {}", m_pending_level_name);
             }
-            
+
             m_pending_level_name.clear();
         }
         m_state.load_level_next_frame = false;
@@ -181,7 +183,9 @@ void Zeytin::run_frame() {
     }
 #endif
     m_state.reload_next_frame = false;
-}
+  }
+
+    Singleton<ResourceCache<Texture2D>>::get().check_hot_reload();
 
     begin_texture_mode(m_render_texture);
     clear_background(BLACK);

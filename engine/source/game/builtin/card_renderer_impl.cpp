@@ -4,6 +4,7 @@ module;
 #include <algorithm>
 #include <cmath>
 #include <numbers>
+#include <string>
 
 module zeytin.game.card_renderer;
 import zeytin.raylib;
@@ -11,6 +12,8 @@ import zeytin.game.transform;
 import zeytin.game.collider;
 import zeytin.game.card;
 import zeytin.query;
+import zeytin.resource;
+import zeytin.logger;
 
 namespace {
     Color make_color(const int red, const int green, const int blue, const int alpha) {
@@ -323,8 +326,26 @@ void CCardRenderer::on_update() {
     if (mask_status == CardMaskStatus::NO_MASK) {
         draw_abstract_symbol(card.symbol_id, face_center, half_width, half_height, face_color);
     } else if (mask_status == CardMaskStatus::SMILE) {
-        draw_happy_face(face_center, half_width, half_height, face_color);
+        ResourcePtr<Texture2D> happy_texture(mask_happy_path);
+        if (happy_texture.is_valid()) {
+            Texture2D* tex = happy_texture.get_ptr();
+            const Rectangle source{.x=0, .y=0, .width=static_cast<float>(tex->width), .height=static_cast<float>(tex->height)};
+            const Rectangle dest{.x=face_center.x - half_width, .y=face_center.y - (half_height / 1.2F), .width=width, .height=height};
+            DrawTexturePro(*tex, source, dest, Vector2{.x=0, .y=0}, 0.0F, WHITE);
+        } else {
+			log_error("Couldn't find valid resource: {}. Drawing place holder", mask_happy_path);
+            draw_happy_face(face_center, half_width, half_height, face_color);
+        }
     } else {
-        draw_sad_face(face_center, half_width, half_height, face_color);
+        ResourcePtr<Texture2D> sad_texture(mask_sad_path);
+        if (sad_texture.is_valid()) {
+            Texture2D* tex = sad_texture.get_ptr();
+            const Rectangle source{.x=0, .y=0, .width=static_cast<float>(tex->width), .height=static_cast<float>(tex->height)};
+            const Rectangle dest{.x=face_center.x - half_width, .y=face_center.y - half_height, .width=width, .height=height};
+            DrawTexturePro(*tex, source, dest, Vector2{.x=0, .y=0}, 0.0F, WHITE);
+        } else {
+			//log_error("Couldn't find valid resource: {}. Drawing place holder", mask_sad_path);
+            draw_sad_face(face_center, half_width, half_height, face_color);
+        }
     }
 }
