@@ -8,32 +8,29 @@ import zeytin.component;
 export struct CCollider : public Component 
 {
     PROPERTY(GROUP="Size")   
-	float width = 100.0f;
+	float width = 100.0F;
 
     PROPERTY(GROUP="Size")   
-	float height = 100.0f;
+	float height = 100.0F;
 
     PROPERTY(GROUP="Offset") 
-	float offset_x = 0.0f;
+	float offset_x = 0.0F;
 
     PROPERTY(GROUP="Offset") 
-	float offset_y = 0.0f;
+	float offset_y = 0.0F;
 
     PROPERTY(GROUP="Debug")  
 	bool enable_debug = true;
 
     PROPERTY(GROUP="Debug", ENABLE_IF=is_debug())  
-	bool show_bounds = true;
+	bool show_bounds = false;
 
-    PROPERTY(GROUP="Debug", ENABLE_IF=is_debug())  
-	float random_float_1 = 0;
+    [[nodiscard]] 
+	bool is_point_inside(float in_px, float in_py) const;
 
-    PROPERTY(GROUP="Debug", ENABLE_IF=is_debug())  
-	float random_float_2 = 0;
+	[[nodiscard]] 
+	bool is_debug() const { return enable_debug; }
 
     void on_update() override;
     void draw_bounds() const;
-    bool is_point_inside(float px, float py) const;
-
-	bool is_debug() const { return enable_debug; }
 };

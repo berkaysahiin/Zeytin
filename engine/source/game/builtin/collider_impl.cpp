@@ -9,9 +9,11 @@ import zeytin.zeytin;
 import zeytin.game.transform;
 import zeytin.query;
 import zeytin.manipulator.manager;
+
 #ifdef EDITOR_MODE
 import zeytin.editor.message;
 #endif
+
 import zeytin.entity;
 
 void CCollider::on_update() {
@@ -26,10 +28,10 @@ void CCollider::on_update() {
             const Vector2 world_mouse = get_screen_to_world2d(mouse_pos, Zeytin::get().get_camera());
 
             if (is_point_inside(world_mouse.x, world_mouse.y)) {
-                const EntityID id = get_id();
-                if (id != 0) {
+                const EntityID entity_id = get_id();
+                if (entity_id != 0) {
 					// editor will sync this info back to the engine
-                    send_message_to_editor<EntitySelectedMessage>(id);
+                    send_message_to_editor<EntitySelectedMessage>(entity_id);
                 }
             }
         }
