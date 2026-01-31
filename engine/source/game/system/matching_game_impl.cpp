@@ -40,6 +40,7 @@ void GMatchingGame::on_play_start() {
 	m_remaining_actions = allowed_actions;
 	m_found_pairs.clear();
 	m_game_over = false;
+	m_matched_pairs_count = 0;
 	m_current_streak = 0;
 	m_current_multiplier = 1.0F;
 	const auto score_opt = Query::try_find_first<GScoreState>();
@@ -136,6 +137,16 @@ void GMatchingGame::on_play_update() {
 		}
 	}
 
+	if (m_multiplier_fx_active) {
+		m_multiplier_fx_timer += get_frame_time();
+		const auto ui_opt = Query::try_find_first<GGameUIConfig>();
+		const float duration = ui_opt ? ui_opt->get().multiplier_fx_duration : 0.3F;
+		if (duration <= 0.0F || m_multiplier_fx_timer >= duration) {
+			m_multiplier_fx_active = false;
+			m_multiplier_fx_timer = 0.0F;
+		}
+	}
+
 	if (m_invalid_select_id != 0) {
 		m_invalid_select_timer += get_frame_time();
 		const auto ui_opt = Query::try_find_first<GGameUIConfig>();
@@ -205,6 +216,7 @@ void GMatchingGame::process_card_selection(EntityID id, CCard& card) {
 				first_card.e_mask_status = CardMaskStatus::NO_MASK;
 				card.e_mask_status = CardMaskStatus::NO_MASK;
 				m_found_pairs.insert(first_card.symbol_id);
+				m_matched_pairs_count++;
 				m_current_streak++;
 				const auto scoring_opt = Query::try_find_first<GScoringConfig>();
 				const int base_points = scoring_opt ? scoring_opt->get().base_match_points : 10;
@@ -212,10 +224,10 @@ void GMatchingGame::process_card_selection(EntityID id, CCard& card) {
 				const float max_mult = scoring_opt ? scoring_opt->get().max_multiplier : 5.0F;
 				const float bonus = scoring_opt ? scoring_opt->get().sad_happy_bonus : 1.0F;
 
-				m_current_multiplier += step;
-				if (m_current_multiplier > max_mult) {
-					m_current_multiplier = max_mult;
-				}
+			m_current_multiplier += step;
+			if (m_current_multiplier > max_mult) {
+				m_current_multiplier = max_mult;
+			}
 
 				const bool is_sad_happy = (m_first_mask_type != m_second_mask_type) &&
 					((m_first_mask_type == CardMaskStatus::SMILE && m_second_mask_type == CardMaskStatus::SAD) ||
@@ -229,6 +241,20 @@ void GMatchingGame::process_card_selection(EntityID id, CCard& card) {
 					score.multiplier = m_current_multiplier;
 				}
 
+				if (m_current_multiplier > m_last_multiplier) {
+					m_multiplier_fx_active = true;
+					m_multiplier_fx_timer = 0.0F;
+					m_last_multiplier = m_current_multiplier;
+					const auto ui_opt = Query::try_find_first<GGameUIConfig>();
+					if (ui_opt) {
+						m_camera_shake_duration = 0.08F;
+						m_camera_shake_amplitude = ui_opt->get().multiplier_fx_shake_px;
+						m_camera_shake_timer = 0.0F;
+						m_camera_shake_active = true;
+						m_camera_base_target = Zeytin::get().get_camera().target;
+					}
+				}
+
 				m_match_from = m_first_selected;
 				m_match_to = id;
 				m_match_timer = 0.0F;
@@ -238,6 +264,7 @@ void GMatchingGame::process_card_selection(EntityID id, CCard& card) {
 				card.e_mask_status = m_second_mask_type;
 				m_current_streak = 0;
 				m_current_multiplier = 1.0F;
+				m_last_multiplier = m_current_multiplier;
 				const auto score_opt = Query::try_find_first<GScoreState>();
 				if (score_opt) {
 					score_opt->get().multiplier = m_current_multiplier;
@@ -263,6 +290,7 @@ void GMatchingGame::process_card_selection(EntityID id, CCard& card) {
 			card.e_mask_status = m_first_mask_type;
 			m_current_streak = 0;
 			m_current_multiplier = 1.0F;
+			m_last_multiplier = m_current_multiplier;
 			const auto score_opt = Query::try_find_first<GScoreState>();
 			if (score_opt) {
 				score_opt->get().multiplier = m_current_multiplier;
@@ -279,15 +307,19 @@ void GMatchingGame::process_card_selection(EntityID id, CCard& card) {
 }
 
 void GMatchingGame::check_game_state() {
-	const int total_unique_symbols = 5;
-	const bool all_found = m_found_pairs.size() == total_unique_symbols;
+	const int total_cards = static_cast<int>(Query::find_all_with<CCard>().size());
+	if (total_cards % 2 != 0) {
+		log_error("Odd number of cards detected: {}", total_cards);
+	}
+	const int total_pairs = total_cards / 2;
+	const bool all_found = m_matched_pairs_count >= total_pairs && total_pairs > 0;
 
 	if (all_found) {
 		m_game_over = true;
 		log_info("YOU WIN! All pairs found in {} actions", allowed_actions - m_remaining_actions);
 	} else if (m_remaining_actions <= 0) {
 		m_game_over = true;
-		log_info("GAME OVER. Found {}/{} pairs", m_found_pairs.size(), total_unique_symbols);
+		log_info("GAME OVER. Found {}/{} pairs", m_matched_pairs_count, total_pairs);
 	}
 }
 
@@ -593,8 +625,51 @@ void GMatchingGame::draw_score_ui() {
 		const int value_width = MeasureText(value.c_str(), value_size);
 		const float label_x = cell_x + (cell_width - static_cast<float>(label_width)) * 0.5F;
 		const float value_x = cell_x + (cell_width - static_cast<float>(value_width)) * 0.5F;
+		float draw_x = value_x;
+		float draw_y = value_y;
+		if (index == 2 && m_multiplier_fx_active && ui_opt) {
+			const float duration = ui_opt->get().multiplier_fx_duration;
+			const float t = m_multiplier_fx_timer;
+			const float decay = duration > 0.0F ? (1.0F - (t / duration)) : 0.0F;
+			const float shake = ui_opt->get().multiplier_fx_shake_px;
+			const float phase = t * 60.0F;
+			draw_x += sinf(phase * 1.7F) * shake * decay;
+			draw_y += cosf(phase * 2.1F) * shake * decay;
+			const int a = static_cast<int>(static_cast<float>(ui_opt->get().multiplier_fx_color_a) * decay);
+			const Color glow = make_color(
+				ui_opt->get().multiplier_fx_color_r,
+				ui_opt->get().multiplier_fx_color_g,
+				ui_opt->get().multiplier_fx_color_b,
+				a
+			);
+			const Rectangle glow_rect{
+				.x=cell_x + 6.0F,
+				.y=content_y - 4.0F,
+				.width=cell_width - 12.0F,
+				.height=panel_height - padding * 2.0F + 8.0F
+			};
+			DrawRectangleRec(glow_rect, glow);
+
+			const float flame_base = content_y + static_cast<float>(meta_size + 2);
+			const float flame_height = static_cast<float>(value_size) * 0.9F;
+			for (int i = 0; i < 3; ++i) {
+				const float offset = static_cast<float>(i) * 10.0F;
+				const float sway = sinf(phase * (1.3F + i * 0.2F)) * 4.0F;
+				const float height = flame_height * (0.6F + 0.2F * sinf(phase * (1.7F + i * 0.3F)));
+				const float base_x = cell_x + cell_width * 0.5F + sway + offset - 10.0F;
+				const float base_y = flame_base + 6.0F;
+				const float top_y = base_y - height;
+				const Color flame_color = make_color(255, 120 + i * 20, 40, static_cast<int>(180 * decay));
+				DrawTriangle(
+					Vector2{.x=base_x, .y=base_y},
+					Vector2{.x=base_x + 20.0F, .y=base_y},
+					Vector2{.x=base_x + 10.0F, .y=top_y},
+					flame_color
+				);
+			}
+		}
 		DrawText(label.c_str(), static_cast<int>(label_x), static_cast<int>(content_y), meta_size, text_color);
-		DrawText(value.c_str(), static_cast<int>(value_x), static_cast<int>(value_y), value_size, value_color);
+		DrawText(value.c_str(), static_cast<int>(draw_x), static_cast<int>(draw_y), value_size, value_color);
 	};
 
 	draw_cell(0, "Score", std::to_string(score.current_points), text_color);

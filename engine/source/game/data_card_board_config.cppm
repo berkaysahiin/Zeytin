@@ -14,6 +14,7 @@ export struct GCardBoardConfig final : public DataComponent
     PROPERTY(GROUP="Grid")
     int32_t columns = 4;
 
+
     PROPERTY(GROUP="Canvas")
     float canvas_x = 0.0F;
 

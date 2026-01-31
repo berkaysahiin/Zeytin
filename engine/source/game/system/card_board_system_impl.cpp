@@ -1,4 +1,5 @@
 module;
+
 #include <optional>
 #include <functional>
 #include <string>
@@ -30,9 +31,21 @@ void CCardBoardSystem::on_play_start() {
         return;
     }
 
-    const GCardBoardConfig& board = board_opt->get();
+    GCardBoardConfig board = board_opt->get();
+    int32_t total_cards = board.rows * board.columns;
+    if (total_cards % 2 != 0) {
+        log_error("Odd card count ({}). Adjusting layout to even.", total_cards);
+        if (board.columns > 1) {
+            board.columns -= 1;
+        } else if (board.rows > 1) {
+            board.rows -= 1;
+        }
+        total_cards = board.rows * board.columns;
+    }
     log_info(
-        "Setting up card layout with canvas_width={:.2f} canvas_height={:.2f} use_virtual_canvas={}",
+        "Setting up card layout with rows={} cols={} canvas_width={:.2f} canvas_height={:.2f} use_virtual_canvas={}",
+        board.rows,
+        board.columns,
         board.canvas_width,
         board.canvas_height,
         board.use_virtual_canvas
@@ -50,14 +63,14 @@ void CCardBoardSystem::on_play_start() {
     m_reveal_timer = 0.0F;
     m_revealed = false;
 
-    const int32_t rows = board_opt->get().rows;
-    const int32_t columns = board_opt->get().columns;
+    const int32_t rows = board.rows;
+    const int32_t columns = board.columns;
 
     const int32_t symbol_matrix[4][4] = {
         {0, 1, 2, 3},
-        {4, 0, 1, 2},
-        {3, 4, 0, 1},
-        {2, 3, 4, 0}
+        {2, 4, 0, 1},
+        {1, 0, 4, 2},
+        {3, 2, 1, 0}
     };
 
     const int32_t mask_matrix[4][4] = {

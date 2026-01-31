@@ -25,6 +25,7 @@ private:
 	int m_remaining_actions = 20;
 	std::set<int> m_found_pairs;
 	bool m_game_over = false;
+	int m_matched_pairs_count = 0;
 
 	bool handle_mouse_click();
 	void process_card_selection(EntityID id, CCard& card);
@@ -58,6 +59,9 @@ private:
 
 	int m_current_streak = 0;
 	float m_current_multiplier = 1.0F;
+	float m_last_multiplier = 1.0F;
+	float m_multiplier_fx_timer = 0.0F;
+	bool m_multiplier_fx_active = false;
 
 	float m_move_timer = 0.0F;
 	EntityID m_move_from = 0;

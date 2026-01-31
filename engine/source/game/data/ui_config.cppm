@@ -64,6 +64,24 @@ export struct GGameUIConfig final : public DataComponent
     PROPERTY(GROUP="Score UI")
     float score_panel_height = 140.0F;
 
+    PROPERTY(GROUP="Multiplier UI")
+    float multiplier_fx_duration = 0.3F;
+
+    PROPERTY(GROUP="Multiplier UI")
+    float multiplier_fx_shake_px = 3.0F;
+
+    PROPERTY(GROUP="Multiplier UI")
+    int multiplier_fx_color_r = 255;
+
+    PROPERTY(GROUP="Multiplier UI")
+    int multiplier_fx_color_g = 140;
+
+    PROPERTY(GROUP="Multiplier UI")
+    int multiplier_fx_color_b = 60;
+
+    PROPERTY(GROUP="Multiplier UI")
+    int multiplier_fx_color_a = 160;
+
     PROPERTY(GROUP="Actions UI")
     bool actions_anchor_right = true;
 
