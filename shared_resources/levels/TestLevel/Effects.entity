@@ -5,11 +5,11 @@
             "type": "CRTEffect",
             "value": {
                 "enabled": true,
-                "curvature": 12.600000381469728,
-                "scanline_intensity": 0.30000001192092896,
-                "vignette_intensity": 0.30000001192092896,
-                "noise_intensity": 0.05000000074505806,
-                "chromatic_aberration": 0.20000000298023224,
+                "curvature": 15.399999618530272,
+                "scanline_intensity": 0.10000000149011612,
+                "vignette_intensity": 1.100000023841858,
+                "noise_intensity": 0.15000000596046448,
+                "chromatic_aberration": 1.7999999523162842,
                 "entity_id": 2284798232150996280
             }
         },
@@ -17,6 +17,8 @@
             "type": "CBackground",
             "value": {
                 "enabled": true,
+                "texture_path": "background.png",
+                "entity_id": 2284798232150996280,
                 "base_red": 24,
                 "base_green": 18,
                 "base_blue": 14,
@@ -27,8 +29,7 @@
                 "accent_alpha": 120,
                 "motion_speed": 0.20000000298023224,
                 "motion_strength": 0.07999999821186066,
-                "blob_scale": 11.449999809265137,
-                "entity_id": 2284798232150996280
+                "blob_scale": 11.449999809265137
             }
         }
     ]

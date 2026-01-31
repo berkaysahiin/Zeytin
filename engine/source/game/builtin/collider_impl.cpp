@@ -64,23 +64,7 @@ void CCollider::draw_bounds() const {
         .height=scaled_height
     };
 
-    Vector2 origin = { .x=scaled_width / 2.0F, .y=scaled_height / 2.0F }; // Center the rectangle
-
-#ifdef EDITOR_MODE
-    // In editor mode, draw with green in edit mode, yellow in play mode
-    if (!Zeytin::get().is_play_mode()) {
-        DrawRectanglePro(rec, origin, transform.rotation, GREEN);
-        // Draw center point
-        draw_circle_v({.x=pos_x, .y=pos_y}, 3.0F, GREEN);
-    } else if (Zeytin::get().is_paused_play_mode()) {
-        DrawRectanglePro(rec, origin, transform.rotation, ORANGE);
-    } else {
-        DrawRectanglePro(rec, origin, transform.rotation, YELLOW);
-    }
-#else
-    // In standalone mode, draw with yellow
-    DrawRectanglePro(rec, origin, transform.rotation, YELLOW);
-#endif
+    Vector2 origin = { .x=scaled_width / 2.0F, .y=scaled_height / 2.0F };
 }
 
 bool CCollider::is_point_inside(float px, float py) const {
