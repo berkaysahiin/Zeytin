@@ -27,4 +27,25 @@ export struct GGameUIConfig final : public DataComponent
 
     PROPERTY(GROUP="Timer UI")
     int timer_font_size = 32;
+
+    PROPERTY(GROUP="Mismatch UI")
+    float mismatch_duration = 0.35F;
+
+    PROPERTY(GROUP="Mismatch UI")
+    float mismatch_shake_px = 3.0F;
+
+    PROPERTY(GROUP="Mismatch UI")
+    float mismatch_outline_thickness = 6.0F;
+
+    PROPERTY(GROUP="Mismatch UI")
+    int mismatch_color_r = 230;
+
+    PROPERTY(GROUP="Mismatch UI")
+    int mismatch_color_g = 80;
+
+    PROPERTY(GROUP="Mismatch UI")
+    int mismatch_color_b = 80;
+
+    PROPERTY(GROUP="Mismatch UI")
+    int mismatch_color_a = 240;
 };

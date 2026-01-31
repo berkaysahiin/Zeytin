@@ -29,6 +29,11 @@ private:
 	void process_card_selection(EntityID id, CCard& card);
 	void check_game_state();
 	void draw_selection_highlight();
+	void draw_mismatch_highlight();
 	void draw_actions_ui();
 	void draw_game_over_overlay();
+
+	float m_mismatch_timer = 0.0F;
+	EntityID m_mismatch_first = 0;
+	EntityID m_mismatch_second = 0;
 };

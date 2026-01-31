@@ -1,8 +1,9 @@
 module;
+
 #include "raylib.h"
-#include <vector>
 #include <set>
 #include <string>
+#include <cmath>
 
 module zeytin.game.matching_game;
 import zeytin.query;
@@ -10,10 +11,12 @@ import zeytin.logger;
 import zeytin.game.card;
 import zeytin.game.transform;
 import zeytin.game.collider;
+import zeytin.game.card_renderer;
 import zeytin.game.ui_config;
 import zeytin.raylib;
 import zeytin.zeytin;
 import zeytin.entity;
+import zeytin.resource;
 
 namespace {
 	Color make_color(const int red, const int green, const int blue, const int alpha) {
@@ -43,6 +46,18 @@ void GMatchingGame::on_play_update() {
 
 	draw_actions_ui();
 	draw_selection_highlight();
+	draw_mismatch_highlight();
+
+	if (m_mismatch_first != 0) {
+		m_mismatch_timer += get_frame_time();
+		const auto ui_opt = Query::try_find_first<GGameUIConfig>();
+		const float duration = ui_opt ? ui_opt->get().mismatch_duration : 0.0F;
+		if (duration <= 0.0F || m_mismatch_timer >= duration) {
+			m_mismatch_first = 0;
+			m_mismatch_second = 0;
+			m_mismatch_timer = 0.0F;
+		}
+	}
 
 	if (handle_mouse_click()) {
 		check_game_state();
@@ -83,7 +98,6 @@ void GMatchingGame::process_card_selection(EntityID id, CCard& card) {
 
 		m_first_selected = id;
 		m_first_mask_type = card.e_mask_status;
-		card.e_mask_status = CardMaskStatus::NO_MASK;
 		log_info("First selected: card {}, mask type {}", id, static_cast<int>(m_first_mask_type));
 	} else {
 		m_second_selected = id;
@@ -94,14 +108,17 @@ void GMatchingGame::process_card_selection(EntityID id, CCard& card) {
 		auto& first_card = Query::get<CCard>(m_first_selected);
 
 		if (card.e_mask_status != CardMaskStatus::NO_MASK) {
-			card.e_mask_status = CardMaskStatus::NO_MASK;
-
 			if (first_card.symbol_id == card.symbol_id) {
+				first_card.e_mask_status = CardMaskStatus::NO_MASK;
+				card.e_mask_status = CardMaskStatus::NO_MASK;
 				m_found_pairs.insert(first_card.symbol_id);
 				log_info("Match found: symbol {}", first_card.symbol_id);
 			} else {
 				first_card.e_mask_status = m_first_mask_type;
 				card.e_mask_status = m_second_mask_type;
+				m_mismatch_first = m_first_selected;
+				m_mismatch_second = id;
+				m_mismatch_timer = 0.0F;
 				log_info("No match: symbols {} vs {}", first_card.symbol_id, card.symbol_id);
 			}
 		} else {
@@ -134,17 +151,91 @@ void GMatchingGame::draw_selection_highlight() {
 
 	const auto& transform = Query::get<CTransform>(m_first_selected);
 	const auto& collider = Query::get<CCollider>(m_first_selected);
+	const auto& card = Query::get<CCard>(m_first_selected);
+	const auto& renderer = Query::get<CCardRenderer>(m_first_selected);
 
-	const float outline_thickness = 4.0F;
-	const Rectangle rect{
+	const float lift = 8.0F;
+	const float scale = 1.08F;
+	const float scaled_width = collider.width * scale;
+	const float scaled_height = collider.height * scale;
+	const Rectangle dest{
+		.x=transform.position_x - scaled_width * 0.5F,
+		.y=transform.position_y - scaled_height * 0.5F - lift,
+		.width=scaled_width,
+		.height=scaled_height
+	};
+
+	const Rectangle source = {
+		.x=0.0F,
+		.y=0.0F,
+		.width=0.0F,
+		.height=0.0F
+	};
+
+	const CardMaskStatus mask_status = static_cast<CardMaskStatus>(card.e_mask_status);
+	const std::string* texture_path = nullptr;
+	if (mask_status == CardMaskStatus::SMILE) {
+		texture_path = &renderer.mask_happy_path;
+	} else if (mask_status == CardMaskStatus::SAD) {
+		texture_path = &renderer.mask_sad_path;
+	} else {
+		texture_path = (card.symbol_id == 1) ? &renderer.symbol_1_path : &renderer.symbol_0_path;
+	}
+
+	if (texture_path != nullptr) {
+		ResourcePtr<Texture2D> texture(*texture_path);
+		if (texture.is_valid()) {
+			Texture2D* tex = texture.get_ptr();
+			const Rectangle tex_source{.x=0, .y=0, .width=static_cast<float>(tex->width), .height=static_cast<float>(tex->height)};
+			DrawTexturePro(*tex, tex_source, dest, Vector2{.x=0, .y=0}, 0.0F, WHITE);
+		}
+	}
+
+	const float outline_thickness = 6.0F;
+	const Rectangle outline{
 		.x=transform.position_x - collider.width / 2.0F - outline_thickness,
 		.y=transform.position_y - collider.height / 2.0F - outline_thickness,
 		.width=collider.width + outline_thickness * 2.0F,
 		.height=collider.height + outline_thickness * 2.0F
 	};
-
 	const Color highlight_color = make_color(255, 215, 0, 255);
-	DrawRectangleLinesEx(rect, outline_thickness, highlight_color);
+	DrawRectangleLinesEx(outline, outline_thickness, highlight_color);
+}
+
+void GMatchingGame::draw_mismatch_highlight() {
+	if (m_mismatch_first == 0) {
+		return;
+	}
+
+	const auto ui_opt = Query::try_find_first<GGameUIConfig>();
+	if (!ui_opt) {
+		return;
+	}
+	const auto& ui = ui_opt->get();
+
+	const float thickness = ui.mismatch_outline_thickness;
+	const float shake = ui.mismatch_shake_px;
+	const Color mismatch_color = make_color(ui.mismatch_color_r, ui.mismatch_color_g, ui.mismatch_color_b, ui.mismatch_color_a);
+	const float t = m_mismatch_timer * 60.0F;
+	const float offset_x = sinf(t * 1.7F) * shake;
+	const float offset_y = cosf(t * 2.1F) * shake;
+
+	auto draw_outline_for = [&](EntityID id) {
+		const auto& transform = Query::get<CTransform>(id);
+		const auto& collider = Query::get<CCollider>(id);
+		const Rectangle rect{
+			.x=transform.position_x - collider.width / 2.0F - thickness + offset_x,
+			.y=transform.position_y - collider.height / 2.0F - thickness + offset_y,
+			.width=collider.width + thickness * 2.0F,
+			.height=collider.height + thickness * 2.0F
+		};
+		DrawRectangleLinesEx(rect, thickness, mismatch_color);
+	};
+
+	draw_outline_for(m_mismatch_first);
+	if (m_mismatch_second != 0) {
+		draw_outline_for(m_mismatch_second);
+	}
 }
 
 void GMatchingGame::draw_actions_ui() {

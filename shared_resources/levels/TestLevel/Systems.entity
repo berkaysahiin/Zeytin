@@ -26,6 +26,13 @@
                 "timer_x": 120.0,
                 "timer_y": 600.0,
                 "timer_font_size": 60,
+                "mismatch_duration": 0.3499999940395355,
+                "mismatch_shake_px": 3.0,
+                "mismatch_outline_thickness": 6.0,
+                "mismatch_color_r": 230,
+                "mismatch_color_g": 80,
+                "mismatch_color_b": 80,
+                "mismatch_color_a": 240,
                 "entity_id": 9554886114356367157
             }
         }
