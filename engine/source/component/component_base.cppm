@@ -8,26 +8,41 @@ import zeytin.entity;
 /// Base class for components
 export struct Component 
 {
-	/// Prefer using this over the constructor, 
-	/// because serializer will read and set properties after the component constructored.
-    virtual void on_init() {}
+  virtual ~Component() = default;
 
-	/// Called upon entering the play mode
-    virtual void on_play_start() {}
+  /// Prefer using this over the constructor,
+  /// because serializer will read and set properties after the component
+  /// constructored.
+  virtual void on_init() {}
 
-	/// Called every frame
-    virtual void on_update() {}
+  /// Called upon entering the play mode
+  virtual void on_play_start() {}
 
-	/// Called every frame while in play mode
-    virtual void on_play_update() {}
+  /// Called every frame
+  virtual void on_update() {}
 
-	/// Called every frame while in play mode, right after on_play_update
-    virtual void on_play_late_update() {}
+  /// Called every frame while in play mode
+  virtual void on_play_update() {}
 
-    uint64_t get_id() { return entity_id; }
-    const uint64_t get_id() const { return entity_id; }
+  /// Called every frame while in play mode, right after on_play_update
+  virtual void on_play_late_update() {}
 
-    EntityID entity_id = 0;
-    bool is_dead = false;
-    bool post_inited = false;
+  [[nodiscard]]
+  uint64_t get_id() const { return entity_id; }
+
+  EntityID entity_id = 0;
+  bool is_dead = false;
+  bool post_inited = false;
+};
+
+/// Defines empty lifetime functions. Can be used for data-only components
+export struct DataComponent : Component
+{
+  virtual ~DataComponent() = default;
+
+  void on_init() final  {}
+  void on_play_start() final {}
+  void on_update() final {}
+  void on_play_update() final {}
+  void on_play_late_update() final {}
 };
