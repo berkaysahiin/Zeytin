@@ -7,6 +7,7 @@ module;
 export module zeytin.selection;
 import zeytin.singleton;
 import zeytin.entity.document;
+import zeytin.component;
 
 export enum class SelectionType {
     None,
