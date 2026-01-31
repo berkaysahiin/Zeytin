@@ -15,7 +15,7 @@ export enum class CardMaskStatus : std::uint8_t {
 export struct CCard final : public DataComponent
 {
     PROPERTY(GROUP="Identity")
-    int symbol_id = 2;
+    int symbol_id = 0;
 
     CardMaskStatus e_mask_status = CardMaskStatus::NO_MASK;
 

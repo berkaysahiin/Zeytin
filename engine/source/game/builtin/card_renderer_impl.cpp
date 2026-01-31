@@ -77,14 +77,14 @@ namespace {
 
     void draw_symbol_0(const Vector2 center, const float half_width, const float half_height, const Color color) {
         const float radius = half_height * 0.4F;
-        const Color symbol_color = make_color(255, 100, 100, 255);
+        const Color symbol_color = make_color(180, 180, 180, 255);
         DrawCircleV(center, radius, symbol_color);
     }
 
     void draw_symbol_1(const Vector2 center, const float half_width, const float half_height, const Color color) {
         const float size = half_height * 0.6F;
         const float half_size = size * 0.5F;
-        const Color symbol_color = make_color(100, 200, 255, 255);
+        const Color symbol_color = make_color(200, 200, 200, 255);
         DrawRectangleV(
             Vector2{.x=center.x - half_size, .y=center.y - half_size},
             Vector2{.x=size, .y=size},
@@ -94,14 +94,14 @@ namespace {
 
     void draw_symbol_2(const Vector2 center, const float half_width, const float half_height, const Color color) {
         const float radius = half_height * 0.35F;
-        const Color symbol_color = make_color(100, 255, 100, 255);
+        const Color symbol_color = make_color(220, 220, 220, 255);
         DrawCircleV(center, radius, symbol_color);
         DrawCircleV(center, radius * 0.5F, make_color(255, 255, 255, 255));
     }
 
     void draw_symbol_3(const Vector2 center, const float half_width, const float half_height, const Color color) {
         const float size = half_height * 0.5F;
-        const Color symbol_color = make_color(255, 255, 100, 255);
+        const Color symbol_color = make_color(240, 240, 240, 255);
         DrawRectangleV(
             Vector2{.x=center.x - size * 0.5F, .y=center.y - size * 0.3F},
             Vector2{.x=size, .y=size * 0.6F},
@@ -116,7 +116,7 @@ namespace {
 
     void draw_symbol_4(const Vector2 center, const float half_width, const float half_height, const Color color) {
         const float size = half_height * 0.5F;
-        const Color symbol_color = make_color(255, 150, 255, 255);
+        const Color symbol_color = make_color(255, 255, 255, 255);
         const Vector2 points[4] = {
             Vector2{.x=center.x, .y=center.y - size},
             Vector2{.x=center.x + size, .y=center.y},
@@ -130,7 +130,7 @@ namespace {
 
     void draw_symbol_5(const Vector2 center, const float half_width, const float half_height, const Color color) {
         const float size = half_height * 0.45F;
-        const Color symbol_color = make_color(255, 200, 100, 255);
+        const Color symbol_color = make_color(255, 255, 255, 255);
         for (int i = 0; i < 5; ++i) {
             const float angle = -std::numbers::pi_v<float> * 0.5F + (std::numbers::pi_v<float> * 2.0F / 5.0F) * i;
             const float inner_angle = angle + std::numbers::pi_v<float> * 2.0F / 5.0F * 0.5F;

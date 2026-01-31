@@ -8,13 +8,13 @@ import zeytin.component;
 export struct CCardRenderer final : public Component
 {
     PROPERTY(GROUP="Colors")
-    int card_red = 160;
+    int card_red = 140;
 
     PROPERTY(GROUP="Colors")
-    int card_green = 100;
+    int card_green = 140;
 
     PROPERTY(GROUP="Colors")
-    int card_blue = 60;
+    int card_blue = 140;
 
     PROPERTY(GROUP="Colors")
     int card_alpha = 255;

@@ -24,7 +24,7 @@ export struct CRTEffect final : public Component
     float noise_intensity = 0.02F;
 
     PROPERTY(GROUP="CRT")
-    float chromatic_aberration = 0.25F;
+    float chromatic_aberration = 0.0F;
 
     void on_init() override;
     void on_update() override;
