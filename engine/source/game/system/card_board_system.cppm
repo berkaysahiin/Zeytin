@@ -14,6 +14,7 @@ export struct CCardBoardSystem final : public Component
     float initial_collider_height = 128.0F;
 
     void on_play_start() override;
+    void on_play_update() override;
     void on_update() override;
 
 private:

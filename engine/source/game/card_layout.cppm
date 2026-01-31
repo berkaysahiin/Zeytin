@@ -62,11 +62,11 @@ void setup_card_layout(const GCardBoardConfig& board, const GCardConfig& config,
     const float offset_y = (cell_height - card_height) * 0.5F;
 
     log_info(
-        "Card layout: rows={} cols={} canvas=({:.2f},{:.2f},{:.2f},{:.2f}) cell=({:.2f},{:.2f}) card=({:.2f},{:.2f}) origin=({:.2f},{:.2f}) virtual={}",
+        "Card layout: rows={} cols={} board_canvas=({:.2f},{:.2f}) final_canvas=({:.2f},{:.2f}) cell=({:.2f},{:.2f}) card=({:.2f},{:.2f}) origin=({:.2f},{:.2f}) virtual={}",
         rows,
         columns,
-        board.canvas_x,
-        board.canvas_y,
+        board.canvas_width,
+        board.canvas_height,
         canvas_width,
         canvas_height,
         cell_width,
@@ -101,4 +101,14 @@ void setup_card_layout(const GCardBoardConfig& board, const GCardConfig& config,
             collider.height = card_height;
         }
     }
+
+    log_info(
+        "Layout applied: canvas=({:.2f},{:.2f}) cell=({:.2f},{:.2f}) card=({:.2f},{:.2f})",
+        canvas_width,
+        canvas_height,
+        cell_width,
+        cell_height,
+        card_width,
+        card_height
+    );
 }

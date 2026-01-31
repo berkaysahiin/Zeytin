@@ -1,6 +1,7 @@
 module;
 #include <optional>
 #include <functional>
+#include <string>
 #include "raylib.h"
 
 module zeytin.game.card_board_system;
@@ -15,28 +16,9 @@ import zeytin.game.card;
 import zeytin.raylib;
 import zeytin.entity;
 
-namespace {
-    template<typename T>
-    std::optional<std::reference_wrapper<T>> find_config_stable() {
-        const auto configs = Query::find_all<T>();
-        if (configs.empty()) {
-            return std::nullopt;
-        }
-
-        auto best = configs.front();
-        for (const auto& config : configs) {
-            if (config.get().get_id() < best.get().get_id()) {
-                best = config;
-            }
-        }
-
-        return best;
-    }
-}
-
 void CCardBoardSystem::on_play_start() {
-    const auto board_opt = find_config_stable<GCardBoardConfig>();
-    const auto card_opt = find_config_stable<GCardConfig>();
+    const auto board_opt = Query::try_find_first<GCardBoardConfig>();
+    const auto card_opt = Query::try_find_first<GCardConfig>();
     if (!board_opt || !card_opt) {
         if (!board_opt) {
             log_error("Card board config missing; cannot layout cards");
@@ -47,9 +29,17 @@ void CCardBoardSystem::on_play_start() {
         return;
     }
 
+    const GCardBoardConfig& board = board_opt->get();
+    log_info(
+        "Setting up card layout with canvas_width={:.2f} canvas_height={:.2f} use_virtual_canvas={}",
+        board.canvas_width,
+        board.canvas_height,
+        board.use_virtual_canvas
+    );
+
     clear_card_layout();
     setup_card_layout(
-        board_opt->get(),
+        board,
         card_opt->get(),
         this->initial_collider_width,
         this->initial_collider_height,
@@ -69,6 +59,13 @@ void CCardBoardSystem::on_play_start() {
         {0, 1, 2, 3}
     };
 
+    const int32_t mask_matrix[4][4] = {
+        {1, 1, 2, 2},
+        {1, 2, 1, 2},
+        {2, 1, 2, 1},
+        {2, 2, 1, 1}
+    };
+
     const std::vector<EntityID> card_ids = Query::find_all_with<CCard>();
     for (const EntityID id : card_ids) {
         auto& card = Query::get<CCard>(id);
@@ -85,8 +82,8 @@ void CCardBoardSystem::on_play_start() {
     log_info("Assigned symbols from matrix to {} cards", card_ids.size());
 }
 
-void CCardBoardSystem::on_update() {
-    const auto card_opt = find_config_stable<GCardConfig>();
+void CCardBoardSystem::on_play_update() {
+    const auto card_opt = Query::try_find_first<GCardConfig>();
     if (!card_opt) {
         return;
     }
@@ -100,13 +97,52 @@ void CCardBoardSystem::on_update() {
     m_reveal_timer += get_frame_time();
 
     if (m_reveal_timer >= config.initial_reveal_duration) {
+        const int32_t mask_matrix[4][4] = {
+            {1, 1, 2, 2},
+            {1, 2, 1, 2},
+            {2, 1, 2, 1},
+            {2, 2, 1, 1}
+        };
+
         const std::vector<EntityID> card_ids = Query::find_all_with<CCard>();
         for (const EntityID id : card_ids) {
             auto& card = Query::get<CCard>(id);
-            const CardMaskStatus mask_type = static_cast<CardMaskStatus>(config.mask_type);
-            card.e_mask_status = mask_type;
+            const int row = card.row;
+            const int col = card.column;
+            if (row < 4 && col < 4) {
+                const int mask_val = mask_matrix[row][col];
+                card.e_mask_status = static_cast<CardMaskStatus>(mask_val);
+            } else {
+                card.e_mask_status = static_cast<CardMaskStatus>(config.mask_type);
+            }
         }
         m_revealed = true;
-        log_info("All cards hidden after {:.2f} seconds", config.initial_reveal_duration);
+        log_info("Hiding {} cards with masks after {:.2f} seconds", card_ids.size(), config.initial_reveal_duration);
     }
+}
+
+void CCardBoardSystem::on_update() {
+    const auto card_opt = Query::try_find_first<GCardConfig>();
+    if (!card_opt) {
+        return;
+    }
+
+    const GCardConfig& config = card_opt->get();
+
+    if (m_revealed) {
+        return;
+    }
+
+    const float remaining_time = config.initial_reveal_duration - m_reveal_timer;
+
+    const int font_size = 32;
+    const int time_int = static_cast<int>(remaining_time);
+    const std::string text = "Time: " + std::to_string(time_int);
+
+    const float margin = 20.0F;
+    const float text_x = margin;
+    const float text_y = margin;
+    const Color text_color = Color{.r=200, .g=200, .b=200, .a=255};
+
+    DrawText(text.c_str(), static_cast<int>(text_x), static_cast<int>(text_y), font_size, text_color);
 }
