@@ -39,6 +39,7 @@ import zeytin.editor.message;
 import zeytin.manipulator.manager;
 #endif
 
+
 Zeytin::Zeytin() {
     initialize();
 }
@@ -968,7 +969,7 @@ void Zeytin::enter_play_mode(bool is_paused) {
     m_state.play_mode = true;
 
     initialize_camera();
-    
+
 	log_info("Entered play mode");
 }
 

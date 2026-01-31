@@ -54,9 +54,9 @@ void CCardBoardSystem::on_play_start() {
 
     const int32_t symbol_matrix[4][4] = {
         {0, 1, 2, 3},
-        {4, 5, 0, 1},
-        {2, 3, 4, 5},
-        {0, 1, 2, 3}
+        {4, 0, 1, 2},
+        {3, 4, 0, 1},
+        {2, 3, 4, 0}
     };
 
     const int32_t mask_matrix[4][4] = {

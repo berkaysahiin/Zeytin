@@ -114,7 +114,7 @@ void GMatchingGame::process_card_selection(EntityID id, CCard& card) {
 }
 
 void GMatchingGame::check_game_state() {
-	const int total_unique_symbols = 6;
+	const int total_unique_symbols = 5;
 	const bool all_found = m_found_pairs.size() == total_unique_symbols;
 
 	if (all_found) {
@@ -165,7 +165,7 @@ void GMatchingGame::draw_game_over_overlay() {
 	const float screen_width = static_cast<float>(get_screen_width());
 	const float screen_height = static_cast<float>(get_screen_height());
 
-	const int total_unique_symbols = 6;
+	const int total_unique_symbols = 5;
 	const bool all_found = m_found_pairs.size() == total_unique_symbols;
 
 	const std::string message = all_found ? "YOU WIN!" : "GAME OVER";
