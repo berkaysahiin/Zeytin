@@ -7,9 +7,6 @@ import zeytin.component;
 
 export struct CCardRenderer final : public Component
 {
-    PROPERTY(GROUP="Face Type")
-    int face_type = 0;
-
     PROPERTY(GROUP="Colors")
     int card_red = 160;
 

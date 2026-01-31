@@ -13,6 +13,9 @@ export struct GCardConfig final: public DataComponent
 	PROPERTY(GROUP = "Timing")
 	float mismatch_delay = 0.6F;
 
+	PROPERTY(GROUP = "Timing")
+	float initial_reveal_duration = 2.0F;
+
 	PROPERTY(GROUP = "Card Back")
 	int mask_type = 0;
 };

@@ -87,8 +87,7 @@ void setup_card_layout(const GCardBoardConfig& board, const GCardConfig& config,
             auto& card = Query::get<CCard>(entity_id);
             card.row = row;
             card.column = col;
-            card.is_face_up = false;
-            card.is_matched = false;
+            card.e_mask_status = CardMaskStatus::NO_MASK;
 
             auto& transform = Query::get<CTransform>(entity_id);
             transform.position_x = origin_x + (cell_width * static_cast<float>(col)) + offset_x;

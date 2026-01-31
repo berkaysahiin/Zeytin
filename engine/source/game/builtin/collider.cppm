@@ -23,7 +23,7 @@ export struct CCollider : public Component
 	bool enable_debug = true;
 
     PROPERTY(GROUP="Debug", ENABLE_IF=is_debug())  
-	bool show_bounds = false;
+	bool show_bounds = true;
 
     [[nodiscard]] 
 	bool is_point_inside(float in_px, float in_py) const;
