@@ -341,7 +341,7 @@ void CCardRenderer::on_update() {
         if (sad_texture.is_valid()) {
             Texture2D* tex = sad_texture.get_ptr();
             const Rectangle source{.x=0, .y=0, .width=static_cast<float>(tex->width), .height=static_cast<float>(tex->height)};
-            const Rectangle dest{.x=face_center.x - half_width, .y=face_center.y - half_height, .width=width, .height=height};
+            const Rectangle dest{.x=face_center.x - half_width, .y=face_center.y - (half_height / 1.2F), .width=width, .height=height};
             DrawTexturePro(*tex, source, dest, Vector2{.x=0, .y=0}, 0.0F, WHITE);
         } else {
 			//log_error("Couldn't find valid resource: {}. Drawing place holder", mask_sad_path);

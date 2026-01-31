@@ -36,7 +36,7 @@ export struct CCardRenderer final : public Component
     std::string mask_happy_path = "happy_face.png";
 
     PROPERTY(GROUP="Mask Textures")
-    std::string mask_sad_path;
+    std::string mask_sad_path = "sad_face.png";
 
     void on_update() override;
 };

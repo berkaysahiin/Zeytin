@@ -602,6 +602,8 @@ void Zeytin::render() {
     const float pos_x = (screen_width - render_width) * 0.5f;
     const float pos_y = (screen_height - render_height) * 0.5f;
 
+    m_camera.offset = {pos_x, pos_y};
+
     const auto crt_opt = Query::try_find_first<CRTEffect>();
     if (crt_opt && crt_opt->get().enabled && crt_opt->get().is_shader_loaded()) {
         BeginShaderMode(crt_opt->get().get_shader());

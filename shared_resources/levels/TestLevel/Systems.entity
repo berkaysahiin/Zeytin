@@ -8,6 +8,13 @@
                 "initial_collider_height": 210.0,
                 "entity_id": 9554886114356367157
             }
+        },
+        {
+            "type": "GMatchingGame",
+            "value": {
+                "allowed_actions": 20,
+                "entity_id": 9554886114356367157
+            }
         }
     ]
 }
