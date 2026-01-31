@@ -1,0 +1,30 @@
+{
+    "entity_id": 7761662378699493710,
+    "variants": [
+        {
+            "type": "GCardConfig",
+            "value": {
+                "card_width": 150.0,
+                "card_height": 200.0,
+                "flip_duration": 0.20000000298023224,
+                "mismatch_delay": 0.6000000238418579,
+                "entity_id": 7761662378699493710
+            }
+        },
+        {
+            "type": "GCardBoardConfig",
+            "value": {
+                "rows": 4,
+                "columns": 4,
+                "canvas_x": 400.0,
+                "canvas_y": 50.0,
+                "canvas_width": 1383.5,
+                "canvas_height": 993.0,
+                "canvas_centered": false,
+                "draw_canvas_outline": true,
+                "draw_cell_outline": true,
+                "entity_id": 7761662378699493710
+            }
+        }
+    ]
+}

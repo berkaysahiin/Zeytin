@@ -1,0 +1,11 @@
+{
+    "entity_id": 15143944964060387509,
+    "variants": [
+        {
+            "type": "CCardBoardSystem",
+            "value": {
+                "entity_id": 15143944964060387509
+            }
+        }
+    ]
+}

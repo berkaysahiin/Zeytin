@@ -1,0 +1,11 @@
+{
+    "entity_id": 9554886114356367157,
+    "variants": [
+        {
+            "type": "CCardRenderer",
+            "value": {
+                "entity_id": 9554886114356367157
+            }
+        }
+    ]
+}
