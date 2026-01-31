@@ -32,6 +32,7 @@ private:
 	void draw_selection_highlight();
 	void draw_mismatch_highlight();
 	void draw_move_highlight();
+	void draw_invalid_selection_highlight();
 	void draw_actions_ui();
 	void draw_game_over_overlay();
 
@@ -49,6 +50,9 @@ private:
 
 	float m_actions_effect_timer = 0.0F;
 	bool m_actions_effect_active = false;
+
+	float m_invalid_select_timer = 0.0F;
+	EntityID m_invalid_select_id = 0;
 
 	float m_move_timer = 0.0F;
 	EntityID m_move_from = 0;

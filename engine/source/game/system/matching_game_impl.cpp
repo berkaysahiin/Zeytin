@@ -46,21 +46,50 @@ void GMatchingGame::on_play_update() {
 		return;
 	}
 
+	if (m_camera_shake_active) {
+		m_camera_shake_timer += get_frame_time();
+		if (m_camera_shake_duration > 0.0F && m_camera_shake_timer <= m_camera_shake_duration) {
+			const float phase = m_camera_shake_timer * 60.0F;
+			const float offset_x = sinf(phase * 1.7F) * m_camera_shake_amplitude;
+			const float offset_y = cosf(phase * 2.1F) * m_camera_shake_amplitude;
+			Camera2D& camera = Zeytin::get().get_camera();
+			camera.target = Vector2{.x=m_camera_base_target.x + offset_x, .y=m_camera_base_target.y + offset_y};
+		} else {
+			Camera2D& camera = Zeytin::get().get_camera();
+			camera.target = m_camera_base_target;
+			m_camera_shake_active = false;
+			m_camera_shake_timer = 0.0F;
+		}
+	}
+
 	draw_actions_ui();
 	draw_selection_highlight();
 	draw_mismatch_highlight();
 	draw_move_highlight();
+	draw_invalid_selection_highlight();
 
-	if (m_mismatch_first != 0) {
+	if (m_mismatch_first != 0 || m_mismatch_prev_first != 0) {
 		m_mismatch_timer += get_frame_time();
 		const auto ui_opt = Query::try_find_first<GGameUIConfig>();
 		const float duration = ui_opt ? ui_opt->get().mismatch_duration : 0.0F;
-		if (duration <= 0.0F || m_mismatch_timer >= duration) {
-			m_mismatch_prev_first = m_mismatch_first;
-			m_mismatch_prev_second = m_mismatch_second;
+		if (duration <= 0.0F) {
 			m_mismatch_first = 0;
 			m_mismatch_second = 0;
+			m_mismatch_prev_first = 0;
+			m_mismatch_prev_second = 0;
 			m_mismatch_timer = 0.0F;
+		} else if (m_mismatch_timer >= duration) {
+			if (m_mismatch_prev_first == 0 && m_mismatch_first != 0) {
+				m_mismatch_prev_first = m_mismatch_first;
+				m_mismatch_prev_second = m_mismatch_second;
+				m_mismatch_first = 0;
+				m_mismatch_second = 0;
+				m_mismatch_timer = 0.0F;
+			} else {
+				m_mismatch_prev_first = 0;
+				m_mismatch_prev_second = 0;
+				m_mismatch_timer = 0.0F;
+			}
 		}
 	}
 
@@ -85,6 +114,16 @@ void GMatchingGame::on_play_update() {
 		}
 	}
 
+	if (m_invalid_select_id != 0) {
+		m_invalid_select_timer += get_frame_time();
+		const auto ui_opt = Query::try_find_first<GGameUIConfig>();
+		const float duration = ui_opt ? ui_opt->get().invalid_select_duration : 0.2F;
+		if (duration <= 0.0F || m_invalid_select_timer >= duration) {
+			m_invalid_select_id = 0;
+			m_invalid_select_timer = 0.0F;
+		}
+	}
+
 	if (handle_mouse_click()) {
 		check_game_state();
 	}
@@ -106,6 +145,8 @@ bool GMatchingGame::handle_mouse_click() {
 
 		if (collider.is_point_inside(world_mouse.x, world_mouse.y)) {
 			if (m_first_selected == id) {
+				m_invalid_select_id = id;
+				m_invalid_select_timer = 0.0F;
 				return false;
 			}
 
@@ -119,6 +160,8 @@ bool GMatchingGame::handle_mouse_click() {
 void GMatchingGame::process_card_selection(EntityID id, CCard& card) {
 	if (m_first_selected == 0) {
 		if (card.e_mask_status == CardMaskStatus::NO_MASK) {
+			m_invalid_select_id = id;
+			m_invalid_select_timer = 0.0F;
 			return;
 		}
 
@@ -149,6 +192,15 @@ void GMatchingGame::process_card_selection(EntityID id, CCard& card) {
 			m_mismatch_timer = 0.0F;
 			m_mismatch_prev_first = 0;
 			m_mismatch_prev_second = 0;
+			const auto ui_opt = Query::try_find_first<GGameUIConfig>();
+			if (ui_opt) {
+				const auto& ui = ui_opt->get();
+				m_camera_shake_duration = ui.mismatch_camera_shake_duration;
+				m_camera_shake_amplitude = ui.mismatch_camera_shake_px;
+				m_camera_shake_timer = 0.0F;
+				m_camera_shake_active = true;
+				m_camera_base_target = Zeytin::get().get_camera().target;
+			}
 			log_info("No match: symbols {} vs {}", first_card.symbol_id, card.symbol_id);
 			}
 		} else {
@@ -310,6 +362,40 @@ void GMatchingGame::draw_move_highlight() {
 		DrawLineEx(from, to, thickness, glow_color);
 	}
 	DrawLineEx(from, to, base_thickness, move_color);
+}
+
+void GMatchingGame::draw_invalid_selection_highlight() {
+	if (m_invalid_select_id == 0) {
+		return;
+	}
+
+	const auto ui_opt = Query::try_find_first<GGameUIConfig>();
+	if (!ui_opt) {
+		return;
+	}
+	const auto& ui = ui_opt->get();
+
+	const float duration = ui.invalid_select_duration;
+	const float alpha = duration > 0.0F ? (1.0F - (m_invalid_select_timer / duration)) : 0.0F;
+	const float clamped = alpha < 0.0F ? 0.0F : (alpha > 1.0F ? 1.0F : alpha);
+	const int a = static_cast<int>(static_cast<float>(ui.invalid_select_color_a) * clamped);
+	const Color color = make_color(ui.invalid_select_color_r, ui.invalid_select_color_g, ui.invalid_select_color_b, a);
+
+	const float shake = ui.invalid_select_shake_px;
+	const float phase = m_invalid_select_timer * 60.0F;
+	const float offset_x = sinf(phase * 1.9F) * shake;
+	const float offset_y = cosf(phase * 2.2F) * shake;
+	const float thickness = ui.invalid_select_outline_thickness;
+
+	const auto& transform = Query::get<CTransform>(m_invalid_select_id);
+	const auto& collider = Query::get<CCollider>(m_invalid_select_id);
+	const Rectangle rect{
+		.x=transform.position_x - collider.width / 2.0F - thickness + offset_x,
+		.y=transform.position_y - collider.height / 2.0F - thickness + offset_y,
+		.width=collider.width + thickness * 2.0F,
+		.height=collider.height + thickness * 2.0F
+	};
+	DrawRectangleLinesEx(rect, thickness, color);
 }
 
 void GMatchingGame::draw_actions_ui() {

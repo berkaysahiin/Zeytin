@@ -31,6 +31,27 @@ export struct GGameUIConfig final : public DataComponent
     PROPERTY(GROUP="Actions UI")
     int actions_flash_b = 90;
 
+    PROPERTY(GROUP="Selection UI")
+    float invalid_select_duration = 0.2F;
+
+    PROPERTY(GROUP="Selection UI")
+    float invalid_select_shake_px = 2.0F;
+
+    PROPERTY(GROUP="Selection UI")
+    float invalid_select_outline_thickness = 4.0F;
+
+    PROPERTY(GROUP="Selection UI")
+    int invalid_select_color_r = 255;
+
+    PROPERTY(GROUP="Selection UI")
+    int invalid_select_color_g = 160;
+
+    PROPERTY(GROUP="Selection UI")
+    int invalid_select_color_b = 80;
+
+    PROPERTY(GROUP="Selection UI")
+    int invalid_select_color_a = 220;
+
     PROPERTY(GROUP="Actions UI")
     bool actions_anchor_right = true;
 
