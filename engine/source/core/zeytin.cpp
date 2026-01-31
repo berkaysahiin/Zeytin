@@ -61,10 +61,10 @@ void Zeytin::initialize_rendering() {
 }
 
 void Zeytin::initialize_camera() {
-    m_camera.offset = {0, 0};
-    m_camera.target = {0, 0};
-    m_camera.rotation = 0.0f;
-    m_camera.zoom = 1.0f;
+    m_camera.offset = {.x=0, .y=0};
+    m_camera.target = {.x=0, .y=0};
+    m_camera.rotation = 0.0F;
+    m_camera.zoom = 1.0F;
 }
 
 #ifdef EDITOR_MODE
