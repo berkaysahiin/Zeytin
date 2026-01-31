@@ -47,6 +47,7 @@ void GMatchingGame::on_play_update() {
 	draw_actions_ui();
 	draw_selection_highlight();
 	draw_mismatch_highlight();
+	draw_move_highlight();
 
 	if (m_mismatch_first != 0) {
 		m_mismatch_timer += get_frame_time();
@@ -56,6 +57,17 @@ void GMatchingGame::on_play_update() {
 			m_mismatch_first = 0;
 			m_mismatch_second = 0;
 			m_mismatch_timer = 0.0F;
+		}
+	}
+
+	if (m_move_to != 0) {
+		m_move_timer += get_frame_time();
+		const auto ui_opt = Query::try_find_first<GGameUIConfig>();
+		const float duration = ui_opt ? ui_opt->get().move_duration : 0.0F;
+		if (duration <= 0.0F || m_move_timer >= duration) {
+			m_move_from = 0;
+			m_move_to = 0;
+			m_move_timer = 0.0F;
 		}
 	}
 
@@ -122,7 +134,11 @@ void GMatchingGame::process_card_selection(EntityID id, CCard& card) {
 				log_info("No match: symbols {} vs {}", first_card.symbol_id, card.symbol_id);
 			}
 		} else {
+			first_card.e_mask_status = CardMaskStatus::NO_MASK;
 			card.e_mask_status = m_first_mask_type;
+			m_move_from = m_first_selected;
+			m_move_to = id;
+			m_move_timer = 0.0F;
 			log_info("Move: mask from card {} to {}", m_first_selected, id);
 		}
 
@@ -236,6 +252,46 @@ void GMatchingGame::draw_mismatch_highlight() {
 	if (m_mismatch_second != 0) {
 		draw_outline_for(m_mismatch_second);
 	}
+}
+
+void GMatchingGame::draw_move_highlight() {
+	if (m_move_to == 0) {
+		return;
+	}
+
+	const auto ui_opt = Query::try_find_first<GGameUIConfig>();
+	if (!ui_opt) {
+		return;
+	}
+	const auto& ui = ui_opt->get();
+	if (m_move_from == 0 || ui.move_duration <= 0.0F) {
+		return;
+	}
+
+	const float remaining = 1.0F - (m_move_timer / ui.move_duration);
+	const float alpha = remaining < 0.0F ? 0.0F : (remaining > 1.0F ? 1.0F : remaining);
+	const Color move_color = make_color(
+		ui.move_color_r,
+		ui.move_color_g,
+		ui.move_color_b,
+		static_cast<int>(static_cast<float>(ui.move_color_a) * alpha)
+	);
+
+	const auto& from_transform = Query::get<CTransform>(m_move_from);
+	const auto& to_transform = Query::get<CTransform>(m_move_to);
+	const Vector2 from{.x=from_transform.position_x, .y=from_transform.position_y};
+	const Vector2 to{.x=to_transform.position_x, .y=to_transform.position_y};
+
+	const float base_thickness = ui.move_outline_thickness;
+	for (int i = 2; i >= 0; --i) {
+		const float layer = static_cast<float>(i);
+		const float thickness = base_thickness + layer * 3.0F;
+		const float layer_alpha = alpha * (0.35F - layer * 0.1F);
+		const int a = static_cast<int>(static_cast<float>(ui.move_color_a) * layer_alpha);
+		const Color glow_color = make_color(ui.move_color_r, ui.move_color_g, ui.move_color_b, a);
+		DrawLineEx(from, to, thickness, glow_color);
+	}
+	DrawLineEx(from, to, base_thickness, move_color);
 }
 
 void GMatchingGame::draw_actions_ui() {

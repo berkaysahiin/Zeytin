@@ -48,4 +48,22 @@ export struct GGameUIConfig final : public DataComponent
 
     PROPERTY(GROUP="Mismatch UI")
     int mismatch_color_a = 240;
+
+    PROPERTY(GROUP="Move UI")
+    float move_duration = 0.25F;
+
+    PROPERTY(GROUP="Move UI")
+    float move_outline_thickness = 5.0F;
+
+    PROPERTY(GROUP="Move UI")
+    int move_color_r = 90;
+
+    PROPERTY(GROUP="Move UI")
+    int move_color_g = 200;
+
+    PROPERTY(GROUP="Move UI")
+    int move_color_b = 255;
+
+    PROPERTY(GROUP="Move UI")
+    int move_color_a = 220;
 };

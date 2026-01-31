@@ -33,6 +33,12 @@
                 "mismatch_color_g": 80,
                 "mismatch_color_b": 80,
                 "mismatch_color_a": 240,
+                "move_duration": 0.25,
+                "move_outline_thickness": 5.0,
+                "move_color_r": 90,
+                "move_color_g": 200,
+                "move_color_b": 255,
+                "move_color_a": 220,
                 "entity_id": 9554886114356367157
             }
         }
