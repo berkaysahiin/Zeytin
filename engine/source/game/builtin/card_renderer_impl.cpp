@@ -44,7 +44,7 @@ namespace {
         const float scaled_width = width * scale_x;
         const Rectangle dest{
             .x=center.x - scaled_width * 0.5F,
-            .y=center.y - (height / 1.2F),
+            .y=center.y - (height * 0.5F),
             .width=scaled_width,
             .height=height
         };
