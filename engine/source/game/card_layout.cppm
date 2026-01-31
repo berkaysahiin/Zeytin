@@ -26,6 +26,7 @@ export inline void clear_card_layout() {
 
 export template<typename... Ts>
 void setup_card_layout(const GCardBoardConfig& board, const GCardConfig& config,
+					   const float initial_width, const float initial_height,
 					   [[maybe_unused]] const Alias<Ts...>& alias) {
     static_assert(alias_contains_v<CCard, Ts...>, "Alias must include CCard");
     static_assert(alias_contains_v<CTransform, Ts...>, "Alias must include CTransform");
@@ -54,11 +55,8 @@ void setup_card_layout(const GCardBoardConfig& board, const GCardConfig& config,
     const float cell_width = canvas_width / static_cast<float>(columns);
     const float cell_height = canvas_height / static_cast<float>(rows);
 
-    const float default_card_width = 96.0F;
-    const float default_card_height = 128.0F;
-
-    const float card_width = default_card_width < cell_width ? default_card_width : cell_width;
-    const float card_height = default_card_height < cell_height ? default_card_height : cell_height;
+    const float card_width = initial_width < cell_width ? initial_width : cell_width;
+    const float card_height = initial_height < cell_height ? initial_height : cell_height;
 
     const float offset_x = (cell_width - card_width) * 0.5F;
     const float offset_y = (cell_height - card_height) * 0.5F;

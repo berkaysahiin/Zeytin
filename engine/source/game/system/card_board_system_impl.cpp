@@ -45,5 +45,11 @@ void CCardBoardSystem::on_play_start() {
     }
 
     clear_card_layout();
-    setup_card_layout(board_opt->get(), card_opt->get(), CardAlias{});
+    setup_card_layout(
+        board_opt->get(),
+        card_opt->get(),
+        this->initial_collider_width,
+        this->initial_collider_height,
+        CardAlias{}
+    );
 }
