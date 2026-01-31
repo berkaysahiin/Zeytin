@@ -4,6 +4,8 @@
         {
             "type": "CCardBoardSystem",
             "value": {
+                "initial_collider_width": 160.0,
+                "initial_collider_height": 210.0,
                 "entity_id": 9554886114356367157
             }
         }
