@@ -33,6 +33,7 @@ private:
 	void draw_mismatch_highlight();
 	void draw_move_highlight();
 	void draw_invalid_selection_highlight();
+	void draw_match_highlight();
 	void draw_score_ui();
 	void draw_actions_ui();
 	void draw_game_over_overlay();
@@ -55,7 +56,14 @@ private:
 	float m_invalid_select_timer = 0.0F;
 	EntityID m_invalid_select_id = 0;
 
+	int m_current_streak = 0;
+	float m_current_multiplier = 1.0F;
+
 	float m_move_timer = 0.0F;
 	EntityID m_move_from = 0;
 	EntityID m_move_to = 0;
+
+	float m_match_timer = 0.0F;
+	EntityID m_match_from = 0;
+	EntityID m_match_to = 0;
 };

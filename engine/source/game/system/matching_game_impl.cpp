@@ -16,6 +16,7 @@ import zeytin.game.collider;
 import zeytin.game.card_renderer;
 import zeytin.game.ui_config;
 import zeytin.game.score_state;
+import zeytin.game.scoring_config;
 import zeytin.raylib;
 import zeytin.zeytin;
 import zeytin.entity;
@@ -39,6 +40,12 @@ void GMatchingGame::on_play_start() {
 	m_remaining_actions = allowed_actions;
 	m_found_pairs.clear();
 	m_game_over = false;
+	m_current_streak = 0;
+	m_current_multiplier = 1.0F;
+	const auto score_opt = Query::try_find_first<GScoreState>();
+	if (score_opt) {
+		score_opt->get().multiplier = m_current_multiplier;
+	}
 	log_info("Matching game started with {} actions", m_remaining_actions);
 }
 
@@ -70,6 +77,7 @@ void GMatchingGame::on_play_update() {
 	draw_mismatch_highlight();
 	draw_move_highlight();
 	draw_invalid_selection_highlight();
+	draw_match_highlight();
 
 	if (m_mismatch_first != 0 || m_mismatch_prev_first != 0) {
 		m_mismatch_timer += get_frame_time();
@@ -104,6 +112,17 @@ void GMatchingGame::on_play_update() {
 			m_move_from = 0;
 			m_move_to = 0;
 			m_move_timer = 0.0F;
+		}
+	}
+
+	if (m_match_to != 0) {
+		m_match_timer += get_frame_time();
+		const auto ui_opt = Query::try_find_first<GGameUIConfig>();
+		const float duration = ui_opt ? ui_opt->get().match_trail_duration : 0.0F;
+		if (duration <= 0.0F || m_match_timer >= duration) {
+			m_match_from = 0;
+			m_match_to = 0;
+			m_match_timer = 0.0F;
 		}
 	}
 
@@ -186,13 +205,46 @@ void GMatchingGame::process_card_selection(EntityID id, CCard& card) {
 				first_card.e_mask_status = CardMaskStatus::NO_MASK;
 				card.e_mask_status = CardMaskStatus::NO_MASK;
 				m_found_pairs.insert(first_card.symbol_id);
+				m_current_streak++;
+				const auto scoring_opt = Query::try_find_first<GScoringConfig>();
+				const int base_points = scoring_opt ? scoring_opt->get().base_match_points : 10;
+				const float step = scoring_opt ? scoring_opt->get().multiplier_step : 0.5F;
+				const float max_mult = scoring_opt ? scoring_opt->get().max_multiplier : 5.0F;
+				const float bonus = scoring_opt ? scoring_opt->get().sad_happy_bonus : 1.0F;
+
+				m_current_multiplier += step;
+				if (m_current_multiplier > max_mult) {
+					m_current_multiplier = max_mult;
+				}
+
+				const bool is_sad_happy = (m_first_mask_type != m_second_mask_type) &&
+					((m_first_mask_type == CardMaskStatus::SMILE && m_second_mask_type == CardMaskStatus::SAD) ||
+					 (m_first_mask_type == CardMaskStatus::SAD && m_second_mask_type == CardMaskStatus::SMILE));
+				const float effective_multiplier = m_current_multiplier + (is_sad_happy ? bonus : 0.0F);
+
+				const auto score_opt = Query::try_find_first<GScoreState>();
+				if (score_opt) {
+					auto& score = score_opt->get();
+					score.current_points += static_cast<int>(static_cast<float>(base_points) * effective_multiplier);
+					score.multiplier = m_current_multiplier;
+				}
+
+				m_match_from = m_first_selected;
+				m_match_to = id;
+				m_match_timer = 0.0F;
 				log_info("Match found: symbol {}", first_card.symbol_id);
 			} else {
 				first_card.e_mask_status = m_first_mask_type;
 				card.e_mask_status = m_second_mask_type;
-			m_mismatch_first = m_first_selected;
-			m_mismatch_second = id;
-			m_mismatch_timer = 0.0F;
+				m_current_streak = 0;
+				m_current_multiplier = 1.0F;
+				const auto score_opt = Query::try_find_first<GScoreState>();
+				if (score_opt) {
+					score_opt->get().multiplier = m_current_multiplier;
+				}
+				m_mismatch_first = m_first_selected;
+				m_mismatch_second = id;
+				m_mismatch_timer = 0.0F;
 			m_mismatch_prev_first = 0;
 			m_mismatch_prev_second = 0;
 			const auto ui_opt = Query::try_find_first<GGameUIConfig>();
@@ -209,6 +261,12 @@ void GMatchingGame::process_card_selection(EntityID id, CCard& card) {
 		} else {
 			first_card.e_mask_status = CardMaskStatus::NO_MASK;
 			card.e_mask_status = m_first_mask_type;
+			m_current_streak = 0;
+			m_current_multiplier = 1.0F;
+			const auto score_opt = Query::try_find_first<GScoreState>();
+			if (score_opt) {
+				score_opt->get().multiplier = m_current_multiplier;
+			}
 			m_move_from = m_first_selected;
 			m_move_to = id;
 			m_move_timer = 0.0F;
@@ -365,6 +423,40 @@ void GMatchingGame::draw_move_highlight() {
 		DrawLineEx(from, to, thickness, glow_color);
 	}
 	DrawLineEx(from, to, base_thickness, move_color);
+}
+
+void GMatchingGame::draw_match_highlight() {
+	if (m_match_to == 0 || m_match_from == 0) {
+		return;
+	}
+
+	const auto ui_opt = Query::try_find_first<GGameUIConfig>();
+	if (!ui_opt) {
+		return;
+	}
+	const auto& ui = ui_opt->get();
+
+	const float duration = ui.match_trail_duration;
+	const float alpha = duration > 0.0F ? (1.0F - (m_match_timer / duration)) : 0.0F;
+	const float clamped = alpha < 0.0F ? 0.0F : (alpha > 1.0F ? 1.0F : alpha);
+	const int a = static_cast<int>(static_cast<float>(ui.match_color_a) * clamped);
+	const Color match_color = make_color(ui.match_color_r, ui.match_color_g, ui.match_color_b, a);
+
+	const auto& from_transform = Query::get<CTransform>(m_match_from);
+	const auto& to_transform = Query::get<CTransform>(m_match_to);
+	const Vector2 from{.x=from_transform.position_x, .y=from_transform.position_y};
+	const Vector2 to{.x=to_transform.position_x, .y=to_transform.position_y};
+
+	const float base_thickness = ui.match_trail_thickness;
+	for (int i = 2; i >= 0; --i) {
+		const float layer = static_cast<float>(i);
+		const float thickness = base_thickness + layer * 3.0F;
+		const float layer_alpha = clamped * (0.35F - layer * 0.1F);
+		const int layer_a = static_cast<int>(static_cast<float>(ui.match_color_a) * layer_alpha);
+		const Color glow_color = make_color(ui.match_color_r, ui.match_color_g, ui.match_color_b, layer_a);
+		DrawLineEx(from, to, thickness, glow_color);
+	}
+	DrawLineEx(from, to, base_thickness, match_color);
 }
 
 void GMatchingGame::draw_invalid_selection_highlight() {

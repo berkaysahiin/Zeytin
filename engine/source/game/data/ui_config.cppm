@@ -123,4 +123,22 @@ export struct GGameUIConfig final : public DataComponent
 
     PROPERTY(GROUP="Move UI")
     int move_color_a = 220;
+
+    PROPERTY(GROUP="Match UI")
+    float match_trail_duration = 0.35F;
+
+    PROPERTY(GROUP="Match UI")
+    float match_trail_thickness = 6.0F;
+
+    PROPERTY(GROUP="Match UI")
+    int match_color_r = 120;
+
+    PROPERTY(GROUP="Match UI")
+    int match_color_g = 230;
+
+    PROPERTY(GROUP="Match UI")
+    int match_color_b = 140;
+
+    PROPERTY(GROUP="Match UI")
+    int match_color_a = 220;
 };
