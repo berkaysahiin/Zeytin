@@ -27,6 +27,8 @@ import zeytin.json;
 import zeytin.component;
 import zeytin.property;
 import zeytin.raylib;
+import zeytin.query;
+import zeytin.game.crt_effect;
 
 #ifdef EDITOR_MODE
 import zeytin.shared_texture;
@@ -573,6 +575,11 @@ void Zeytin::render() {
     const float pos_x = (screen_width - render_width) * 0.5f;
     const float pos_y = (screen_height - render_height) * 0.5f;
 
+    const auto crt_opt = Query::try_find_first<CRTEffect>();
+    if (crt_opt && crt_opt->get().enabled && crt_opt->get().is_shader_loaded()) {
+        BeginShaderMode(crt_opt->get().get_shader());
+    }
+
     draw_texture_pro(
         m_render_texture.texture,
         {0, 0, (float)m_render_texture.texture.width, (float)-m_render_texture.texture.height},
@@ -581,6 +588,10 @@ void Zeytin::render() {
         0.0f,
         WHITE
     );
+
+    if (crt_opt && crt_opt->get().enabled && crt_opt->get().is_shader_loaded()) {
+        EndShaderMode();
+    }
 }
 
 void Zeytin::request_level_load(const std::string& level_name) {
