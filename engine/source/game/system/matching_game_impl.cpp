@@ -15,6 +15,7 @@ import zeytin.game.transform;
 import zeytin.game.collider;
 import zeytin.game.card_renderer;
 import zeytin.game.ui_config;
+import zeytin.game.score_state;
 import zeytin.raylib;
 import zeytin.zeytin;
 import zeytin.entity;
@@ -29,6 +30,7 @@ namespace {
 			.a=static_cast<unsigned char>(alpha)
 		};
 	}
+
 }
 
 void GMatchingGame::on_play_start() {
@@ -62,7 +64,8 @@ void GMatchingGame::on_play_update() {
 		}
 	}
 
-	draw_actions_ui();
+	// actions are shown in score panel
+	draw_score_ui();
 	draw_selection_highlight();
 	draw_mismatch_highlight();
 	draw_move_highlight();
@@ -449,6 +452,64 @@ void GMatchingGame::draw_actions_ui() {
 		);
 	}
 	DrawText(text.c_str(), static_cast<int>(x), static_cast<int>(y), font_size, text_color);
+}
+
+void GMatchingGame::draw_score_ui() {
+	const auto score_opt = Query::try_find_first<GScoreState>();
+	if (!score_opt) {
+		return;
+	}
+	const auto& score = score_opt->get();
+
+	const auto ui_opt = Query::try_find_first<GGameUIConfig>();
+	const float margin_bottom = 24.0F;
+	const float padding = 18.0F;
+	const float gap = 16.0F;
+	const int value_size = 56;
+	const int meta_size = 18;
+	const float min_panel_height = padding * 2.0F + static_cast<float>(meta_size + 6 + value_size + 6);
+	float panel_height = ui_opt ? ui_opt->get().score_panel_height : min_panel_height;
+	if (panel_height < min_panel_height) {
+		panel_height = min_panel_height;
+	}
+
+	const Color panel_color = make_color(18, 18, 22, 210);
+	const Color text_color = make_color(230, 230, 230, 255);
+	const Color accent_color = make_color(255, 210, 120, 255);
+
+	const float base_width = VIRTUAL_WIDTH > 0.0F ? VIRTUAL_WIDTH : static_cast<float>(get_screen_width());
+	const float base_height = VIRTUAL_HEIGHT > 0.0F ? VIRTUAL_HEIGHT : static_cast<float>(get_screen_height());
+	const float horizontal_inset = 120.0F;
+	const float x = horizontal_inset;
+	const float width = base_width - horizontal_inset * 2.0F;
+	const float y = base_height - panel_height - margin_bottom;
+
+	DrawRectangleRec(Rectangle{.x=x, .y=y, .width=width, .height=panel_height}, panel_color);
+	DrawRectangleLinesEx(Rectangle{.x=x, .y=y, .width=width, .height=panel_height}, 2.0F, make_color(255, 255, 255, 30));
+
+	const std::string level_text = "Level " + std::to_string(score.level_index);
+	const int level_width = MeasureText(level_text.c_str(), meta_size);
+	DrawText(level_text.c_str(), static_cast<int>(x + width - padding - level_width), static_cast<int>(y + padding), meta_size, text_color);
+
+	const float content_y = y + padding;
+	const float value_y = content_y + static_cast<float>(meta_size + 6);
+	const float cell_width = (width - padding * 2.0F - gap * 4.0F) / 5.0F;
+
+	auto draw_cell = [&](int index, const std::string& label, const std::string& value, Color value_color) {
+		const float cell_x = x + padding + (cell_width + gap) * static_cast<float>(index);
+		const int label_width = MeasureText(label.c_str(), meta_size);
+		const int value_width = MeasureText(value.c_str(), value_size);
+		const float label_x = cell_x + (cell_width - static_cast<float>(label_width)) * 0.5F;
+		const float value_x = cell_x + (cell_width - static_cast<float>(value_width)) * 0.5F;
+		DrawText(label.c_str(), static_cast<int>(label_x), static_cast<int>(content_y), meta_size, text_color);
+		DrawText(value.c_str(), static_cast<int>(value_x), static_cast<int>(value_y), value_size, value_color);
+	};
+
+	draw_cell(0, "Score", std::to_string(score.current_points), text_color);
+	draw_cell(1, "Target", std::to_string(score.target_points), text_color);
+	draw_cell(2, "Mult", "x" + std::to_string(score.multiplier), accent_color);
+	draw_cell(3, "Pairs", std::to_string(m_found_pairs.size()), text_color);
+	draw_cell(4, "Actions", std::to_string(m_remaining_actions), text_color);
 }
 
 void GMatchingGame::draw_game_over_overlay() {

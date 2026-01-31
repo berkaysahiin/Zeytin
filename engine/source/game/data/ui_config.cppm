@@ -53,55 +53,16 @@ export struct GGameUIConfig final : public DataComponent
     int invalid_select_color_a = 220;
 
     PROPERTY(GROUP="Score UI")
-    float score_panel_x = 40.0F;
+    float score_panel_x = 0.0F;
 
     PROPERTY(GROUP="Score UI")
-    float score_panel_y = 140.0F;
+    float score_panel_y = -1.0F;
 
     PROPERTY(GROUP="Score UI")
-    float score_panel_width = 260.0F;
+    float score_panel_width = 0.0F;
 
     PROPERTY(GROUP="Score UI")
-    float score_panel_padding = 18.0F;
-
-    PROPERTY(GROUP="Score UI")
-    int score_title_font_size = 18;
-
-    PROPERTY(GROUP="Score UI")
-    int score_value_font_size = 42;
-
-    PROPERTY(GROUP="Score UI")
-    int score_meta_font_size = 18;
-
-    PROPERTY(GROUP="Score UI")
-    int score_panel_color_r = 18;
-
-    PROPERTY(GROUP="Score UI")
-    int score_panel_color_g = 18;
-
-    PROPERTY(GROUP="Score UI")
-    int score_panel_color_b = 22;
-
-    PROPERTY(GROUP="Score UI")
-    int score_panel_color_a = 210;
-
-    PROPERTY(GROUP="Score UI")
-    int score_text_color_r = 230;
-
-    PROPERTY(GROUP="Score UI")
-    int score_text_color_g = 230;
-
-    PROPERTY(GROUP="Score UI")
-    int score_text_color_b = 230;
-
-    PROPERTY(GROUP="Score UI")
-    int score_accent_color_r = 255;
-
-    PROPERTY(GROUP="Score UI")
-    int score_accent_color_g = 210;
-
-    PROPERTY(GROUP="Score UI")
-    int score_accent_color_b = 120;
+    float score_panel_height = 140.0F;
 
     PROPERTY(GROUP="Actions UI")
     bool actions_anchor_right = true;
