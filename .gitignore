@@ -51,3 +51,4 @@ engine/engine_gdb.log
 common/CMakeFiles/ZeytinCommon.dir
 common/cmake_install.cmake
 engine/build-standalone
+engine/LLM.txt
