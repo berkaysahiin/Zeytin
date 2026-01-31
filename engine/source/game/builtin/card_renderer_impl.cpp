@@ -27,52 +27,168 @@ namespace {
     }
 
     void draw_happy_face(const Vector2 center, const float half_width, const float half_height, const Color face_color) {
-        const float eye_offset_x = half_width * 0.25F;
-        const float eye_offset_y = half_height * 0.15F;
-        const float eye_radius = half_height * 0.1F;
-        const Color eye_color{.r=0, .g=0, .b=0, .a=255};
+        const float mask_scale = 0.75F;
+        const float mask_half_width = half_width * mask_scale * 0.7F;
+        const float mask_half_height = half_height * mask_scale;
 
-        DrawCircleV(Vector2{.x=center.x - eye_offset_x, .y=center.y - eye_offset_y}, eye_radius, eye_color);
-        DrawCircleV(Vector2{.x=center.x + eye_offset_x, .y=center.y - eye_offset_y}, eye_radius, eye_color);
+        const Color mask_bg_color = make_color(230, 230, 230, 255);
+        const Color mask_outline_color = make_color(40, 40, 40, 255);
+        const Color feature_color = make_color(30, 30, 30, 255);
+        const Color decor_color = make_color(180, 180, 180, 255);
 
-        const float smile_start_x = center.x - (half_width * 0.15F);
-        const float smile_start_y = center.y + (half_height * 0.25F);
-        const float smile_end_x = center.x + (half_width * 0.15F);
-        const float smile_end_y = smile_start_y;
-        const float smile_thickness = half_height * 0.08F;
+        const float top_y = center.y - mask_half_height * 0.9F;
+        const float bottom_y = center.y + mask_half_height * 0.95F;
+        const float left_x = center.x - mask_half_width;
+        const float right_x = center.x + mask_half_width;
 
-        draw_line_ex(
-            Vector2{.x=smile_start_x, .y=smile_start_y},
-            Vector2{.x=smile_end_x, .y=smile_end_y},
+        const float shoulder_width = mask_half_width * 1.2F;
+
+        Vector2 points[12] = {
+            Vector2{.x=center.x - shoulder_width, .y=bottom_y * 0.5F + center.y * 0.5F},
+            Vector2{.x=center.x - mask_half_width * 0.8F, .y=bottom_y * 0.7F + center.y * 0.3F},
+            Vector2{.x=center.x - mask_half_width * 0.5F, .y=bottom_y * 0.85F + center.y * 0.15F},
+            Vector2{.x=center.x, .y=bottom_y},
+            Vector2{.x=center.x + mask_half_width * 0.5F, .y=bottom_y * 0.85F + center.y * 0.15F},
+            Vector2{.x=center.x + mask_half_width * 0.8F, .y=bottom_y * 0.7F + center.y * 0.3F},
+            Vector2{.x=center.x + shoulder_width, .y=bottom_y * 0.5F + center.y * 0.5F},
+            Vector2{.x=center.x + mask_half_width, .y=center.y - mask_half_height * 0.5F},
+            Vector2{.x=center.x + mask_half_width * 0.9F, .y=top_y + mask_half_height * 0.2F},
+            Vector2{.x=center.x, .y=top_y},
+            Vector2{.x=center.x - mask_half_width * 0.9F, .y=top_y + mask_half_height * 0.2F},
+            Vector2{.x=center.x - mask_half_width, .y=center.y - mask_half_height * 0.5F}
+        };
+
+        DrawTriangleFan(points, 12, mask_bg_color);
+
+        for (int i = 0; i < 12; ++i) {
+            const Vector2 p1 = points[i];
+            const Vector2 p2 = points[(i + 1) % 12];
+            DrawLineEx(p1, p2, 3.0F, mask_outline_color);
+        }
+
+        const float decor_x_left = center.x - mask_half_width * 1.3F;
+        const float decor_x_right = center.x + mask_half_width * 1.3F;
+
+        DrawSplineSegmentBezierQuadratic(
+            Vector2{.x=decor_x_left, .y=center.y - mask_half_height * 0.6F},
+            Vector2{.x=decor_x_left - 10.0F, .y=center.y},
+            Vector2{.x=decor_x_left, .y=center.y + mask_half_height * 0.4F},
+            2.0F,
+            decor_color
+        );
+
+        DrawSplineSegmentBezierQuadratic(
+            Vector2{.x=decor_x_right, .y=center.y - mask_half_height * 0.6F},
+            Vector2{.x=decor_x_right + 10.0F, .y=center.y},
+            Vector2{.x=decor_x_right, .y=center.y + mask_half_height * 0.4F},
+            2.0F,
+            decor_color
+        );
+
+        const float eye_offset_x = mask_half_width * 0.35F;
+        const float eye_offset_y = mask_half_height * 0.15F;
+        const float eye_radius = mask_half_height * 0.1F;
+
+        DrawCircleV(Vector2{.x=center.x - eye_offset_x, .y=center.y - eye_offset_y}, eye_radius, feature_color);
+        DrawCircleV(Vector2{.x=center.x + eye_offset_x, .y=center.y - eye_offset_y}, eye_radius, feature_color);
+
+        const float smile_width = mask_half_width * 0.35F;
+        const float smile_y = center.y + mask_half_height * 0.15F;
+        const float smile_thickness = mask_half_height * 0.05F;
+
+        DrawSplineSegmentBezierQuadratic(
+            Vector2{.x=center.x - smile_width, .y=smile_y + 8.0F},
+            Vector2{.x=center.x, .y=smile_y - 12.0F},
+            Vector2{.x=center.x + smile_width, .y=smile_y + 8.0F},
             smile_thickness,
-            eye_color
+            feature_color
         );
     }
 
     void draw_sad_face(const Vector2 center, const float half_width, const float half_height, const Color face_color) {
-        const float eye_offset_x = half_width * 0.25F;
-        const float eye_offset_y = half_height * 0.15F;
-        const float eye_radius = half_height * 0.1F;
-        const Color eye_color{.r=0, .g=0, .b=0, .a=255};
+        const float mask_scale = 0.75F;
+        const float mask_half_width = half_width * mask_scale * 0.7F;
+        const float mask_half_height = half_height * mask_scale;
 
-        DrawCircleV(Vector2{.x=center.x - eye_offset_x, .y=center.y - eye_offset_y}, eye_radius, eye_color);
-        DrawCircleV(Vector2{.x=center.x + eye_offset_x, .y=center.y - eye_offset_y}, eye_radius, eye_color);
+        const Color mask_bg_color = make_color(225, 225, 225, 255);
+        const Color mask_outline_color = make_color(40, 40, 40, 255);
+        const Color feature_color = make_color(30, 30, 30, 255);
+        const Color decor_color = make_color(170, 170, 170, 255);
 
-        const float frown_start_x = center.x - (half_width * 0.2F);
-        const float frown_start_y = center.y + (half_height * 0.35F);
-        const float frown_end_x = center.x + half_width * 0.2F;
-        const float frown_end_y = frown_start_y - half_height * 0.15F;
-        const float frown_control_x = center.x;
-        const float frown_control_y = center.y + half_height * 0.1F;
-        const float frown_thickness = half_height * 0.08F;
+        const float top_y = center.y - mask_half_height * 0.9F;
+        const float bottom_y = center.y + mask_half_height * 0.95F;
+        const float left_x = center.x - mask_half_width;
+        const float right_x = center.x + mask_half_width;
 
-	DrawSplineSegmentBezierQuadratic(
-            Vector2{.x=frown_start_x, .y=frown_start_y},
-            Vector2{.x=frown_control_x, .y=frown_control_y},
-            Vector2{.x=frown_end_x, .y=frown_end_y},
-            frown_thickness,
-            eye_color
+        const float shoulder_width = mask_half_width * 1.2F;
+
+        Vector2 points[12] = {
+            Vector2{.x=center.x - shoulder_width, .y=bottom_y * 0.5F + center.y * 0.5F},
+            Vector2{.x=center.x - mask_half_width * 0.8F, .y=bottom_y * 0.7F + center.y * 0.3F},
+            Vector2{.x=center.x - mask_half_width * 0.5F, .y=bottom_y * 0.85F + center.y * 0.15F},
+            Vector2{.x=center.x, .y=bottom_y},
+            Vector2{.x=center.x + mask_half_width * 0.5F, .y=bottom_y * 0.85F + center.y * 0.15F},
+            Vector2{.x=center.x + mask_half_width * 0.8F, .y=bottom_y * 0.7F + center.y * 0.3F},
+            Vector2{.x=center.x + shoulder_width, .y=bottom_y * 0.5F + center.y * 0.5F},
+            Vector2{.x=center.x + mask_half_width, .y=center.y - mask_half_height * 0.5F},
+            Vector2{.x=center.x + mask_half_width * 0.9F, .y=top_y + mask_half_height * 0.2F},
+            Vector2{.x=center.x, .y=top_y},
+            Vector2{.x=center.x - mask_half_width * 0.9F, .y=top_y + mask_half_height * 0.2F},
+            Vector2{.x=center.x - mask_half_width, .y=center.y - mask_half_height * 0.5F}
+        };
+
+        DrawTriangleFan(points, 12, mask_bg_color);
+
+        for (int i = 0; i < 12; ++i) {
+            const Vector2 p1 = points[i];
+            const Vector2 p2 = points[(i + 1) % 12];
+            DrawLineEx(p1, p2, 3.0F, mask_outline_color);
+        }
+
+        const float decor_x_left = center.x - mask_half_width * 1.3F;
+        const float decor_x_right = center.x + mask_half_width * 1.3F;
+
+        DrawSplineSegmentBezierQuadratic(
+            Vector2{.x=decor_x_left, .y=center.y - mask_half_height * 0.6F},
+            Vector2{.x=decor_x_left - 8.0F, .y=center.y},
+            Vector2{.x=decor_x_left, .y=center.y + mask_half_height * 0.4F},
+            2.0F,
+            decor_color
         );
+
+        DrawSplineSegmentBezierQuadratic(
+            Vector2{.x=decor_x_right, .y=center.y - mask_half_height * 0.6F},
+            Vector2{.x=decor_x_right + 8.0F, .y=center.y},
+            Vector2{.x=decor_x_right, .y=center.y + mask_half_height * 0.4F},
+            2.0F,
+            decor_color
+        );
+
+        const float eye_offset_x = mask_half_width * 0.35F;
+        const float eye_offset_y = mask_half_height * 0.15F;
+        const float eye_radius = mask_half_height * 0.1F;
+
+        DrawCircleV(Vector2{.x=center.x - eye_offset_x, .y=center.y - eye_offset_y}, eye_radius, feature_color);
+        DrawCircleV(Vector2{.x=center.x + eye_offset_x, .y=center.y - eye_offset_y}, eye_radius, feature_color);
+
+        const float frown_width = mask_half_width * 0.3F;
+        const float frown_y = center.y + mask_half_height * 0.15F;
+        const float frown_thickness = mask_half_height * 0.05F;
+
+        DrawSplineSegmentBezierQuadratic(
+            Vector2{.x=center.x - frown_width, .y=frown_y - 6.0F},
+            Vector2{.x=center.x, .y=frown_y + 10.0F},
+            Vector2{.x=center.x + frown_width, .y=frown_y - 6.0F},
+            frown_thickness,
+            feature_color
+        );
+
+        const float tear_x = center.x + mask_half_width * 0.35F;
+        const float tear_y = center.y + mask_half_height * 0.05F;
+        const float tear_radius = mask_half_height * 0.04F;
+        const Color tear_color = make_color(150, 170, 200, 255);
+
+        DrawCircleV(Vector2{.x=tear_x, .y=tear_y}, tear_radius, tear_color);
     }
 
     void draw_symbol_0(const Vector2 center, const float half_width, const float half_height, const Color color) {
