@@ -33,6 +33,7 @@ private:
 	void draw_mismatch_highlight();
 	void draw_move_highlight();
 	void draw_invalid_selection_highlight();
+	void draw_score_ui();
 	void draw_actions_ui();
 	void draw_game_over_overlay();
 
