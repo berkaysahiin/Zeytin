@@ -6,6 +6,22 @@
             "value": {
                 "entity_id": 15143944964060387509
             }
+        },
+        {
+            "type": "GCardConfig",
+            "value": {
+                "card_width": 96.0,
+                "card_height": 128.0,
+                "flip_duration": 0.20000000298023224,
+                "mismatch_delay": 0.6000000238418579,
+                "back_leather_tone": 0.44999998807907104,
+                "back_texture_strength": 0.6499999761581421,
+                "back_highlight_strength": 0.3499999940395355,
+                "back_shadow_strength": 0.550000011920929,
+                "mask_scale": 0.47999998927116394,
+                "mask_opacity": 0.8999999761581421,
+                "entity_id": 15143944964060387509
+            }
         }
     ]
 }

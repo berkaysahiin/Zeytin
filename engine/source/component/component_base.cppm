@@ -19,6 +19,9 @@ export struct Component
   virtual void on_play_start() {}
 
   /// Called every frame
+  virtual void on_early_update() {}
+
+  /// Called every frame
   virtual void on_update() {}
 
   /// Called every frame while in play mode
@@ -42,6 +45,7 @@ export struct DataComponent : Component
 
   void on_init() final  {}
   void on_play_start() final {}
+  void on_early_update() final {}
   void on_update() final {}
   void on_play_update() final {}
   void on_play_late_update() final {}

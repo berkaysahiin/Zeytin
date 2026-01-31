@@ -188,6 +188,7 @@ void Zeytin::run_frame() {
 
     begin_mode2d(m_camera);
     
+    early_update_components();
     update_components();
     
     if (m_state.play_mode && !m_state.pause_play_mode) {
@@ -463,6 +464,28 @@ bool Zeytin::switch_to_level(const std::string& level_name) {
     return true;
 }
 
+void Zeytin::early_update_components() {
+    ZPROFILE_ZONE_NAMED("Zeytin::update_variants()");
+
+    for (auto& pair : m_storage) {   
+        for (auto& variant : pair.second) {
+            Component& base = variant.get_value<Component&>();
+            
+            if (base.is_dead) {
+                continue;
+            }
+            
+            {
+                ZPROFILE_ZONE_NAMED("Component::on_early_update()");
+                ZPROFILE_TEXT(base.get_type().get_name().to_string().c_str(),
+                              base.get_type().get_name().to_string().size());
+                ZPROFILE_VALUE(pair.first);
+                
+                base.on_early_update();
+            }
+        }
+    }
+}
 void Zeytin::update_components() {
     ZPROFILE_ZONE_NAMED("Zeytin::update_variants()");
 
@@ -937,6 +960,8 @@ void Zeytin::enter_play_mode(bool is_paused) {
 
     m_state.pause_play_mode = is_paused;
     m_state.play_mode = true;
+
+    initialize_camera();
     
 	log_info("Entered play mode");
 }

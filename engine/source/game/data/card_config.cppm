@@ -17,5 +17,26 @@ export struct GCardConfig final: public DataComponent
 	float flip_duration = 0.2F;
 
 	PROPERTY(GROUP = "Timing")
-  	float mismatch_delay = 0.6F;
+	float mismatch_delay = 0.6F;
+
+	PROPERTY(GROUP = "Card Back")
+	float back_leather_tone = 0.45F;
+
+	PROPERTY(GROUP = "Card Back")
+	float back_texture_strength = 0.65F;
+
+	PROPERTY(GROUP = "Card Back")
+	float back_highlight_strength = 0.35F;
+
+	PROPERTY(GROUP = "Card Back")
+	float back_shadow_strength = 0.55F;
+
+	PROPERTY(GROUP = "Card Back")
+	float mask_scale = 0.48F;
+
+	PROPERTY(GROUP = "Card Back")
+	float mask_opacity = 0.9F;
+
+	PROPERTY(GROUP = "Card Back")
+	int mask_type = 0;
 };

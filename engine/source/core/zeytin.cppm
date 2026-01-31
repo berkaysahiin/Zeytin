@@ -18,8 +18,8 @@ import zeytin.editor.communication;
 import zeytin.editor.event;
 #endif
 
-constexpr float VIRTUAL_WIDTH = 1920;
-constexpr float VIRTUAL_HEIGHT = 1080;
+export constexpr float VIRTUAL_WIDTH = 1920.0F;
+export constexpr float VIRTUAL_HEIGHT = 1080.0F;
 
 export using ComponentList = std::vector<rttr::variant>;
 export using Storage = std::unordered_map<EntityID, ComponentList>;
@@ -61,6 +61,7 @@ public:
     bool deserialize_scene(const std::string& scene); 
 	bool switch_to_level(const std::string& level_name);
 
+    void early_update_components();
     void update_components();
     void play_start_components();
     void play_update_components();

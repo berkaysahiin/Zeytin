@@ -27,6 +27,9 @@ export struct GCardBoardConfig final : public DataComponent
     float canvas_height = 600.0F;
 
     PROPERTY(GROUP="Canvas")
+    bool use_virtual_canvas = true;
+
+    PROPERTY(GROUP="Canvas")
     bool canvas_centered = false;
 
     PROPERTY(GROUP="Debug")
