@@ -6,6 +6,7 @@
             "value": {
                 "flip_duration": 0.20000000298023224,
                 "mismatch_delay": 0.6000000238418579,
+                "initial_reveal_duration": 2.0,
                 "mask_type": 0,
                 "entity_id": 7761662378699493710,
                 "card_width": 150.0,
