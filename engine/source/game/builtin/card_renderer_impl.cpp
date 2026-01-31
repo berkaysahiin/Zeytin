@@ -43,6 +43,66 @@ void CCardRenderer::on_update() {
 
     const auto mask_status = static_cast<CardMaskStatus>(card.e_mask_status);
     if (mask_status == CardMaskStatus::NO_MASK) {
+
+		if (card.symbol_id == 0) {
+            ResourcePtr<Texture2D> symbol_texture(symbol_0_path);
+            if (symbol_texture.is_valid()) {
+                Texture2D* tex = symbol_texture.get_ptr();
+                const Rectangle source{.x=0, .y=0, .width=static_cast<float>(tex->width), .height=static_cast<float>(tex->height)};
+                const Rectangle dest{.x=face_center.x - half_width, .y=face_center.y - (half_height / 1.2F), .width=width, .height=height};
+                DrawTexturePro(*tex, source, dest, Vector2{.x=0, .y=0}, 0.0F, WHITE);
+            } else {
+                log_error("Couldn't find valid resource: {}", symbol_0_path);
+			}
+        }
+
+  		if (card.symbol_id == 1) {
+            ResourcePtr<Texture2D> symbol_texture(symbol_1_path);
+            if (symbol_texture.is_valid()) {
+                Texture2D* tex = symbol_texture.get_ptr();
+                const Rectangle source{.x=0, .y=0, .width=static_cast<float>(tex->width), .height=static_cast<float>(tex->height)};
+                const Rectangle dest{.x=face_center.x - half_width, .y=face_center.y - (half_height / 1.2F), .width=width, .height=height};
+                DrawTexturePro(*tex, source, dest, Vector2{.x=0, .y=0}, 0.0F, WHITE);
+            } else {
+                log_error("Couldn't find valid resource: {}", symbol_1_path);
+            }
+        } 
+
+        if (card.symbol_id == 2) {
+            ResourcePtr<Texture2D> symbol_texture(symbol_2_path);
+            if (symbol_texture.is_valid()) {
+                Texture2D* tex = symbol_texture.get_ptr();
+                const Rectangle source{.x=0, .y=0, .width=static_cast<float>(tex->width), .height=static_cast<float>(tex->height)};
+                const Rectangle dest{.x=face_center.x - half_width, .y=face_center.y - (half_height / 1.2F), .width=width, .height=height};
+                DrawTexturePro(*tex, source, dest, Vector2{.x=0, .y=0}, 0.0F, WHITE);
+            } else {
+                log_error("Couldn't find valid resource: {}", symbol_2_path);
+            }
+        } 
+
+		if (card.symbol_id == 3) {
+            ResourcePtr<Texture2D> symbol_texture(symbol_3_path);
+            if (symbol_texture.is_valid()) {
+                Texture2D* tex = symbol_texture.get_ptr();
+                const Rectangle source{.x=0, .y=0, .width=static_cast<float>(tex->width), .height=static_cast<float>(tex->height)};
+                const Rectangle dest{.x=face_center.x - half_width, .y=face_center.y - (half_height / 1.2F), .width=width, .height=height};
+                DrawTexturePro(*tex, source, dest, Vector2{.x=0, .y=0}, 0.0F, WHITE);
+            } else {
+                log_error("Couldn't find valid resource: {}", symbol_3_path);
+            }
+        } 
+		if (card.symbol_id == 4) {
+            ResourcePtr<Texture2D> symbol_texture(symbol_4_path);
+            if (symbol_texture.is_valid()) {
+                Texture2D* tex = symbol_texture.get_ptr();
+                const Rectangle source{.x=0, .y=0, .width=static_cast<float>(tex->width), .height=static_cast<float>(tex->height)};
+                const Rectangle dest{.x=face_center.x - half_width, .y=face_center.y - (half_height / 1.2F), .width=width, .height=height};
+                DrawTexturePro(*tex, source, dest, Vector2{.x=0, .y=0}, 0.0F, WHITE);
+            } else {
+                log_error("Couldn't find valid resource: {}", symbol_4_path);
+            }
+        } 
+
         return;
     } else if (mask_status == CardMaskStatus::SMILE) {
         ResourcePtr<Texture2D> happy_texture(mask_happy_path);

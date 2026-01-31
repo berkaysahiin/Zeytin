@@ -2,6 +2,7 @@ module;
 
 #include "raylib.h"
 #include <filesystem>
+#include <string>
 
 module zeytin.resource_cache;
 import zeytin.resource;
@@ -23,7 +24,29 @@ Texture2D* ResourceCache<Texture2D>::get_ptr(const std::string& path) {
         return nullptr;
     }
 
-    Texture2D texture = LoadTexture(full_path.c_str());
+    const std::string filename = full_path.filename().string();
+    const bool is_symbol = filename.rfind("symbol_", 0) == 0;
+
+    Texture2D texture{};
+    if (is_symbol) {
+        Image image = LoadImage(full_path.c_str());
+        if (image.data == nullptr || image.width <= 0 || image.height <= 0) {
+            return nullptr;
+        }
+
+        const int target_height = 512;
+        if (image.height > target_height) {
+            const float scale = static_cast<float>(target_height) / static_cast<float>(image.height);
+            const int target_width = static_cast<int>(image.width * scale);
+            ImageResize(&image, target_width, target_height);
+        }
+
+        texture = LoadTextureFromImage(image);
+        UnloadImage(image);
+    } else {
+        texture = LoadTexture(full_path.c_str());
+    }
+
     if (texture.id == 0) {
         return nullptr;
     }
