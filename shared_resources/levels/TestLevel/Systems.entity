@@ -15,6 +15,19 @@
                 "allowed_actions": 20,
                 "entity_id": 9554886114356367157
             }
+        },
+        {
+            "type": "GGameUIConfig",
+            "value": {
+                "actions_x": 35.599998474121094,
+                "actions_y": 20.0,
+                "actions_font_size": 24,
+                "actions_anchor_right": true,
+                "timer_x": 120.0,
+                "timer_y": 600.0,
+                "timer_font_size": 60,
+                "entity_id": 9554886114356367157
+            }
         }
     ]
 }

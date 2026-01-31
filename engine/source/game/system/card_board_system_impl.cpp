@@ -10,6 +10,7 @@ import zeytin.logger;
 import zeytin.game.card_layout;
 import zeytin.game.card_board_config;
 import zeytin.game.card_config;
+import zeytin.game.ui_config;
 import zeytin.game.transform;
 import zeytin.game.aliases;
 import zeytin.game.card;
@@ -135,13 +136,17 @@ void CCardBoardSystem::on_update() {
 
     const float remaining_time = config.initial_reveal_duration - m_reveal_timer;
 
-    const int font_size = 32;
+    const auto ui_opt = Query::try_find_first<GGameUIConfig>();
+    if (!ui_opt) {
+        return;
+    }
+    const auto& ui = ui_opt->get();
+    const int font_size = ui.timer_font_size;
     const int time_int = static_cast<int>(remaining_time);
     const std::string text = "Time: " + std::to_string(time_int);
 
-    const float margin = 20.0F;
-    const float text_x = margin;
-    const float text_y = margin;
+    const float text_x = ui.timer_x;
+    const float text_y = ui.timer_y;
     const Color text_color = Color{.r=200, .g=200, .b=200, .a=255};
 
     DrawText(text.c_str(), static_cast<int>(text_x), static_cast<int>(text_y), font_size, text_color);

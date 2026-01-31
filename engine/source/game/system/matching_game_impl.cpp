@@ -10,6 +10,7 @@ import zeytin.logger;
 import zeytin.game.card;
 import zeytin.game.transform;
 import zeytin.game.collider;
+import zeytin.game.ui_config;
 import zeytin.raylib;
 import zeytin.zeytin;
 import zeytin.entity;
@@ -147,14 +148,21 @@ void GMatchingGame::draw_selection_highlight() {
 }
 
 void GMatchingGame::draw_actions_ui() {
-	const int font_size = 24;
+	const auto ui_opt = Query::try_find_first<GGameUIConfig>();
+	if (!ui_opt) {
+		return;
+	}
+	const auto& ui = ui_opt->get();
+	const int font_size = ui.actions_font_size;
 	const std::string text = "Actions: " + std::to_string(m_remaining_actions);
 	const int text_width = MeasureText(text.c_str(), font_size);
+	const float margin_x = ui.actions_x;
+	const float margin_y = ui.actions_y;
+	const bool anchor_right = ui.actions_anchor_right;
 
-	const float margin = 20.0F;
 	const float screen_width = static_cast<float>(get_screen_width());
-	const float x = screen_width - text_width - margin;
-	const float y = margin;
+	const float x = anchor_right ? (screen_width - text_width - margin_x) : margin_x;
+	const float y = margin_y;
 
 	const Color text_color = make_color(200, 200, 200, 255);
 	DrawText(text.c_str(), static_cast<int>(x), static_cast<int>(y), font_size, text_color);
