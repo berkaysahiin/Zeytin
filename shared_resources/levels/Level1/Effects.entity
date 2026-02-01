@@ -1,0 +1,36 @@
+{
+    "entity_id": 2284798232150996280,
+    "variants": [
+        {
+            "type": "CRTEffect",
+            "value": {
+                "enabled": true,
+                "curvature": 42.29999923706055,
+                "scanline_intensity": 0.20000000298023224,
+                "vignette_intensity": 0.20000000298023224,
+                "noise_intensity": 0.05000000074505806,
+                "chromatic_aberration": 0.05000000074505806,
+                "entity_id": 2284798232150996280
+            }
+        },
+        {
+            "type": "CBackground",
+            "value": {
+                "enabled": true,
+                "texture_path": "background.png",
+                "entity_id": 2284798232150996280,
+                "base_red": 24,
+                "base_green": 18,
+                "base_blue": 14,
+                "base_alpha": 255,
+                "accent_red": 48,
+                "accent_green": 32,
+                "accent_blue": 24,
+                "accent_alpha": 120,
+                "motion_speed": 0.20000000298023224,
+                "motion_strength": 0.07999999821186066,
+                "blob_scale": 11.449999809265137
+            }
+        }
+    ]
+}

@@ -111,25 +111,25 @@ void CCardBoardSystem::on_play_update() {
     m_reveal_timer += get_frame_time();
 
 	if (m_reveal_timer >= (config.initial_reveal_duration + config.reveal_hold_after_timer)) {
-        const int32_t mask_matrix[4][4] = {
-            {1, 1, 2, 2},
-            {1, 2, 1, 2},
-            {2, 1, 2, 1},
-            {2, 2, 1, 1}
-        };
+		const int32_t mask_matrix[4][4] = {
+			{1, 1, 2, 2},
+			{1, 2, 1, 2},
+			{2, 1, 2, 1},
+			{2, 2, 1, 1}
+		};
 
-        const std::vector<EntityID> card_ids = Query::find_all_with<CCard>();
-        for (const EntityID id : card_ids) {
-            auto& card = Query::get<CCard>(id);
-            const int row = card.row;
-            const int col = card.column;
-            if (row < 4 && col < 4) {
-                const int mask_val = mask_matrix[row][col];
-                card.e_mask_status = static_cast<CardMaskStatus>(mask_val);
-            } else {
-                card.e_mask_status = static_cast<CardMaskStatus>(config.mask_type);
-            }
-        }
+		const std::vector<EntityID> card_ids = Query::find_all_with<CCard>();
+		for (const EntityID id : card_ids) {
+			auto& card = Query::get<CCard>(id);
+			const int row = card.row;
+			const int col = card.column;
+			if (row < 4 && col < 4) {
+				const int mask_val = mask_matrix[row][col];
+				card.e_mask_status = static_cast<CardMaskStatus>(mask_val);
+			} else {
+				card.e_mask_status = static_cast<CardMaskStatus>(config.mask_type);
+			}
+		}
         m_revealed = true;
         log_info("Hiding {} cards with masks after {:.2f} seconds", card_ids.size(), config.initial_reveal_duration);
     }

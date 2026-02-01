@@ -2,6 +2,7 @@ module;
 
 #include "preparser.h"
 #include <cstdint>
+#include <string>
 
 export module zeytin.game.card_board_config;
 import zeytin.component;

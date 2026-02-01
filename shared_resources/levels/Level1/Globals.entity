@@ -23,8 +23,8 @@
         {
             "type": "GCardBoardConfig",
             "value": {
-                "rows": 4,
-                "columns": 4,
+                "rows": 2,
+                "columns": 2,
                 "canvas_x": 150.0,
                 "canvas_y": 110.0,
                 "canvas_width": 1700.0,
@@ -33,15 +33,14 @@
                 "canvas_centered": false,
                 "draw_canvas_outline": false,
                 "draw_cell_outline": false,
-                "entity_id": 7761662378699493710,
-                "level_id": "level_2"
+                "entity_id": 7761662378699493710
             }
         },
         {
             "type": "GScoreState",
             "value": {
                 "current_points": 0,
-                "target_points": 120,
+                "target_points": 30,
                 "multiplier": 1.0,
                 "level_index": 1,
                 "entity_id": 7761662378699493710

@@ -1,0 +1,93 @@
+{
+    "entity_id": 9554886114356367157,
+    "variants": [
+        {
+            "type": "CCardBoardSystem",
+            "value": {
+                "initial_collider_width": 160.0,
+                "initial_collider_height": 210.0,
+                "entity_id": 9554886114356367157
+            }
+        },
+        {
+            "type": "GMatchingGame",
+            "value": {
+                "allowed_actions": 12,
+                "entity_id": 9554886114356367157
+            }
+        },
+        {
+            "type": "GGameUIConfig",
+            "value": {
+                "actions_x": 20.0,
+                "actions_y": 20.0,
+                "actions_font_size": 24,
+                "actions_effect_duration": 0.25,
+                "actions_shake_px": 3.0,
+                "actions_flash_r": 230,
+                "actions_flash_g": 90,
+                "actions_flash_b": 90,
+                "invalid_select_duration": 0.20000000298023224,
+                "invalid_select_shake_px": 2.0,
+                "invalid_select_outline_thickness": 4.0,
+                "invalid_select_color_r": 255,
+                "invalid_select_color_g": 160,
+                "invalid_select_color_b": 80,
+                "invalid_select_color_a": 220,
+                "score_panel_x": 40.0,
+                "score_panel_y": 140.0,
+                "score_panel_width": 260.0,
+                "score_panel_height": 140.0,
+                "multiplier_fx_duration": 0.30000001192092896,
+                "multiplier_fx_shake_px": 3.0,
+                "multiplier_fx_color_r": 255,
+                "multiplier_fx_color_g": 140,
+                "multiplier_fx_color_b": 60,
+                "multiplier_fx_color_a": 160,
+                "actions_anchor_right": true,
+                "timer_x": 20.0,
+                "timer_y": 20.0,
+                "timer_font_size": 32,
+                "mismatch_duration": 0.3499999940395355,
+                "mismatch_shake_px": 3.0,
+                "mismatch_outline_thickness": 6.0,
+                "mismatch_color_r": 230,
+                "mismatch_color_g": 80,
+                "mismatch_color_b": 80,
+                "mismatch_color_a": 240,
+                "mismatch_trail_thickness": 6.0,
+                "mismatch_camera_shake_px": 6.0,
+                "mismatch_camera_shake_duration": 0.20000000298023224,
+                "move_duration": 0.25,
+                "move_outline_thickness": 5.0,
+                "move_color_r": 90,
+                "move_color_g": 200,
+                "move_color_b": 255,
+                "move_color_a": 220,
+                "match_trail_duration": 0.3499999940395355,
+                "match_trail_thickness": 6.0,
+                "match_color_r": 120,
+                "match_color_g": 230,
+                "match_color_b": 140,
+                "match_color_a": 220,
+                "entity_id": 9554886114356367157,
+                "score_panel_margin_bottom": 24.0,
+                "score_panel_gap": 16.0,
+                "score_panel_padding": 18.0,
+                "score_title_font_size": 18,
+                "score_value_font_size": 56,
+                "score_meta_font_size": 18,
+                "score_panel_color_r": 18,
+                "score_panel_color_g": 18,
+                "score_panel_color_b": 22,
+                "score_panel_color_a": 210,
+                "score_text_color_r": 230,
+                "score_text_color_g": 230,
+                "score_text_color_b": 230,
+                "score_accent_color_r": 255,
+                "score_accent_color_g": 210,
+                "score_accent_color_b": 120
+            }
+        }
+    ]
+}
