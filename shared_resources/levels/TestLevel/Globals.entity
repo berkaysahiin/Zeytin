@@ -44,6 +44,7 @@
                 "target_points": 120,
                 "multiplier": 1.0,
                 "level_index": 1,
+                "next_level": "",
                 "entity_id": 7761662378699493710
             }
         }

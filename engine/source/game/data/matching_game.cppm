@@ -31,6 +31,7 @@ private:
 	float m_game_over_timer = 0.0F;
 	float m_game_over_fade = 0.0F;
 	std::string m_game_over_reason = "";
+	bool m_next_level_requested = false;
 
 	bool handle_mouse_click();
 	void process_card_selection(EntityID id, CCard& card);

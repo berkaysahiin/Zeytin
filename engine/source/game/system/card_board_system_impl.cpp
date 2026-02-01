@@ -66,18 +66,28 @@ void CCardBoardSystem::on_play_start() {
     const int32_t rows = board.rows;
     const int32_t columns = board.columns;
 
-    const int32_t symbol_matrix[4][4] = {
+    const int32_t symbol_matrix_4x4[4][4] = {
         {0, 1, 2, 3},
         {2, 4, 0, 1},
         {1, 0, 4, 2},
         {3, 2, 1, 0}
     };
 
-    const int32_t mask_matrix[4][4] = {
+    const int32_t mask_matrix_4x4[4][4] = {
         {1, 1, 2, 2},
         {1, 2, 1, 2},
         {2, 1, 2, 1},
         {2, 2, 1, 1}
+    };
+
+    const int32_t symbol_matrix_2x2[2][2] = {
+        {0, 1},
+        {1, 0}
+    };
+
+    const int32_t mask_matrix_2x2[2][2] = {
+        {1, 2},
+        {2, 1}
     };
 
     const std::vector<EntityID> card_ids = Query::find_all_with<CCard>();
@@ -85,8 +95,10 @@ void CCardBoardSystem::on_play_start() {
         auto& card = Query::get<CCard>(id);
         const int row = card.row;
         const int col = card.column;
-        if (row < 4 && col < 4) {
-            card.symbol_id = symbol_matrix[row][col];
+        if (rows == 2 && columns == 2 && row < 2 && col < 2) {
+            card.symbol_id = symbol_matrix_2x2[row][col];
+        } else if (row < 4 && col < 4) {
+            card.symbol_id = symbol_matrix_4x4[row][col];
         } else {
             card.symbol_id = 0;
         }
@@ -111,11 +123,21 @@ void CCardBoardSystem::on_play_update() {
     m_reveal_timer += get_frame_time();
 
 	if (m_reveal_timer >= (config.initial_reveal_duration + config.reveal_hold_after_timer)) {
-		const int32_t mask_matrix[4][4] = {
+		const auto board_opt = Query::try_find_first<GCardBoardConfig>();
+		const GCardBoardConfig board = board_opt ? board_opt->get() : GCardBoardConfig{};
+		const int32_t rows = board.rows;
+		const int32_t columns = board.columns;
+
+		const int32_t mask_matrix_4x4[4][4] = {
 			{1, 1, 2, 2},
 			{1, 2, 1, 2},
 			{2, 1, 2, 1},
 			{2, 2, 1, 1}
+		};
+
+		const int32_t mask_matrix_2x2[2][2] = {
+			{1, 2},
+			{2, 1}
 		};
 
 		const std::vector<EntityID> card_ids = Query::find_all_with<CCard>();
@@ -123,8 +145,11 @@ void CCardBoardSystem::on_play_update() {
 			auto& card = Query::get<CCard>(id);
 			const int row = card.row;
 			const int col = card.column;
-			if (row < 4 && col < 4) {
-				const int mask_val = mask_matrix[row][col];
+			if (rows == 2 && columns == 2 && row < 2 && col < 2) {
+				const int mask_val = mask_matrix_2x2[row][col];
+				card.e_mask_status = static_cast<CardMaskStatus>(mask_val);
+			} else if (row < 4 && col < 4) {
+				const int mask_val = mask_matrix_4x4[row][col];
 				card.e_mask_status = static_cast<CardMaskStatus>(mask_val);
 			} else {
 				card.e_mask_status = static_cast<CardMaskStatus>(config.mask_type);

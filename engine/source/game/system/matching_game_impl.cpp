@@ -81,6 +81,7 @@ void GMatchingGame::on_play_start() {
 	m_game_over_timer = 0.0F;
 	m_game_over_fade = 0.0F;
 	m_game_over_reason = "";
+	m_next_level_requested = false;
 	m_current_streak = 0;
 	m_current_multiplier = 1.0F;
 	const auto score_opt = Query::try_find_first<GScoreState>();
@@ -94,8 +95,18 @@ void GMatchingGame::on_play_update() {
 	if (m_game_over) {
 		m_game_over_timer += get_frame_time();
 		m_game_over_fade += get_frame_time();
+		const auto score_opt = Query::try_find_first<GScoreState>();
+		const std::string next_level = score_opt ? score_opt->get().next_level : "";
+		if (!m_next_level_requested && m_game_over_win && !next_level.empty() && m_game_over_timer > 2.5F) {
+			Zeytin::get().request_level_load(next_level);
+			m_next_level_requested = true;
+		}
 		if (m_game_over_timer > 2.5F && (is_key_pressed(KEY_R) || is_mouse_button_pressed(0))) {
-			Zeytin::get().reload_scene();
+			if (m_game_over_win && !next_level.empty()) {
+				Zeytin::get().request_level_load(next_level);
+			} else {
+				Zeytin::get().reload_scene();
+			}
 		}
 		draw_game_over_overlay();
 		return;

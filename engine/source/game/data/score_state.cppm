@@ -1,6 +1,7 @@
 module;
 
 #include "preparser.h"
+#include <string>
 
 export module zeytin.game.score_state;
 import zeytin.component;
@@ -18,4 +19,7 @@ export struct GScoreState final : public DataComponent
 
     PROPERTY(GROUP="Progression")
     int level_index = 1;
+
+    PROPERTY(GROUP="Progression")
+    std::string next_level;
 };
