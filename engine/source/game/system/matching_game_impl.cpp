@@ -600,6 +600,8 @@ void GMatchingGame::draw_score_ui() {
 	const Color panel_color = make_color(18, 18, 22, 210);
 	const Color text_color = make_color(230, 230, 230, 255);
 	const Color accent_color = make_color(255, 210, 120, 255);
+	const Color score_color = make_color(90, 170, 255, 255);
+	const Color target_color = make_color(235, 90, 90, 255);
 
 	const float base_width = VIRTUAL_WIDTH > 0.0F ? VIRTUAL_WIDTH : static_cast<float>(get_screen_width());
 	const float base_height = VIRTUAL_HEIGHT > 0.0F ? VIRTUAL_HEIGHT : static_cast<float>(get_screen_height());
@@ -672,11 +674,22 @@ void GMatchingGame::draw_score_ui() {
 		DrawText(value.c_str(), static_cast<int>(draw_x), static_cast<int>(draw_y), value_size, value_color);
 	};
 
-	draw_cell(0, "Score", std::to_string(score.current_points), text_color);
-	draw_cell(1, "Target", std::to_string(score.target_points), text_color);
+	draw_cell(0, "Score", std::to_string(score.current_points), score_color);
+	draw_cell(1, "Target", std::to_string(score.target_points), target_color);
 	draw_cell(2, "Mult", "x" + std::to_string(score.multiplier), accent_color);
 	draw_cell(3, "Pairs", std::to_string(m_found_pairs.size()), text_color);
 	draw_cell(4, "Actions", std::to_string(m_remaining_actions), text_color);
+
+	const float bar_x = x + padding;
+	const float bar_y = y + panel_height - padding - 10.0F;
+	const float bar_w = width - padding * 2.0F;
+	const float bar_h = 6.0F;
+	const float progress = score.target_points > 0
+		? std::min(1.0F, static_cast<float>(score.current_points) / static_cast<float>(score.target_points))
+		: 0.0F;
+	DrawRectangleRec(Rectangle{.x=bar_x, .y=bar_y, .width=bar_w, .height=bar_h}, make_color(60, 60, 70, 255));
+	DrawRectangleRec(Rectangle{.x=bar_x, .y=bar_y, .width=bar_w * progress, .height=bar_h}, score_color);
+	DrawRectangleLinesEx(Rectangle{.x=bar_x, .y=bar_y, .width=bar_w, .height=bar_h}, 1.0F, make_color(255, 255, 255, 40));
 }
 
 void GMatchingGame::draw_game_over_overlay() {
