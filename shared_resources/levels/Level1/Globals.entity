@@ -23,8 +23,8 @@
         {
             "type": "GCardBoardConfig",
             "value": {
-                "rows": 4,
-                "columns": 3,
+                "rows": 2,
+                "columns": 2,
                 "canvas_x": 150.0,
                 "canvas_y": 110.0,
                 "canvas_width": 1700.0,
@@ -40,10 +40,10 @@
             "type": "GScoreState",
             "value": {
                 "current_points": 0,
-                "target_points": 80,
+                "target_points": 30,
                 "multiplier": 1.0,
-                "level_index": 2,
-                "next_level": "TestLevel",
+                "level_index": 1,
+                "next_level": "Level2",
                 "entity_id": 7761662378699493710
             }
         }

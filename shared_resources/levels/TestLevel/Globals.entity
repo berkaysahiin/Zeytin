@@ -33,8 +33,7 @@
                 "canvas_centered": false,
                 "draw_canvas_outline": false,
                 "draw_cell_outline": false,
-                "entity_id": 7761662378699493710,
-                "level_id": "level_2"
+                "entity_id": 7761662378699493710
             }
         },
         {
@@ -43,7 +42,7 @@
                 "current_points": 0,
                 "target_points": 120,
                 "multiplier": 1.0,
-                "level_index": 1,
+                "level_index": 3,
                 "next_level": "",
                 "entity_id": 7761662378699493710
             }
