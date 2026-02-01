@@ -130,6 +130,20 @@ float get_mouse_wheel_move() {
 void set_mouse_position(int x, int y) { SetMousePosition(x, y); }
 void set_mouse_cursor(int cursor) { SetMouseCursor(cursor); }
 
+void init_audio_device() { InitAudioDevice(); }
+void close_audio_device() { CloseAudioDevice(); }
+Sound load_sound(const char* fileName) { return LoadSound(fileName); }
+void unload_sound(Sound sound) { UnloadSound(sound); }
+void play_sound(Sound sound) { PlaySound(sound); }
+void set_sound_volume(Sound sound, float volume) { SetSoundVolume(sound, volume); }
+
+Music load_music_stream(const char* fileName) { return LoadMusicStream(fileName); }
+void unload_music_stream(Music music) { UnloadMusicStream(music); }
+void play_music_stream(Music music) { PlayMusicStream(music); }
+void stop_music_stream(Music music) { StopMusicStream(music); }
+void update_music_stream(Music music) { UpdateMusicStream(music); }
+void set_music_volume(Music music, float volume) { SetMusicVolume(music, volume); }
+
 void begin_drawing() {
 #ifdef EDITOR_MODE
     // Update shared input state at start of each frame

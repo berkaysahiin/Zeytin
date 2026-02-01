@@ -50,6 +50,20 @@ export float get_mouse_wheel_move();
 export void set_mouse_position(int x, int y);
 export void set_mouse_cursor(int cursor);
 
+export void init_audio_device();
+export void close_audio_device();
+export Sound load_sound(const char* fileName);
+export void unload_sound(Sound sound);
+export void play_sound(Sound sound);
+export void set_sound_volume(Sound sound, float volume);
+
+export Music load_music_stream(const char* fileName);
+export void unload_music_stream(Music music);
+export void play_music_stream(Music music);
+export void stop_music_stream(Music music);
+export void update_music_stream(Music music);
+export void set_music_volume(Music music, float volume);
+
 export void begin_drawing();
 export void end_drawing();
 export void begin_mode2d(Camera2D camera);

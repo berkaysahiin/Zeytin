@@ -97,3 +97,139 @@ void ResourceCache<Texture2D>::clear() {
     m_cache.clear();
     m_last_modified.clear();
 }
+
+template<>
+Sound* ResourceCache<Sound>::get_ptr(const std::string& path) {
+    if (path.empty()) {
+        return nullptr;
+    }
+
+    auto it = m_cache.find(path);
+    if (it != m_cache.end()) {
+        return &it->second;
+    }
+
+    std::filesystem::path full_path = ResourceManager::get().get_asset_path(path);
+    if (!std::filesystem::exists(full_path)) {
+        return nullptr;
+    }
+
+    Sound sound = LoadSound(full_path.c_str());
+    if (sound.frameCount == 0) {
+        return nullptr;
+    }
+
+    auto result = m_cache.emplace(path, sound).first;
+    m_last_modified[path] = std::filesystem::last_write_time(full_path);
+    return &result->second;
+}
+
+template<>
+void ResourceCache<Sound>::reload(const std::string& path) {
+    auto it = m_cache.find(path);
+    if (it == m_cache.end()) {
+        return;
+    }
+
+    UnloadSound(it->second);
+    m_cache.erase(it);
+    m_last_modified.erase(path);
+
+    get_ptr(path);
+}
+
+template<>
+void ResourceCache<Sound>::check_hot_reload() {
+    for (auto& [path, sound] : m_cache) {
+        std::filesystem::path full_path = ResourceManager::get().get_asset_path(path);
+        if (!std::filesystem::exists(full_path)) {
+            continue;
+        }
+
+        auto current_time = std::filesystem::last_write_time(full_path);
+        auto last_time = m_last_modified[path];
+
+        if (current_time != last_time) {
+            UnloadSound(sound);
+            sound = LoadSound(full_path.c_str());
+            m_last_modified[path] = current_time;
+        }
+    }
+}
+
+template<>
+void ResourceCache<Sound>::clear() {
+    for (auto& [path, sound] : m_cache) {
+        UnloadSound(sound);
+    }
+    m_cache.clear();
+    m_last_modified.clear();
+}
+
+template<>
+Music* ResourceCache<Music>::get_ptr(const std::string& path) {
+    if (path.empty()) {
+        return nullptr;
+    }
+
+    auto it = m_cache.find(path);
+    if (it != m_cache.end()) {
+        return &it->second;
+    }
+
+    std::filesystem::path full_path = ResourceManager::get().get_asset_path(path);
+    if (!std::filesystem::exists(full_path)) {
+        return nullptr;
+    }
+
+    Music music = LoadMusicStream(full_path.c_str());
+    if (music.stream.buffer == nullptr) {
+        return nullptr;
+    }
+
+    auto result = m_cache.emplace(path, music).first;
+    m_last_modified[path] = std::filesystem::last_write_time(full_path);
+    return &result->second;
+}
+
+template<>
+void ResourceCache<Music>::reload(const std::string& path) {
+    auto it = m_cache.find(path);
+    if (it == m_cache.end()) {
+        return;
+    }
+
+    UnloadMusicStream(it->second);
+    m_cache.erase(it);
+    m_last_modified.erase(path);
+
+    get_ptr(path);
+}
+
+template<>
+void ResourceCache<Music>::check_hot_reload() {
+    for (auto& [path, music] : m_cache) {
+        std::filesystem::path full_path = ResourceManager::get().get_asset_path(path);
+        if (!std::filesystem::exists(full_path)) {
+            continue;
+        }
+
+        auto current_time = std::filesystem::last_write_time(full_path);
+        auto last_time = m_last_modified[path];
+
+        if (current_time != last_time) {
+            UnloadMusicStream(music);
+            music = LoadMusicStream(full_path.c_str());
+            m_last_modified[path] = current_time;
+        }
+    }
+}
+
+template<>
+void ResourceCache<Music>::clear() {
+    for (auto& [path, music] : m_cache) {
+        UnloadMusicStream(music);
+    }
+    m_cache.clear();
+    m_last_modified.clear();
+}

@@ -54,6 +54,7 @@ void Application::init_window() {
     InitWindow(window_width, window_height, window_name.c_str());
 #endif
 
+    init_audio_device();
     set_target_fps(144);
     set_exit_key(0);
 }
