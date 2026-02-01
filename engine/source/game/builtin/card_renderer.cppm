@@ -30,6 +30,15 @@ export struct CCardRenderer final : public Component
     PROPERTY(GROUP="Symbol Textures")
     std::string symbol_4_path = "symbol_4.png";
 
+    PROPERTY(GROUP="Symbol Textures")
+    std::string symbol_5_path = "symbol_5.png";
+
+    PROPERTY(GROUP="Symbol Textures")
+    std::string symbol_6_path = "symbol_6.png";
+
+    PROPERTY(GROUP="Symbol Textures")
+    std::string symbol_7_path = "symbol_7.png";
+
     void on_update() override;
 
     CardMaskStatus m_last_mask_status = CardMaskStatus::NO_MASK;

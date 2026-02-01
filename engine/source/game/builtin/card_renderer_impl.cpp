@@ -22,6 +22,9 @@ namespace {
             case 2: return renderer.symbol_2_path;
             case 3: return renderer.symbol_3_path;
             case 4: return renderer.symbol_4_path;
+            case 5: return renderer.symbol_5_path;
+            case 6: return renderer.symbol_6_path;
+            case 7: return renderer.symbol_7_path;
             default: return renderer.symbol_0_path;
         }
     }
