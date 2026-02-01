@@ -2,6 +2,7 @@ module;
 
 #include "preparser.h"
 #include "raylib.h"
+#include <string>
 #include <set>
 
 export module zeytin.game.matching_game;
@@ -26,6 +27,10 @@ private:
 	std::set<int> m_found_pairs;
 	bool m_game_over = false;
 	int m_matched_pairs_count = 0;
+	bool m_game_over_win = false;
+	float m_game_over_timer = 0.0F;
+	float m_game_over_fade = 0.0F;
+	std::string m_game_over_reason = "";
 
 	bool handle_mouse_click();
 	void process_card_selection(EntityID id, CCard& card);

@@ -32,6 +32,42 @@ namespace {
 		};
 	}
 
+	void draw_corner_flames(float strength) {
+		const float base_width = VIRTUAL_WIDTH > 0.0F ? VIRTUAL_WIDTH : static_cast<float>(get_screen_width());
+		const float base_height = VIRTUAL_HEIGHT > 0.0F ? VIRTUAL_HEIGHT : static_cast<float>(get_screen_height());
+		const float size = 120.0F + strength * 80.0F;
+		const int alpha = static_cast<int>(200.0F * strength);
+		const Color flame = make_color(255, 120, 40, alpha);
+		const Color flame_mid = make_color(255, 170, 80, static_cast<int>(alpha * 0.7F));
+		const Color flame_low = make_color(255, 220, 140, static_cast<int>(alpha * 0.45F));
+
+		auto draw_corner = [&](float x, float y, float dx, float dy) {
+			DrawTriangle(
+				Vector2{.x=x, .y=y},
+				Vector2{.x=x + dx * size, .y=y},
+				Vector2{.x=x, .y=y + dy * size},
+				flame
+			);
+			DrawTriangle(
+				Vector2{.x=x, .y=y},
+				Vector2{.x=x + dx * (size * 0.7F), .y=y},
+				Vector2{.x=x, .y=y + dy * (size * 0.7F)},
+				flame_mid
+			);
+			DrawTriangle(
+				Vector2{.x=x, .y=y},
+				Vector2{.x=x + dx * (size * 0.45F), .y=y},
+				Vector2{.x=x, .y=y + dy * (size * 0.45F)},
+				flame_low
+			);
+		};
+
+		draw_corner(0.0F, 0.0F, 1.0F, 1.0F);
+		draw_corner(base_width, 0.0F, -1.0F, 1.0F);
+		draw_corner(0.0F, base_height, 1.0F, -1.0F);
+		draw_corner(base_width, base_height, -1.0F, -1.0F);
+	}
+
 }
 
 void GMatchingGame::on_play_start() {
@@ -41,6 +77,10 @@ void GMatchingGame::on_play_start() {
 	m_found_pairs.clear();
 	m_game_over = false;
 	m_matched_pairs_count = 0;
+	m_game_over_win = false;
+	m_game_over_timer = 0.0F;
+	m_game_over_fade = 0.0F;
+	m_game_over_reason = "";
 	m_current_streak = 0;
 	m_current_multiplier = 1.0F;
 	const auto score_opt = Query::try_find_first<GScoreState>();
@@ -52,6 +92,11 @@ void GMatchingGame::on_play_start() {
 
 void GMatchingGame::on_play_update() {
 	if (m_game_over) {
+		m_game_over_timer += get_frame_time();
+		m_game_over_fade += get_frame_time();
+		if (m_game_over_timer > 2.5F && (is_key_pressed(KEY_R) || is_mouse_button_pressed(0))) {
+			Zeytin::get().reload_scene();
+		}
 		draw_game_over_overlay();
 		return;
 	}
@@ -78,6 +123,17 @@ void GMatchingGame::on_play_update() {
 	draw_mismatch_highlight();
 	draw_move_highlight();
 	draw_invalid_selection_highlight();
+	if (m_multiplier_fx_active) {
+		const auto ui_opt = Query::try_find_first<GGameUIConfig>();
+		const float duration = ui_opt ? ui_opt->get().multiplier_fx_duration : 0.3F;
+		const float decay = duration > 0.0F ? (1.0F - (m_multiplier_fx_timer / duration)) : 0.0F;
+		float strength = decay;
+		if (m_current_multiplier > 1.0F) {
+			const float mult_strength = (m_current_multiplier - 1.0F) / 4.0F;
+			strength = decay * (mult_strength > 1.0F ? 1.0F : mult_strength);
+		}
+		draw_corner_flames(strength);
+	}
 	draw_match_highlight();
 
 	if (m_mismatch_first != 0 || m_mismatch_prev_first != 0) {
@@ -316,9 +372,17 @@ void GMatchingGame::check_game_state() {
 
 	if (all_found) {
 		m_game_over = true;
+		m_game_over_win = true;
+		m_game_over_timer = 0.0F;
+		m_game_over_fade = 0.0F;
+		m_game_over_reason = "All pairs matched";
 		log_info("YOU WIN! All pairs found in {} actions", allowed_actions - m_remaining_actions);
 	} else if (m_remaining_actions <= 0) {
 		m_game_over = true;
+		m_game_over_win = false;
+		m_game_over_timer = 0.0F;
+		m_game_over_fade = 0.0F;
+		m_game_over_reason = "Out of actions";
 		log_info("GAME OVER. Found {}/{} pairs", m_matched_pairs_count, total_pairs);
 	}
 }
@@ -693,39 +757,48 @@ void GMatchingGame::draw_score_ui() {
 }
 
 void GMatchingGame::draw_game_over_overlay() {
-	const int font_size = 48;
-	const float screen_width = static_cast<float>(get_screen_width());
-	const float screen_height = static_cast<float>(get_screen_height());
+	const float time = m_game_over_fade;
+	const float pulse = 0.9F + 0.1F * sinf(time * 3.0F);
+	const int font_size = static_cast<int>(56.0F * pulse);
+	const float screen_width = VIRTUAL_WIDTH > 0.0F ? VIRTUAL_WIDTH : static_cast<float>(get_screen_width());
+	const float screen_height = VIRTUAL_HEIGHT > 0.0F ? VIRTUAL_HEIGHT : static_cast<float>(get_screen_height());
 
 	const int total_unique_symbols = 5;
 	const bool all_found = m_found_pairs.size() == total_unique_symbols;
 
-	const std::string message = all_found ? "YOU WIN!" : "GAME OVER";
-	const Color text_color = all_found ? make_color(100, 200, 100, 255) : make_color(200, 100, 100, 255);
+	const std::string message = m_game_over_win ? "LEVEL COMPLETE!" : "GAME OVER";
+	const Color text_color = m_game_over_win ? make_color(120, 220, 140, 255) : make_color(230, 90, 90, 255);
 
 	const int text_width = MeasureText(message.c_str(), font_size);
 	const float x = (screen_width - text_width) * 0.5F;
-	const float y = screen_height * 0.5F - font_size * 2.0F;
+	const float y = screen_height * 0.35F;
 
-	const Color bg_color = make_color(30, 30, 30, 200);
-	DrawRectangle(0, 0, screen_width, screen_height, bg_color);
+	const float bg_alpha = std::min(m_game_over_fade / 0.5F, 1.0F);
+	DrawRectangle(0, 0, static_cast<int>(screen_width), static_cast<int>(screen_height), make_color(10, 10, 12, static_cast<int>(200.0F * bg_alpha)));
 
-	DrawText(message.c_str(), static_cast<int>(x), static_cast<int>(y), font_size, text_color);
+	if (m_game_over_fade >= 0.3F) {
+		const float text_alpha = std::min((m_game_over_fade - 0.3F) / 0.5F, 1.0F);
+		DrawText(message.c_str(), static_cast<int>(x + 4), static_cast<int>(y + 4), font_size, make_color(0, 0, 0, static_cast<int>(180.0F * text_alpha)));
+		DrawText(message.c_str(), static_cast<int>(x), static_cast<int>(y), font_size, make_color(text_color.r, text_color.g, text_color.b, static_cast<int>(255.0F * text_alpha)));
 
-	const int sub_font_size = 24;
-	const std::string pairs_text = "Pairs: " + std::to_string(m_found_pairs.size()) + "/" + std::to_string(total_unique_symbols);
-	const int pairs_width = MeasureText(pairs_text.c_str(), sub_font_size);
-	const float pairs_x = (screen_width - pairs_width) * 0.5F;
-	const float pairs_y = y + font_size + 20.0F;
+		if (!m_game_over_reason.empty() && m_game_over_fade >= 0.7F) {
+			const float reason_alpha = std::min((m_game_over_fade - 0.7F) / 0.5F, 1.0F);
+			const int reason_size = 24;
+			const int reason_width = MeasureText(m_game_over_reason.c_str(), reason_size);
+			const float reason_x = (screen_width - reason_width) * 0.5F;
+			const float reason_y = screen_height * 0.5F;
+			DrawText(m_game_over_reason.c_str(), static_cast<int>(reason_x), static_cast<int>(reason_y), reason_size, make_color(220, 180, 120, static_cast<int>(255.0F * reason_alpha)));
+		}
 
-	const Color sub_color = make_color(150, 150, 150, 255);
-	DrawText(pairs_text.c_str(), static_cast<int>(pairs_x), static_cast<int>(pairs_y), sub_font_size, sub_color);
-
-	const int restart_font_size = 20;
-	const std::string restart_text = "Press R to restart";
-	const int restart_width = MeasureText(restart_text.c_str(), restart_font_size);
-	const float restart_x = (screen_width - restart_width) * 0.5F;
-	const float restart_y = pairs_y + sub_font_size + 30.0F;
-
-	DrawText(restart_text.c_str(), static_cast<int>(restart_x), static_cast<int>(restart_y), restart_font_size, make_color(100, 100, 100, 255));
+		if (m_game_over_fade >= 2.0F) {
+			const float prompt_alpha = std::min((m_game_over_fade - 2.0F) / 0.5F, 1.0F);
+			const int prompt_size = 20;
+			const char* prompt_text = "Press R or click to restart";
+			const int prompt_width = MeasureText(prompt_text, prompt_size);
+			const float prompt_x = (screen_width - prompt_width) * 0.5F;
+			const float prompt_y = screen_height * 0.7F;
+			const float blink = (sinf(m_game_over_fade * 5.0F) * 0.5F + 0.5F) * prompt_alpha;
+			DrawText(prompt_text, static_cast<int>(prompt_x), static_cast<int>(prompt_y), prompt_size, make_color(230, 230, 230, static_cast<int>(255.0F * blink)));
+		}
+	}
 }
