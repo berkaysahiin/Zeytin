@@ -7,6 +7,7 @@ module;
 
 module zeytin.windows.level;
 import zeytin.resource;
+import zeytin.entity.list;
 
 void LevelWindow::render() {
     if (!m_entity_list) {
@@ -15,10 +16,14 @@ void LevelWindow::render() {
     }
 
     const Level& current = m_entity_list->get_current_level();
+    const bool is_play_mode = m_entity_list->is_play_mode();
     ImGui::TextColored(ImVec4(0.5f, 0.8f, 1.0f, 1.0f), "Level Manager");
     ImGui::Separator();
     
     ImGui::Text("Current Level: %s", current.name.c_str());
+    if (is_play_mode) {
+        ImGui::TextColored(ImVec4(1.0f, 0.75f, 0.2f, 1.0f), "Exit play mode to load or export levels");
+    }
     ImGui::Separator();
     
     auto levels = m_entity_list->get_available_levels();
@@ -58,13 +63,27 @@ void LevelWindow::render() {
                 ImGui::Button("Loaded");
                 ImGui::EndDisabled();
             } else {
-                if (ImGui::Button("Load")) {
+                if (is_play_mode) {
+                    ImGui::BeginDisabled();
+                    ImGui::Button("Load");
+                    ImGui::EndDisabled();
+                    if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+                        ImGui::SetTooltip("Exit play mode to load levels");
+                    }
+                } else if (ImGui::Button("Load")) {
                     m_entity_list->load_level(level);
                 }
             }
             
             ImGui::TableNextColumn();
-            if (ImGui::Button("Export")) {
+            if (is_play_mode) {
+                ImGui::BeginDisabled();
+                ImGui::Button("Export");
+                ImGui::EndDisabled();
+                if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)) {
+                    ImGui::SetTooltip("Exit play mode to export levels");
+                }
+            } else if (ImGui::Button("Export")) {
                 export_level_as_scene(level);
             }
             
@@ -76,6 +95,9 @@ void LevelWindow::render() {
     
     ImGui::Separator();
     ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Create New Level:");
+    if (is_play_mode) {
+        ImGui::BeginDisabled();
+    }
     ImGui::InputTextWithHint("##NewLevel", "Level name", m_new_level_name, sizeof(m_new_level_name));
     
     if (ImGui::Button("Create Level", ImVec2(150, 30))) {
@@ -86,6 +108,9 @@ void LevelWindow::render() {
             m_new_level_name[0] = '\0';
             //log_info() << "Created new level: " << m_new_level_name << std::endl;
         }
+    }
+    if (is_play_mode) {
+        ImGui::EndDisabled();
     }
     
     if (m_show_export_success) {
@@ -128,6 +153,12 @@ void LevelWindow::export_level_as_scene(const Level& level) {
     
     Level previous_level = m_entity_list->get_current_level();
     m_entity_list->load_level(level);
+
+    if (m_entity_list->get_current_level().name != level.name) {
+        m_export_message = "Failed to load level for export. Exit play mode and try again.";
+        m_show_export_error = true;
+        return;
+    }
     
     std::string scene_data = m_entity_list->as_string();
     

@@ -26,6 +26,7 @@ public:
     void load_level(const Level& level);
     std::vector<Level> get_available_levels() const;
     const Level& get_current_level() const { return m_current_level; }
+    bool is_play_mode() const { return m_is_play_mode; }
 
     inline std::vector<EntityDocument>& get_entities() { return m_entities; }
     std::string as_string() const;

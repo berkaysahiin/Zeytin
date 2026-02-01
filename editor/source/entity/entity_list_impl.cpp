@@ -400,6 +400,11 @@ void EntityList::load_level(const Level& level) {
         return;
     }
 
+    if (m_is_play_mode) {
+        log_warning("Cannot load level '{}' while in play mode", level.name);
+        return;
+    }
+
 	// Notify all subscribers that the current level is about to be unloaded
     for (auto& callback : m_level_unloading_callbacks) {
         callback(m_current_level);  
