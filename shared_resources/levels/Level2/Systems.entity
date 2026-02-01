@@ -12,7 +12,7 @@
         {
             "type": "GMatchingGame",
             "value": {
-                "allowed_actions": 10,
+                "allowed_actions": 15,
                 "entity_id": 9554886114356367157
             }
         },

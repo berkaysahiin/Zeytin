@@ -783,14 +783,27 @@ void GMatchingGame::draw_game_over_overlay() {
 	const int text_width = MeasureText(message.c_str(), font_size);
 	const float x = (screen_width - text_width) * 0.5F;
 	const float y = screen_height * 0.35F;
+	const Camera2D& camera = Zeytin::get().get_camera();
+	const Vector2 world_origin = get_screen_to_world2d(Vector2{.x=0.0F, .y=0.0F}, camera);
+	const Vector2 world_max = get_screen_to_world2d(Vector2{.x=screen_width, .y=screen_height}, camera);
+	const float world_width = world_max.x - world_origin.x;
+	const float world_height = world_max.y - world_origin.y;
 
 	const float bg_alpha = std::min(m_game_over_fade / 0.5F, 1.0F);
-	DrawRectangle(0, 0, static_cast<int>(screen_width), static_cast<int>(screen_height), make_color(10, 10, 12, static_cast<int>(200.0F * bg_alpha)));
+	DrawRectangle(
+		static_cast<int>(world_origin.x),
+		static_cast<int>(world_origin.y),
+		static_cast<int>(world_width),
+		static_cast<int>(world_height),
+		make_color(10, 10, 12, static_cast<int>(200.0F * bg_alpha))
+	);
 
 	if (m_game_over_fade >= 0.3F) {
 		const float text_alpha = std::min((m_game_over_fade - 0.3F) / 0.5F, 1.0F);
-		DrawText(message.c_str(), static_cast<int>(x + 4), static_cast<int>(y + 4), font_size, make_color(0, 0, 0, static_cast<int>(180.0F * text_alpha)));
-		DrawText(message.c_str(), static_cast<int>(x), static_cast<int>(y), font_size, make_color(text_color.r, text_color.g, text_color.b, static_cast<int>(255.0F * text_alpha)));
+		const Vector2 shadow_pos = get_screen_to_world2d(Vector2{.x=x + 4.0F, .y=y + 4.0F}, camera);
+		const Vector2 text_pos = get_screen_to_world2d(Vector2{.x=x, .y=y}, camera);
+		DrawText(message.c_str(), static_cast<int>(shadow_pos.x), static_cast<int>(shadow_pos.y), font_size, make_color(0, 0, 0, static_cast<int>(180.0F * text_alpha)));
+		DrawText(message.c_str(), static_cast<int>(text_pos.x), static_cast<int>(text_pos.y), font_size, make_color(text_color.r, text_color.g, text_color.b, static_cast<int>(255.0F * text_alpha)));
 
 		if (!m_game_over_reason.empty() && m_game_over_fade >= 0.7F) {
 			const float reason_alpha = std::min((m_game_over_fade - 0.7F) / 0.5F, 1.0F);
@@ -798,7 +811,8 @@ void GMatchingGame::draw_game_over_overlay() {
 			const int reason_width = MeasureText(m_game_over_reason.c_str(), reason_size);
 			const float reason_x = (screen_width - reason_width) * 0.5F;
 			const float reason_y = screen_height * 0.5F;
-			DrawText(m_game_over_reason.c_str(), static_cast<int>(reason_x), static_cast<int>(reason_y), reason_size, make_color(220, 180, 120, static_cast<int>(255.0F * reason_alpha)));
+			const Vector2 reason_pos = get_screen_to_world2d(Vector2{.x=reason_x, .y=reason_y}, camera);
+			DrawText(m_game_over_reason.c_str(), static_cast<int>(reason_pos.x), static_cast<int>(reason_pos.y), reason_size, make_color(220, 180, 120, static_cast<int>(255.0F * reason_alpha)));
 		}
 
 		if (m_game_over_fade >= 2.0F) {
@@ -809,7 +823,8 @@ void GMatchingGame::draw_game_over_overlay() {
 			const float prompt_x = (screen_width - prompt_width) * 0.5F;
 			const float prompt_y = screen_height * 0.7F;
 			const float blink = (sinf(m_game_over_fade * 5.0F) * 0.5F + 0.5F) * prompt_alpha;
-			DrawText(prompt_text, static_cast<int>(prompt_x), static_cast<int>(prompt_y), prompt_size, make_color(230, 230, 230, static_cast<int>(255.0F * blink)));
+			const Vector2 prompt_pos = get_screen_to_world2d(Vector2{.x=prompt_x, .y=prompt_y}, camera);
+			DrawText(prompt_text, static_cast<int>(prompt_pos.x), static_cast<int>(prompt_pos.y), prompt_size, make_color(230, 230, 230, static_cast<int>(255.0F * blink)));
 		}
 	}
 }
