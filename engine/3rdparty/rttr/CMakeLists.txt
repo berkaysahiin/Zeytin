@@ -25,210 +25,67 @@
 #                                                                                  #
 ####################################################################################
 
-project(rttr LANGUAGES CXX)
+####################################################################################
+# Welcome to the CMake build system for RTTR( Run Time Type Reflection).           #
+# This is the main file where the general build environment is set-up and the      #
+# the build configuration options are initialized.                                 #
+####################################################################################
 
-message(STATUS "Scanning "  ${PROJECT_NAME} " module.")
-message(STATUS "===========================")
+cmake_minimum_required (VERSION 3.5)
 
-generateLibraryVersionVariables(${RTTR_VERSION_MAJOR} ${RTTR_VERSION_MINOR} ${RTTR_VERSION_PATCH}
-                                "RTTR" "Copyright (c) 2014 - 2018 Axel Menzel <info@rttr.org>" "MIT License")
+project ("rttr" LANGUAGES CXX)
 
-loadFolder("rttr" HPP_FILES SRC_FILES BUILD_INSTALLER)
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
 
+if (CMAKE_BUILD_TYPE STREQUAL "")
+  # CMake defaults to leaving CMAKE_BUILD_TYPE empty. This screws up
+  # differentiation between debug and release builds.
+  set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build, options are: None (CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel." FORCE)
+endif ()
+
+# our little cmake helper functions
+include(utility)
+
+# set up option variable for cmake
+option(BUILD_RTTR_DYNAMIC "Build the dynamic/shared version of RTTR library" ON)
+option(BUILD_UNIT_TESTS "Build the unit tests of RTTR" ON)
+option(BUILD_STATIC "Build RTTR as static library" OFF)
+option(BUILD_WITH_STATIC_RUNTIME_LIBS "Link against the static runtime libraries" OFF)
+option(BUILD_WITH_RTTI "Enable build with C++ runtime type information for compilation" ON)
+option(BUILD_BENCHMARKS "Enable this to build the benchmarks" OFF)
+option(BUILD_EXAMPLES "Enable this to build the examples" ON)
+option(BUILD_DOCUMENTATION "Enable this to build the documentation" OFF)
+option(BUILD_INSTALLER "Enable this to build the installer" OFF)
+option(BUILD_PACKAGE "Enable this to build the installer" OFF)
+option(USE_PCH "Use precompiled header files for compilation" OFF)
+option(CUSTOM_DOXYGEN_STYLE "Enable this option to use a custom doxygen style for HTML documentation; Otherwise the default will be used" ON)
+option(BUILD_WEBSITE_DOCU "Enable this option to create the special docu for the website" OFF)
+option(WARNINGS_AS_ERROR "Enable this option to treat warnings as error" OFF)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+add_definitions(-w) # Supress all warnigs.
+
+# one precompiled headers cannot be used for multiple ninja targets
+# thats why we have to disable this option, when BUILD_STATIC or
+# BUILD_WITH_STATIC_RUNTIME_LIBS is ON (every target will create the same PCH.pch file)
+# to get it working, we need the feature to enable different source properties
+# for different targets
 if (USE_PCH)
-    activate_precompiled_headers("detail/base/pch.h" SRC_FILES)
+  if (BUILD_STATIC OR BUILD_WITH_STATIC_RUNTIME_LIBS)
+    set(USE_PCH FALSE)
+  endif()
 endif()
 
-if (${BUILD_RTTR_DYNAMIC})
-    add_library(rttr_core SHARED ${UnityBuild} ${SRC_FILES} ${HPP_FILES})
-    add_library(RTTR::Core ALIAS rttr_core)
-    
-    target_compile_definitions(rttr_core PRIVATE RTTR_DLL_EXPORTS)
-    target_compile_definitions(rttr_core PUBLIC RTTR_DLL)
+include(config)
+include(3rd_party_libs)
 
-    
-
-    set_target_properties(rttr_core PROPERTIES
-                          VERSION ${RTTR_VERSION} SOVERSION ${RTTR_VERSION}
-                          EXPORT_NAME Core
-                          DEBUG_POSTFIX ${RTTR_DEBUG_POSTFIX}
-                          CXX_STANDARD ${MAX_CXX_STANDARD}
-                          CXX_VISIBILITY_PRESET hidden
-                          VISIBILITY_INLINES_HIDDEN 1)
-    
-    target_link_libraries(rttr_core PRIVATE ${CMAKE_DL_LIBS})
-                          
-                          
-    if(${CMAKE_VERSION} VERSION_GREATER "3.8.0") 
-        target_compile_features(rttr_core PUBLIC cxx_std_11) # at least c++11 is needed to compile RTTR
-    endif()
-                         
-    target_include_directories(rttr_core PUBLIC
-                               $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../>
-                               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../>
-                               $<INSTALL_INTERFACE:include>)
-
-    set_compiler_warnings(rttr_core)
-    
-    if (BUILD_INSTALLER)
-        install(TARGETS rttr_core EXPORT rttr_targets
-                RUNTIME       DESTINATION ${RTTR_RUNTIME_INSTALL_DIR}
-                LIBRARY       DESTINATION ${RTTR_LIBRARY_INSTALL_DIR}
-                ARCHIVE       DESTINATION ${RTTR_ARCHIVE_INSTALL_DIR}
-                FRAMEWORK     DESTINATION ${RTTR_FRAMEWORK_INSTALL_DIR})
-
-        # install also pdb file
-        install_pdb_files(rttr_core)
-    endif()
-
+if (BUILD_PACKAGE)
+    include(installer)
 endif()
 
-if (BUILD_STATIC)
-    add_library(rttr_core_lib STATIC ${UnityBuild} ${SRC_FILES} ${HPP_FILES})
-    add_library(RTTR::Core_Lib ALIAS rttr_core_lib)
-
-    
-
-    set_target_properties(rttr_core_lib PROPERTIES
-                          VERSION ${RTTR_VERSION} SOVERSION ${RTTR_VERSION}
-                          EXPORT_NAME Core_Lib
-                          CXX_STANDARD ${MAX_CXX_STANDARD}
-                          DEBUG_POSTFIX ${RTTR_DEBUG_POSTFIX})
-                          
-    target_link_libraries(rttr_core_lib PRIVATE ${CMAKE_DL_LIBS})
-    
-    if (MSVC)
-        set_target_properties(rttr_core_lib PROPERTIES OUTPUT_NAME librttr_core)
-    elseif (CMAKE_COMPILER_IS_GNUCXX)
-        set_target_properties(rttr_core_lib PROPERTIES OUTPUT_NAME rttr_core)
-    elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        set_target_properties(rttr_core_lib PROPERTIES OUTPUT_NAME rttr_core)
-    else()
-        message(SEND_ERROR "Do not know how to name the static library.")
-    endif()
-    
-    target_include_directories(rttr_core_lib PUBLIC
-                                $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../>
-                                $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../>
-                                $<INSTALL_INTERFACE:include>)
-    
-    if(${CMAKE_VERSION} VERSION_GREATER "3.8.0") 
-        target_compile_features(rttr_core_lib PUBLIC cxx_std_11) # at least c++11 is needed to compile RTTR
-    endif()
-    
-    set_compiler_warnings(rttr_core_lib)
-
-    if (BUILD_INSTALLER)
-        install(TARGETS rttr_core_lib EXPORT rttr_targets
-                RUNTIME       DESTINATION ${RTTR_RUNTIME_INSTALL_DIR}
-                LIBRARY       DESTINATION ${RTTR_LIBRARY_INSTALL_DIR}
-                ARCHIVE       DESTINATION ${RTTR_ARCHIVE_INSTALL_DIR}
-                FRAMEWORK     DESTINATION ${RTTR_FRAMEWORK_INSTALL_DIR})
-    endif()
+# here we add our source code
+add_subdirectory(src)
+# and the documentation
+if (BUILD_DOCUMENTATION)
+    add_subdirectory(doc)
 endif()
-
-if (BUILD_WITH_STATIC_RUNTIME_LIBS)
-    add_library(rttr_core_s SHARED ${UnityBuild} ${SRC_FILES} ${HPP_FILES})
-    add_library(RTTR::Core_STL ALIAS rttr_core_s)
-    
-    target_compile_definitions(rttr_core_s PRIVATE RTTR_DLL_EXPORTS)
-    target_compile_definitions(rttr_core_s PUBLIC RTTR_DLL)
-
-    target_include_directories(rttr_core_s PUBLIC
-                               $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../>
-                               $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../>
-                               $<INSTALL_INTERFACE:include>)
-
-    target_link_libraries(rttr_core_s PRIVATE ${CMAKE_DL_LIBS})
-                               
-    set_target_properties(rttr_core_s PROPERTIES
-                          VERSION ${RTTR_VERSION} SOVERSION ${RTTR_VERSION}
-                          EXPORT_NAME Core_STL
-                          CXX_STANDARD ${MAX_CXX_STANDARD}
-                          DEBUG_POSTFIX ${RTTR_DEBUG_POSTFIX}
-                          CXX_VISIBILITY_PRESET hidden
-                          VISIBILITY_INLINES_HIDDEN 1)
-
-    if(${CMAKE_VERSION} VERSION_GREATER "3.8.0") 
-        target_compile_features(rttr_core_s PUBLIC cxx_std_11) # at least c++11 is needed to compile RTTR
-    endif()
-    
-    set_compiler_warnings(rttr_core_s)
-
-    if (MSVC)
-        target_compile_options(rttr_core_s PUBLIC "/MT$<$<CONFIG:Debug>:d>")
-    elseif(CMAKE_COMPILER_IS_GNUCXX)
-        set_target_properties(rttr_core_s PROPERTIES LINK_FLAGS ${GNU_STATIC_LINKER_FLAGS})
-    elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        set_target_properties(rttr_core_s PROPERTIES LINK_FLAGS ${CLANG_STATIC_LINKER_FLAGS})
-    else()
-        message(SEND_ERROR "Do not know how to statically link against the standard library with this compiler.")
-    endif()
-
-    if (BUILD_INSTALLER)
-        install_pdb_files(rttr_core_s)
-        install(TARGETS rttr_core_s EXPORT rttr_targets
-                RUNTIME       DESTINATION ${RTTR_RUNTIME_INSTALL_DIR}
-                LIBRARY       DESTINATION ${RTTR_LIBRARY_INSTALL_DIR}
-                ARCHIVE       DESTINATION ${RTTR_ARCHIVE_INSTALL_DIR}
-                FRAMEWORK     DESTINATION ${RTTR_FRAMEWORK_INSTALL_DIR})
-    endif()
-    
-    if (BUILD_STATIC)
-        add_library(rttr_core_lib_s STATIC ${UnityBuild} ${SRC_FILES} ${HPP_FILES})
-        add_library(RTTR::Core_Lib_STL ALIAS rttr_core_lib_s)
-        
-        
-
-        target_include_directories(rttr_core_lib_s PUBLIC
-                                   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../>
-                                   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../>
-                                   $<INSTALL_INTERFACE:include>)
-
-        set_target_properties(rttr_core_lib_s PROPERTIES
-                              VERSION ${RTTR_VERSION} SOVERSION ${RTTR_VERSION}
-                              EXPORT_NAME Core_Lib_STL
-                              CXX_STANDARD ${MAX_CXX_STANDARD}
-                              DEBUG_POSTFIX ${RTTR_DEBUG_POSTFIX})
-                              
-        target_link_libraries(rttr_core_lib_s PRIVATE ${CMAKE_DL_LIBS})
-            
-        if(${CMAKE_VERSION} VERSION_GREATER "3.8.0") 
-            target_compile_features(rttr_core_lib_s PUBLIC cxx_std_11) # at least c++11 is needed to compile RTTR
-        endif()
-    
-        set_compiler_warnings(rttr_core_lib_s)
-
-        if (MSVC)
-            target_compile_options(rttr_core_lib_s PUBLIC "/MT$<$<CONFIG:Debug>:d>")
-            set_target_properties(rttr_core_lib PROPERTIES OUTPUT_NAME librttr_core_s)
-        elseif(CMAKE_COMPILER_IS_GNUCXX)
-            set_target_properties(rttr_core_lib_s PROPERTIES LINK_FLAGS ${GNU_STATIC_LINKER_FLAGS} OUTPUT_NAME rttr_core_s)
-        elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-            set_target_properties(rttr_core_lib_s PROPERTIES LINK_FLAGS ${CLANG_STATIC_LINKER_FLAGS} OUTPUT_NAME rttr_core_s)
-        else()
-            message(SEND_ERROR "Do not know how to statically link against the standard library with this compiler.")
-        endif()
-        
-        if (BUILD_INSTALLER)
-            install(TARGETS rttr_core_lib_s EXPORT rttr_targets
-                    RUNTIME       DESTINATION ${RTTR_RUNTIME_INSTALL_DIR}
-                    LIBRARY       DESTINATION ${RTTR_LIBRARY_INSTALL_DIR}
-                    ARCHIVE       DESTINATION ${RTTR_ARCHIVE_INSTALL_DIR}
-                    FRAMEWORK     DESTINATION ${RTTR_FRAMEWORK_INSTALL_DIR})
-        endif()
-
-    endif()
-endif()
-
-
-if(BUILD_INSTALLER)
-	install(EXPORT rttr_targets
-		DESTINATION ${RTTR_CMAKE_CONFIG_INSTALL_DIR}
-		NAMESPACE RTTR::
-		FILE rttr-config.cmake)
-endif()
-
-
-message(STATUS "Scanning " ${PROJECT_NAME} " module finished!")
-message(STATUS "")
