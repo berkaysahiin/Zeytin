@@ -6,7 +6,7 @@
             "value": {
                 "flip_duration": 0.20000000298023224,
                 "mismatch_delay": 0.6000000238418579,
-                "initial_reveal_duration": 5.0,
+                "initial_reveal_duration": 15.0,
                 "reveal_hold_after_timer": 0.5,
                 "mask_type": 0,
                 "entity_id": 7761662378699493710,
@@ -23,8 +23,8 @@
         {
             "type": "GCardBoardConfig",
             "value": {
-                "rows": 2,
-                "columns": 2,
+                "rows": 4,
+                "columns": 4,
                 "canvas_x": 150.0,
                 "canvas_y": 110.0,
                 "canvas_width": 1700.0,
@@ -40,10 +40,19 @@
             "type": "GScoreState",
             "value": {
                 "current_points": 0,
-                "target_points": 30,
+                "target_points": 120,
                 "multiplier": 1.0,
-                "level_index": 1,
-                "next_level": "Level2",
+                "level_index": 3,
+                "next_level": "",
+                "entity_id": 7761662378699493710
+            }
+        },
+        {
+            "type": "GAudioConfig",
+            "value": {
+                "bgm_path": "background_matrix.wav",
+                "bgm_volume": 0.5,
+                "bgm_loop": true,
                 "entity_id": 7761662378699493710
             }
         }
