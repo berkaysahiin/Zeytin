@@ -121,6 +121,43 @@ void CCardBoardSystem::on_play_start() {
         card.e_mask_status = CardMaskStatus::NO_MASK;
     }
 
+    std::array<int, 16> symbol_counts{};
+    bool has_odd = false;
+    for (const EntityID id : card_ids) {
+        const auto& card = Query::get<CCard>(id);
+        if (card.symbol_id >= 0 && card.symbol_id < static_cast<int>(symbol_counts.size())) {
+            symbol_counts[card.symbol_id] += 1;
+        }
+    }
+
+    for (size_t i = 0; i < symbol_counts.size(); ++i) {
+        if (symbol_counts[i] % 2 != 0) {
+            has_odd = true;
+            log_error("Symbol {} has odd count {} (unsolvable layout)", i, symbol_counts[i]);
+        }
+    }
+
+    if (has_odd) {
+        const int total_cards = rows * columns;
+        const int pair_count = total_cards / 2;
+        std::vector<int> pairs;
+        pairs.reserve(static_cast<size_t>(total_cards));
+        for (int i = 0; i < pair_count; ++i) {
+            pairs.push_back(i);
+            pairs.push_back(i);
+        }
+
+        int index = 0;
+        for (const EntityID id : card_ids) {
+            if (index >= total_cards) {
+                break;
+            }
+            auto& card = Query::get<CCard>(id);
+            card.symbol_id = pairs[static_cast<size_t>(index)];
+            index++;
+        }
+    }
+
     log_info("Assigned symbols from matrix to {} cards", card_ids.size());
 }
 
