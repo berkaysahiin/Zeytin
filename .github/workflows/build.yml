@@ -1,0 +1,66 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux-clang:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes \
+            binutils-dev \
+            clang-18 \
+            libasound2-dev \
+            libclang-18-dev \
+            libdwarf-dev \
+            libdw-dev \
+            libgl1-mesa-dev \
+            libglu1-mesa-dev \
+            libpulse-dev \
+            libx11-dev \
+            libxcursor-dev \
+            libxi-dev \
+            libxinerama-dev \
+            libxrandr-dev \
+            libzmq3-dev \
+            llvm-18-dev \
+            ninja-build
+          python3 -m pip install --user "cmake>=4.2,<4.3"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Report toolchain
+        run: |
+          cmake --version
+          ninja --version
+          clang++-18 --version
+
+      - name: Configure
+        run: |
+          cmake --preset debug \
+            -DCMAKE_C_COMPILER=clang-18 \
+            -DCMAKE_CXX_COMPILER=clang++-18 \
+            -DClang_DIR=/usr/lib/llvm-18/lib/cmake/clang \
+            -DLLVM_DIR=/usr/lib/llvm-18/lib/cmake/llvm
+
+      - name: Build
+        run: cmake --build --preset debug --parallel 2
+
+      - name: Test
+        run: ctest --preset debug
