@@ -9,6 +9,7 @@ module;
 #include <chrono>
 #include <thread>
 #include <queue>
+#include <mutex>
 
 module zeytin.engine.communication;
 import zeytin.engine.event;

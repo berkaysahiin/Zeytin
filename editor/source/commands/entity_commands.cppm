@@ -3,6 +3,7 @@ module;
 #include <string>
 #include <optional>
 #include <memory>
+#include <cstdint>
 
 export module zeytin.command.entity;
 import zeytin.command;

@@ -3,6 +3,7 @@ module;
 #include <string>
 #include <variant>
 #include <optional>
+#include <functional>
 
 export module zeytin.config;
 

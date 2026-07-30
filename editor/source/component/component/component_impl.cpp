@@ -1,6 +1,7 @@
 module;
 
 #include <string> // IWYU pragma: keep
+#include <functional>
 
 module zeytin.component;
 import zeytin.logger;

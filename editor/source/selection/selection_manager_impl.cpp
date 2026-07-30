@@ -4,6 +4,7 @@ module;
 #include <vector>
 #include <memory>
 #include <optional>
+#include <cstdint>
 
 module zeytin.selection;
 import zeytin.entity.registry;

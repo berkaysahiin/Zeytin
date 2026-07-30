@@ -4,6 +4,7 @@ module;
 #include <chrono>
 #include <thread>
 #include <queue>
+#include <mutex>
 
 #include "rapidjson/document.h"
 #include "zmq/zmq.hpp"

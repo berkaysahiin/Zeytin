@@ -5,6 +5,7 @@ module;
 #include <string>
 #include <vector>
 #include <cstddef>
+#include <cstdint>
 
 export module zeytin.property.tracker;
 
