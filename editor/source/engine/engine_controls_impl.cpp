@@ -303,11 +303,15 @@ void EngineControls::monitor_build() {
     log_info("Starting build process...");
     
     m_build_monitor_future = std::async(std::launch::async, [this]() {
-        std::string engine_path = ResourceManager::get().get_engine_path().string();
-        std::string build_script = engine_path + "/build_and_run.sh";
-        
-        std::string temp_output_file = engine_path + "/.build_output.log";
-        std::string build_command = "\"" + build_script + "\" > \"" + temp_output_file + "\" 2>&1";
+        const std::filesystem::path engine_path = ResourceManager::get().get_engine_path();
+        const std::filesystem::path project_path = engine_path.parent_path();
+        const std::filesystem::path runtime_path = project_path / "build/debug/engine/ZeytinEngine_weditor";
+        const std::string temp_output_file = (engine_path / ".build_output.log").string();
+        const std::string build_command =
+            "(cd \"" + project_path.string() +
+            "\" && cmake --preset debug && cmake --build --preset debug --target ZeytinEngine_weditor" +
+            " && (nohup \"" + runtime_path.string() + "\" > /dev/null 2>&1 &))" +
+            " > \"" + temp_output_file + "\" 2>&1";
         
         log_info("Executing: {}", build_command);
         int result = std::system(build_command.c_str());
