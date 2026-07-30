@@ -1,69 +1,67 @@
 module;
 
+#include <algorithm>
 #include <string>
 #include <vector>
 #include <fstream>
 #include <format>
 #include <filesystem>
+#include <stdexcept>
+#include <utility>
 
 module preparser.rttr_generator;
 import preparser.types;
 import preparser.logger;
 
-static std::string to_snake_case(const std::string& name) {
-    std::string result;
-    for (size_t i = 0; i < name.size(); ++i) {
-        char c = name[i];
-        if (std::isupper(c) && i > 0 && std::islower(name[i-1])) {
-            result += '_';
-        }
-        result += std::tolower(c);
-    }
-    return result;
-}
-
-void generate_rttr_registration(const std::vector<ComponentInfo>& components) {
-    // Generate a separate .cpp file for each component
+void generate_rttr_registration(
+    const std::vector<ComponentInfo>& components,
+    const std::filesystem::path& output_path)
+{
+    std::vector<const ComponentInfo*> ordered_components;
+    ordered_components.reserve(components.size());
     for (const auto& component : components) {
-		if (!component.requires_code_generation) {
-			log("Up to date: {}", component.generated_code_path.string());
-			continue;
-		}
+        ordered_components.push_back(&component);
+    }
 
-		log("Generating: {}", component.generated_code_path.string());
+    std::ranges::sort(ordered_components, {}, [](const ComponentInfo* component) {
+        return std::pair(component->module_name, component->name);
+    });
 
-        const std::string filepath = component.generated_code_path;
+    log("Generating: {}", output_path.string());
+    std::ofstream out(output_path);
+    if (!out.is_open()) {
+        throw std::runtime_error(std::format("Failed to open output file: {}", output_path.string()));
+    }
 
-        std::ofstream out(filepath);
-        if (!out.is_open()) {
-            throw std::runtime_error(std::format("Failed to open output file: {}", filepath));
+    out << "#include \"rttr/registration.h\"\n\n";
+    std::string previous_module;
+    for (const ComponentInfo* component : ordered_components) {
+        if (component->module_name != previous_module) {
+            out << std::format("import {};\n", component->module_name);
+            previous_module = component->module_name;
         }
+    }
 
-        out << "#include \"rttr/registration.h\"\n\n";
-        out << std::format("import {};\n", component.module_name);
-
-        out << "\nRTTR_REGISTRATION\n{\n";
-
+    out << "\nRTTR_REGISTRATION\n{\n";
+    for (const ComponentInfo* component : ordered_components) {
         out << std::format("\trttr::registration::class_<{}>(\"{}\")\n",
-                          component.name, component.name);
+                          component->name, component->name);
         out << "\t\t(rttr::metadata(\"is_component\", true))\n";
         out << "        .constructor<>()(rttr::policy::ctor::as_object)";
 
-        for (const auto& method : component.methods) {
+        for (const auto& method : component->methods) {
             out << std::format("\n\t\t.method(\"{}\", &{}::{})",
-                              method, component.name, method);
+                              method, component->name, method);
         }
 
-        for (const auto& prop : component.properties) {
+        for (const auto& prop : component->properties) {
             out << std::format("\n\t\t.property(\"{}\", &{}::{})",
-                              prop.name, component.name, prop.name);
+                              prop.name, component->name, prop.name);
         }
 
         out << std::format("\n\t\t.property(\"entity_id\", &{}::entity_id)"
                           "(rttr::metadata(\"is_hidden\", true));\n",
-                          component.name);
-
-        out << "}\n";
-        out.close();
+                          component->name);
     }
+    out << "}\n";
 }

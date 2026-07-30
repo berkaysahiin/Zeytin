@@ -63,6 +63,10 @@ void ComponentMatchCallback::run(const clang::ast_matchers::MatchFinder::MatchRe
 
 	const auto& SourceManager = Result.Context->getSourceManager();
     const auto Loc = Record->getLocation();
+	if (!SourceManager.isWrittenInMainFile(Loc)) {
+		return;
+	}
+
     const auto FileID = SourceManager.getFileID(Loc);
     const auto FileEntry = SourceManager.getFileEntryRefForID(FileID);
 

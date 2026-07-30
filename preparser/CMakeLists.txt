@@ -7,6 +7,13 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(Clang REQUIRED CONFIG)
 
+execute_process(
+    COMMAND ${CMAKE_CXX_COMPILER} -print-resource-dir
+    OUTPUT_VARIABLE CLANG_RESOURCE_DIR
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    COMMAND_ERROR_IS_FATAL ANY
+)
+
 file(GLOB_RECURSE SOURCES src/*.cpp)
 file(GLOB_RECURSE MODULE_SOURCES src/*.cppm)
 
@@ -21,6 +28,10 @@ target_sources(preparser
 target_include_directories(preparser PRIVATE
     ${LLVM_INCLUDE_DIRS}
     ${CLANG_INCLUDE_DIRS}
+)
+
+target_compile_definitions(preparser PRIVATE
+    ZEYTIN_CLANG_RESOURCE_DIR="${CLANG_RESOURCE_DIR}"
 )
 
 target_link_libraries(preparser PRIVATE
