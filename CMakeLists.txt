@@ -11,6 +11,13 @@ option(ZEYTIN_BUILD_PREPARSER "Build the Zeytin component preparser" ON)
 option(ZEYTIN_BUILD_ENGINE "Build the Zeytin runtime" ON)
 option(ZEYTIN_BUILD_EDITOR "Build the Zeytin editor" ON)
 option(ZEYTIN_BUILD_TESTS "Build Zeytin tests" ON)
+option(ZEYTIN_WARNINGS_AS_ERRORS "Treat first-party warnings as errors" OFF)
+
+add_library(ZeytinWarnings INTERFACE)
+target_compile_options(ZeytinWarnings INTERFACE
+    $<$<COMPILE_LANG_AND_ID:CXX,Clang,AppleClang,GNU>:-Wall;-Wextra;-Wpedantic>
+    $<$<AND:$<BOOL:${ZEYTIN_WARNINGS_AS_ERRORS}>,$<COMPILE_LANG_AND_ID:CXX,Clang,AppleClang,GNU>>:-Werror>
+)
 
 set(ENGINE_CONFIG "weditor" CACHE STRING "Engine configuration: weditor or standalone")
 set_property(CACHE ENGINE_CONFIG PROPERTY STRINGS weditor standalone)

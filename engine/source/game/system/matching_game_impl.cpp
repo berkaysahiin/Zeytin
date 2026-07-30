@@ -419,13 +419,6 @@ void GMatchingGame::draw_selection_highlight() {
 		.height=scaled_height
 	};
 
-	const Rectangle source = {
-		.x=0.0F,
-		.y=0.0F,
-		.width=0.0F,
-		.height=0.0F
-	};
-
 	const CardMaskStatus mask_status = static_cast<CardMaskStatus>(card.e_mask_status);
 	const std::string* texture_path = nullptr;
 	if (mask_status == CardMaskStatus::SMILE) {
@@ -773,9 +766,6 @@ void GMatchingGame::draw_game_over_overlay() {
 	const int font_size = static_cast<int>(56.0F * pulse);
 	const float screen_width = VIRTUAL_WIDTH > 0.0F ? VIRTUAL_WIDTH : static_cast<float>(get_screen_width());
 	const float screen_height = VIRTUAL_HEIGHT > 0.0F ? VIRTUAL_HEIGHT : static_cast<float>(get_screen_height());
-
-	const int total_unique_symbols = 5;
-	const bool all_found = m_found_pairs.size() == total_unique_symbols;
 
 	const std::string message = m_game_over_win ? "LEVEL COMPLETE!" : "GAME OVER";
 	const Color text_color = m_game_over_win ? make_color(120, 220, 140, 255) : make_color(230, 90, 90, 255);

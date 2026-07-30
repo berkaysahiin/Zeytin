@@ -25,7 +25,7 @@ target_sources(preparser
     ${MODULE_SOURCES}
 )
 
-target_include_directories(preparser PRIVATE
+target_include_directories(preparser SYSTEM PRIVATE
     ${LLVM_INCLUDE_DIRS}
     ${CLANG_INCLUDE_DIRS}
 )
@@ -33,6 +33,14 @@ target_include_directories(preparser PRIVATE
 target_compile_definitions(preparser PRIVATE
     ZEYTIN_CLANG_RESOURCE_DIR="${CLANG_RESOURCE_DIR}"
 )
+
+if(TARGET ZeytinWarnings)
+    target_link_libraries(preparser PRIVATE ZeytinWarnings)
+else()
+    target_compile_options(preparser PRIVATE
+        $<$<COMPILE_LANG_AND_ID:CXX,Clang,AppleClang,GNU>:-Wall;-Wextra;-Wpedantic>
+    )
+endif()
 
 target_link_libraries(preparser PRIVATE
     clang-cpp

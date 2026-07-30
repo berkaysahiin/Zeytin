@@ -95,10 +95,10 @@ void ManipulatorManager::handle_selected(const EntityID selected_entity_id) {
 	if(!ctransform_opt) return;
 
 	Context ctx {
+		.transform = Query::get<CTransform>(selected_entity_id),
 		.entity_id = selected_entity_id,
 		.camera = Zeytin::get().get_camera(),
-		.is_play_mode = Zeytin::get().is_play_mode(),
-		.transform = Query::get<CTransform>(selected_entity_id)
+		.is_play_mode = Zeytin::get().is_play_mode()
 	};
 
     auto it = m_impl->manipulators.find(m_impl->active_type);

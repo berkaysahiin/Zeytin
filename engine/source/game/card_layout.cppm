@@ -25,7 +25,7 @@ export inline void clear_card_layout() {
 }
 
 export template<typename... Ts>
-void setup_card_layout(const GCardBoardConfig& board, const GCardConfig& config,
+void setup_card_layout(const GCardBoardConfig& board, const GCardConfig&,
 					   const float initial_width, const float initial_height,
 					   [[maybe_unused]] const Alias<Ts...>& alias) {
     static_assert(alias_contains_v<CCard, Ts...>, "Alias must include CCard");

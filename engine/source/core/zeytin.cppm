@@ -120,7 +120,7 @@ private:
 
 private:
     Storage m_storage;
-    State m_state = {0};
+    State m_state = {};
     
     RenderTexture2D m_render_texture;
     Camera2D m_camera;

@@ -57,14 +57,17 @@ void CCollider::draw_bounds() const {
     const float pos_x = transform.position_x + scaled_offset_x;
     const float pos_y = transform.position_y + scaled_offset_y;
 
-    const Rectangle rec = {
+    [[maybe_unused]] const Rectangle rec = {
         .x=pos_x,
         .y=pos_y,
         .width=scaled_width,
         .height=scaled_height
     };
 
-    Vector2 origin = { .x=scaled_width / 2.0F, .y=scaled_height / 2.0F };
+    [[maybe_unused]] const Vector2 origin = {
+        .x=scaled_width / 2.0F,
+        .y=scaled_height / 2.0F
+    };
 }
 
 bool CCollider::is_point_inside(float px, float py) const {

@@ -11,6 +11,7 @@ import zeytin.editor.event;
 import zeytin.editor.message;
 #endif
 
+#ifdef EDITOR_MODE
 static std::string level_to_string(LogLevel level) {
 	switch (level) {
 		case LogLevel::TRACE: return "TRACE";  
@@ -20,10 +21,13 @@ static std::string level_to_string(LogLevel level) {
 		default: return "UNKNOWN";
 	}
 }
+#endif
 
-void RemoteLogger::log(LogLevel level, const std::string& message) {
+void RemoteLogger::log(
+    [[maybe_unused]] LogLevel level,
+    [[maybe_unused]] const std::string& message)
+{
 #ifdef EDITOR_MODE
 	send_message_to_editor<LogMessage>(level_to_string(level), message);
 #endif
 }
-

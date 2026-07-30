@@ -85,12 +85,20 @@ endif()
 foreach(target IN ITEMS ${RUNTIME_TARGET} ${ENGINE_TARGET})
     target_include_directories(${target} PRIVATE
         include
+    )
+    target_include_directories(${target} SYSTEM PRIVATE
         3rdparty
         3rdparty/zmq
         3rdparty/raylib
         3rdparty/rttr
     )
-    target_compile_options(${target} PRIVATE -w)
+    if(TARGET ZeytinWarnings)
+        target_link_libraries(${target} PRIVATE ZeytinWarnings)
+    else()
+        target_compile_options(${target} PRIVATE
+            $<$<COMPILE_LANG_AND_ID:CXX,Clang,AppleClang,GNU>:-Wall;-Wextra;-Wpedantic>
+        )
+    endif()
 endforeach()
 
 if(WIN32)

@@ -73,21 +73,9 @@ void CCardBoardSystem::on_play_start() {
         {6, 7, 4, 5}
     };
 
-    const int32_t mask_matrix_4x4[4][4] = {
-        {1, 1, 2, 2},
-        {1, 2, 1, 2},
-        {2, 1, 2, 1},
-        {2, 2, 1, 1}
-    };
-
     const int32_t symbol_matrix_2x2[2][2] = {
         {0, 1},
         {1, 0}
-    };
-
-    const int32_t mask_matrix_2x2[2][2] = {
-        {1, 2},
-        {2, 1}
     };
 
     const int32_t symbol_matrix_4x3[4][3] = {
@@ -95,13 +83,6 @@ void CCardBoardSystem::on_play_start() {
         {3, 0, 1},
         {2, 4, 3},
         {4, 2, 0}
-    };
-
-    const int32_t mask_matrix_4x3[4][3] = {
-        {1, 2, 1},
-        {2, 1, 2},
-        {1, 2, 1},
-        {2, 1, 2}
     };
 
     const std::vector<EntityID> card_ids = Query::find_all_with<CCard>();

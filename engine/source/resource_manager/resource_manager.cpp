@@ -10,8 +10,6 @@ import zeytin.logger;
 #define ENGINE_SCRIPTS_FOLDER "scripts"
 
 namespace {
-    const char* ENGINE = "engine";
-    const char* EDITOR = "editor";
     const char* SHARED_RESOUCES = "shared_resources";
 }
 

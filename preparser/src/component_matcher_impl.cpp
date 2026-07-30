@@ -377,7 +377,8 @@ static Result property_type_rules(const clang::FieldDecl *Field)
 	assert(Field != nullptr);
 
 	Result result {
-		.success = true
+		.success = true,
+		.messages = {}
 	};
 
 	const clang::QualType qual_type = Field->getType();

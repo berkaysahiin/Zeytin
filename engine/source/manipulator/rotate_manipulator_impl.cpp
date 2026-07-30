@@ -11,13 +11,6 @@ import zeytin.game.transform;
 import zeytin.raylib;
 import zeytin.manipulator.transform_utils;
 
-#ifndef PI
-	#define PI 3.14159265358979323846f
-#endif
-
-#define RAD2DEG (180.0f / PI)
-#define DEG2RAD (PI / 180.0f)
-
 struct RotateManipulator::Impl {
     bool is_rotating = false;
     float start_angle = 0.0f;
@@ -41,7 +34,6 @@ void RotateManipulator::update(Context& ctx) {
 
     // draw rotation gizmo
     const float circle_radius = 80.0f;
-    const float circle_thickness = 3.0f;
 
     const float pos_x = ctx.transform.position_x;
     const float pos_y = ctx.transform.position_y;
@@ -149,4 +141,3 @@ bool RotateManipulator::Impl::is_hovering_circle(const Context& ctx, float mouse
     // check if mouse is near the circle edge
     return std::abs(distance - circle_radius) < hover_threshold;
 }
-

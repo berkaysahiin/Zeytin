@@ -19,10 +19,10 @@ using EntityID = uint64_t;
 namespace transform_utils {
 
 void send_property_change_command(
-    EntityID entity_id,
-    const char* property_name,
-    float old_value,
-    float new_value
+    [[maybe_unused]] EntityID entity_id,
+    [[maybe_unused]] const char* property_name,
+    [[maybe_unused]] float old_value,
+    [[maybe_unused]] float new_value
 ) {
 #ifdef EDITOR_MODE
 	send_message_to_editor<PropertyChangeCommandMessage>(entity_id, "CTransform", property_name, old_value, new_value);
@@ -31,8 +31,8 @@ void send_property_change_command(
 }
 
 void send_batch_property_change_command(
-    EntityID entity_id,
-    const std::vector<PropertyChange>& changes
+    [[maybe_unused]] EntityID entity_id,
+    [[maybe_unused]] const std::vector<PropertyChange>& changes
 ) {
 #ifdef EDITOR_MODE
     if (changes.empty()) {

@@ -27,7 +27,8 @@
         "ZEYTIN_BUILD_PREPARSER": true,
         "ZEYTIN_BUILD_ENGINE": true,
         "ZEYTIN_BUILD_EDITOR": true,
-        "ZEYTIN_BUILD_TESTS": true
+        "ZEYTIN_BUILD_TESTS": true,
+        "ZEYTIN_WARNINGS_AS_ERRORS": true
       }
     },
     {
@@ -40,7 +41,8 @@
         "ZEYTIN_BUILD_PREPARSER": true,
         "ZEYTIN_BUILD_ENGINE": true,
         "ZEYTIN_BUILD_EDITOR": false,
-        "ZEYTIN_BUILD_TESTS": false
+        "ZEYTIN_BUILD_TESTS": false,
+        "ZEYTIN_WARNINGS_AS_ERRORS": true
       }
     }
   ],

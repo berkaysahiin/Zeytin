@@ -44,6 +44,9 @@ target_link_libraries(ZeytinEditor PRIVATE ZeytinCommon)
 
 target_include_directories(ZeytinEditor PRIVATE
     include
+)
+
+target_include_directories(ZeytinEditor SYSTEM PRIVATE
     3rdparty
     3rdparty/imgui
     3rdparty/zmq
@@ -57,7 +60,14 @@ target_link_directories(ZeytinEditor PRIVATE
     3rdparty/zmq/linux
 )
 
-target_compile_options(ZeytinEditor PRIVATE -Wall -Wextra -Wpedantic -Werror -g -O0)
+if(TARGET ZeytinWarnings)
+    target_link_libraries(ZeytinEditor PRIVATE ZeytinWarnings)
+else()
+    target_compile_options(ZeytinEditor PRIVATE
+        $<$<COMPILE_LANG_AND_ID:CXX,Clang,AppleClang,GNU>:-Wall;-Wextra;-Wpedantic>
+    )
+endif()
+target_compile_options(ZeytinEditor PRIVATE -g -O0)
 
 set_source_files_properties(${THIRD_PARTY_SOURCES} PROPERTIES
     COMPILE_OPTIONS "-w"

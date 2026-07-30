@@ -25,8 +25,15 @@ target_sources(ZeytinCommon
     ${MODULE_SOURCES}
 )
 
-target_include_directories(ZeytinCommon
-    PUBLIC
+target_include_directories(ZeytinCommon SYSTEM PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/../engine/3rdparty
     ${CMAKE_CURRENT_LIST_DIR}/../editor/3rdparty
 )
+
+if(TARGET ZeytinWarnings)
+    target_link_libraries(ZeytinCommon PRIVATE ZeytinWarnings)
+else()
+    target_compile_options(ZeytinCommon PRIVATE
+        $<$<COMPILE_LANG_AND_ID:CXX,Clang,AppleClang,GNU>:-Wall;-Wextra;-Wpedantic>
+    )
+endif()

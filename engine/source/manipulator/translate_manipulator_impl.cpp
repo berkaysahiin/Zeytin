@@ -171,7 +171,6 @@ bool TranslateManipulator::Impl::is_hovering_axis(const Context& ctx, float mous
 }
 
 bool TranslateManipulator::Impl::is_hovering_center(const Context& ctx, float mouse_x, float mouse_y) const {
-    const float center_radius = 8.0f; 
     const float hover_radius = 12.0f;
 
     const float pos_x = ctx.transform.position_x;

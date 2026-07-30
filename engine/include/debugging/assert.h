@@ -2,11 +2,11 @@
 
 #include <cassert>
 
-#define ASSERT(EXPR, ...) \ 
+#define ASSERT(EXPR, ...) \
 	do { \
-	const bool expr = static_cast<bool>((EXPR)); \ 
-	if (!expr) { \  
-		log_error(__VA_ARGS__); \
-	} \ 
-	assert(EXPR); \
-	}while(0);
+		const bool expr = static_cast<bool>((EXPR)); \
+		if (!expr) { \
+			log_error(__VA_ARGS__); \
+		} \
+		assert(expr); \
+	} while (false)

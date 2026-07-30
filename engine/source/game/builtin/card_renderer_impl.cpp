@@ -94,8 +94,6 @@ void CCardRenderer::on_update() {
 
     const float width = collider.width;
     const float height = collider.height;
-    const float half_width = width * 0.5F;
-    const float half_height = height * 0.5F;
 
     const Vector2 face_center{.x=transform.position_x, .y=transform.position_y};
 

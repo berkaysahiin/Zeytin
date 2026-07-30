@@ -3,8 +3,6 @@ module;
 #include <cstdio>
 #include <string>
 #include <cassert>
-#include <filesystem>
-#include <fstream>
 
 #define RAPIDJSON_HAS_STDSTRING 1
 #include <rapidjson/prettywriter.h> 
@@ -252,18 +250,6 @@ rttr::variant from(EntityID entity_id, const std::string& json)
     from_internal(value_as_string(value), obj);
 
     return obj;
-}
-
-rttr::variant from(EntityID entity_id, const std::filesystem::path& json_path)
-{
-    std::ifstream file(json_path);
-    assert(file.is_open());
-
-    std::string json_content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-
-    file.close();
-
-    return from(entity_id, json_content);
 }
 
 }  // end of anonynmous namepsace
