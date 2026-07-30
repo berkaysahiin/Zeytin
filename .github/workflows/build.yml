@@ -26,9 +26,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes \
             binutils-dev \
-            clang-18 \
+            gnupg \
             libasound2-dev \
-            libclang-18-dev \
             libdwarf-dev \
             libdw-dev \
             libgl1-mesa-dev \
@@ -40,8 +39,13 @@ jobs:
             libxinerama-dev \
             libxrandr-dev \
             libzmq3-dev \
-            llvm-18-dev \
-            ninja-build
+            lsb-release \
+            ninja-build \
+            software-properties-common \
+            wget
+          wget --quiet --output-document=/tmp/llvm.sh https://apt.llvm.org/llvm.sh
+          sudo bash /tmp/llvm.sh 22
+          sudo apt-get install --yes clang-tools-22 libclang-22-dev llvm-22-dev
           python3 -m pip install --user "cmake>=4.2,<4.3"
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
 
@@ -49,15 +53,15 @@ jobs:
         run: |
           cmake --version
           ninja --version
-          clang++-18 --version
+          clang++-22 --version
 
       - name: Configure
         run: |
           cmake --preset debug \
-            -DCMAKE_C_COMPILER=clang-18 \
-            -DCMAKE_CXX_COMPILER=clang++-18 \
-            -DClang_DIR=/usr/lib/llvm-18/lib/cmake/clang \
-            -DLLVM_DIR=/usr/lib/llvm-18/lib/cmake/llvm
+            -DCMAKE_C_COMPILER=clang-22 \
+            -DCMAKE_CXX_COMPILER=clang++-22 \
+            -DClang_DIR=/usr/lib/llvm-22/lib/cmake/clang \
+            -DLLVM_DIR=/usr/lib/llvm-22/lib/cmake/llvm
 
       - name: Build
         run: cmake --build --preset debug --parallel 2
