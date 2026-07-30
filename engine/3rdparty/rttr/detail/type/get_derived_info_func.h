@@ -59,22 +59,16 @@ static derived_info get_most_derived_info_impl_none(void* ptr)
 using derived_func = derived_info(*)(void*);
 
 /*!
- * This is the case where the type T has put necessary macro `RTTR_ENABLE` inside the class.
+ * Selects the implementation according to whether T uses the `RTTR_ENABLE` macro.
  */
 
 template<typename T>
-static derived_func get_most_derived_info_check(typename std::enable_if<has_get_derived_info_func<T>::value >::type* = 0)
+static derived_func get_most_derived_info_check()
 {
-    return get_most_derived_info_impl<T>;
-}
-
-/*!
- * This is the case where the typ T has not put necessary macro `RTTR_ENABLE` inside the class.
- */
-template<typename T>
-static derived_func get_most_derived_info_check(typename std::enable_if<!has_get_derived_info_func<T>::value >::type* = 0)
-{
-    return get_most_derived_info_impl_none<T>;
+    if constexpr (has_get_derived_info_func<T>::value)
+        return get_most_derived_info_impl<T>;
+    else
+        return get_most_derived_info_impl_none<T>;
 }
 
 /*!
