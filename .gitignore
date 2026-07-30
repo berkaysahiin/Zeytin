@@ -29,6 +29,7 @@ nohup.out
 ./shared_resources/config/config.json
 
 compile_commands.json
+CMakeUserPresets.json
 
 .clang-format
 .cache/

@@ -1,0 +1,68 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 4,
+    "minor": 2,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": true
+      }
+    },
+    {
+      "name": "debug",
+      "displayName": "Zeytin Debug",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "ENGINE_CONFIG": "weditor",
+        "ZEYTIN_BUILD_PREPARSER": true,
+        "ZEYTIN_BUILD_ENGINE": true,
+        "ZEYTIN_BUILD_EDITOR": true,
+        "ZEYTIN_BUILD_TESTS": true
+      }
+    },
+    {
+      "name": "standalone-release",
+      "displayName": "Zeytin Standalone Release",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENGINE_CONFIG": "standalone",
+        "ZEYTIN_BUILD_PREPARSER": true,
+        "ZEYTIN_BUILD_ENGINE": true,
+        "ZEYTIN_BUILD_EDITOR": false,
+        "ZEYTIN_BUILD_TESTS": false
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "debug",
+      "configurePreset": "debug",
+      "jobs": 0
+    },
+    {
+      "name": "standalone-release",
+      "configurePreset": "standalone-release",
+      "jobs": 0
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "debug",
+      "configurePreset": "debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
+}

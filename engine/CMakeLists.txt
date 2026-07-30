@@ -6,7 +6,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_subdirectory("../common" "${CMAKE_CURRENT_BINARY_DIR}/common")
+if(NOT TARGET ZeytinCommon)
+    add_subdirectory("../common" "${CMAKE_CURRENT_BINARY_DIR}/common")
+endif()
 
 set(ENGINE_CONFIG "weditor" CACHE STRING "Build configuration: weditor or standalone")
 set_property(CACHE ENGINE_CONFIG PROPERTY STRINGS weditor standalone)

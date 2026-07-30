@@ -6,7 +6,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_subdirectory("../common" "${CMAKE_CURRENT_BINARY_DIR}/common")
+if(NOT TARGET ZeytinCommon)
+    add_subdirectory("../common" "${CMAKE_CURRENT_BINARY_DIR}/common")
+endif()
 
 file(GLOB_RECURSE SOURCES
     source/*.cpp
