@@ -22,6 +22,10 @@ target_compile_options(ZeytinWarnings INTERFACE
 set(ENGINE_CONFIG "weditor" CACHE STRING "Engine configuration: weditor or standalone")
 set_property(CACHE ENGINE_CONFIG PROPERTY STRINGS weditor standalone)
 
+if(ZEYTIN_BUILD_TESTS)
+    include(CTest)
+endif()
+
 add_subdirectory(common)
 
 if(ZEYTIN_BUILD_PREPARSER)
@@ -36,6 +40,6 @@ if(ZEYTIN_BUILD_EDITOR)
     add_subdirectory(editor)
 endif()
 
-if(ZEYTIN_BUILD_TESTS)
-    include(CTest)
+if(ZEYTIN_BUILD_TESTS AND BUILD_TESTING)
+    add_subdirectory(tests)
 endif()
