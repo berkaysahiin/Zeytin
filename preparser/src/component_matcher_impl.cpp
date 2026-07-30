@@ -389,8 +389,8 @@ static Result property_type_rules(const clang::FieldDecl *Field)
 		// Not returning here to catch more errors
 	}
 
-	if(qual_type->isPointerOrReferenceType()) {
-		std::string message = "Pointer or reference type is now allowed with properties";
+	if(qual_type->isPointerType() || qual_type->isReferenceType()) {
+		std::string message = "Pointer or reference type is not allowed with properties";
 		result.success = false;
 		result.messages.push_back(message);
 		// Not returning here to catch more errors
@@ -398,7 +398,7 @@ static Result property_type_rules(const clang::FieldDecl *Field)
 
 	clang::QualType type = qual_type.getCanonicalType().getUnqualifiedType();
 
-	if(type->isPointerOrReferenceType()) {
+	if(type->isPointerType() || type->isReferenceType()) {
 		type = type->getPointeeType();
 	}
 
