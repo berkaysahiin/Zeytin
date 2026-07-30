@@ -59,19 +59,6 @@ static derived_info get_most_derived_info_impl_none(void* ptr)
 using derived_func = derived_info(*)(void*);
 
 /*!
- * Selects the implementation according to whether T uses the `RTTR_ENABLE` macro.
- */
-
-template<typename T>
-static derived_func get_most_derived_info_check()
-{
-    if constexpr (has_get_derived_info_func<T>::value)
-        return get_most_derived_info_impl<T>;
-    else
-        return get_most_derived_info_impl_none<T>;
-}
-
-/*!
  * \brief This function returns a function pointer to a function for retrieving the infos
  *        about the most derived type of an given instance.
  *
@@ -79,7 +66,12 @@ static derived_func get_most_derived_info_check()
 template<typename T>
 static derived_func get_most_derived_info_func()
 {
-    return get_most_derived_info_check<typename detail::raw_type<T>::type>();
+    using raw_type = typename detail::raw_type<T>::type;
+
+    if constexpr (has_get_derived_info_func<raw_type>::value)
+        return get_most_derived_info_impl<raw_type>;
+    else
+        return get_most_derived_info_impl_none<raw_type>;
 }
 
 
